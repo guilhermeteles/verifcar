@@ -68,6 +68,10 @@
   .card:hover{transform:translateY(-4px);border-color:rgba(35,203,151,.36);
     box-shadow:0 20px 44px rgba(0,0,0,.5)}
   .card:hover::before{opacity:1}
+  .card-feature{
+    border-color:rgba(35,203,151,.26);
+    background:linear-gradient(160deg,rgba(35,203,151,.06),var(--surface) 55%);
+  }
 
   .card-icon{
     width:44px;height:44px;border-radius:13px;
@@ -141,6 +145,30 @@
   </header>
 
   <div class="grid">
+
+    <a class="card card-feature" href="verifcar-site/index.html">
+      <div class="card-icon">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><path d="M2 12h20"/>
+          <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+        </svg>
+      </div>
+      <div class="card-tag">Site público</div>
+      <div class="card-title">Landing page</div>
+      <p class="card-desc">
+        A apresentação comercial do VerifCar: o problema, como funciona e as três
+        frentes — frota, concessionária e comprador de usado.
+      </p>
+      <div class="card-meta">
+        <span class="chip">B2B</span>
+        <span class="chip">Consumidor</span>
+        <span class="chip">Agendar demo</span>
+      </div>
+      <div class="card-cta">
+        Abrir landing
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </div>
+    </a>
 
     <a class="card" href="verifcar-app/index.html">
       <div class="card-icon">
