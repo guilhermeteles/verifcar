@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<title>VerifCar · Relatório Completo — BRA-2E19</title>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"></noscript>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {--pri-deep:#0C6B4E;--pri-deep2:#149B72;
+  --pri:#23CB97; --pri-50:#0F221D; --pri-100:#16352C;
+  --pri-400:#23CB97; --pri-600:#4FDCB0; --pri-800:#93EED3;
+  --em:#23CB97; --em-50:#0F221D; --em-400:#35D9A4;
+  --am:#F0A92B; --am-50:#2A1F0E;
+  --co:#FF3B63; --co-50:#2B1119;
+  --bg:#12141C; --surface:#1A1D28;
+  --sur-low:#222431; --sur-mid:#282B39; --sur-high:#33374A;
+  --text-h:#F3F5F9; --text-b:#CBD0DC; --text-m:#8D94A6; --text-s:#666D80;
+  --border:rgba(255,255,255,0.10); --outline-v:rgba(255,255,255,0.16);
+  --font-d:'Space Grotesk',sans-serif;
+  --font-b:'Inter',sans-serif;
+  --font-m:'JetBrains Mono',monospace;
+  --sh-card:0 1px 3px rgba(0,0,0,.45),0 6px 20px rgba(0,0,0,.30);
+}
+
+body {
+  background: var(--bg);
+  font-family: var(--font-b);
+  color: var(--text-b);
+  padding: 0px 24px 48px;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* ── PRINT ── */
+@media print {
+  body { padding: 0; max-width: 100%; }
+  .no-print { display: none !important; }
+  .page-break { page-break-before: always; }
+  .section-separator { page-break-inside: avoid; }
+}
+
+/* ── TOP BAR ── */
+.top-bar { height: 4px; background: linear-gradient(90deg,var(--pri-800),var(--pri-400),var(--em-400),var(--pri-400),var(--pri-800)); border-radius: 2px; margin-bottom: 24px; }
+
+/* ── DOC HEADER ── */
+.doc-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom: 20px; gap: 12px; }
+.doc-meta { display:flex; flex-direction:column; gap:3px; }
+.doc-logo { font-family:var(--font-d); font-size:22px; font-weight:800; color:var(--pri-800); letter-spacing:-0.5px; }
+.doc-sub { font-size:11px; color:var(--text-m); }
+.doc-id { font-family:var(--font-m); font-size:9px; color:var(--pri-600); background:var(--pri-50); padding:2px 8px; border-radius:6px; border:1px solid var(--pri-100); align-self:flex-start; }
+.doc-stamp { text-align:right; }
+.doc-stamp .stamp-date { font-family:var(--font-m); font-size:9px; color:var(--text-s); }
+
+/* ── SECTION TITLE ── */
+.sec-title { font-family:var(--font-d); font-size:10px; font-weight:700; color:var(--text-s); text-transform:uppercase; letter-spacing:1.4px; margin: 16px 0 6px 2px; }
+
+/* ── HERO VEÍCULO ── */
+.veh-hero { background:linear-gradient(135deg,var(--pri-deep),var(--pri-deep2)); border-radius:14px; padding:14px 16px; margin-bottom:14px; color:#fff; position:relative; overflow:hidden; }
+.veh-hero::before { content:''; position:absolute; inset:0; background-image:linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px); background-size:100% 3px; }
+.hero-z { position:relative; z-index:1; }
+.placa-badge { background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); border-radius:8px; padding:5px 10px; text-align:center; }
+
+/* ── CARD ── */
+.card { background:var(--surface); border-radius:12px; padding:10px 12px; margin-bottom:8px; box-shadow:var(--sh-card); }
+.card-ok { background:var(--em-50); border-radius:10px; padding:8px 11px; margin-bottom:6px; border-left:2.5px solid var(--em-400); }
+.card-warn { background:var(--am-50); border-radius:10px; padding:8px 11px; margin-bottom:6px; border-left:2.5px solid var(--am); }
+.card-pri { background:var(--pri-50); border-radius:10px; padding:8px 11px; margin-bottom:6px; border-left:2.5px solid var(--pri-400); }
+
+/* ── DATA ROW ── */
+.data-row { display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:0.5px solid var(--sur-low); }
+.data-row:last-child { border-bottom:none; }
+.data-label { font-size:11px; color:var(--text-m); }
+.data-value { font-size:11px; font-weight:600; color:var(--text-h); }
+.data-mono { font-family:var(--font-m); font-size:9.5px; font-weight:500; color:var(--text-h); }
+
+/* ── BADGE ── */
+.badge { display:inline-flex; align-items:center; font-size:9px; font-weight:700; padding:2.5px 7px; border-radius:9999px; gap:3px; }
+.badge-ok { background:var(--em-50); color:var(--em); border:0.5px solid rgba(35,203,151,0.2); }
+.badge-warn { background:var(--am-50); color:var(--am); border:0.5px solid rgba(240,169,43,0.2); }
+.badge-info { background:var(--pri-50); color:var(--pri-600); border:0.5px solid var(--pri-100); }
+.badge-ok-lg { background:rgba(79,220,176,0.2); color:#4FDCB0; border:0.5px solid rgba(79,220,176,0.3); }
+.badge-neutral { background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.7); border:0.5px solid rgba(255,255,255,0.15); }
+
+/* ── TIMELINE ── */
+.tl-item { display:flex; gap:10px; padding-bottom:10px; position:relative; }
+.tl-dot { width:8px; height:8px; border-radius:50%; background:var(--pri-400); flex-shrink:0; margin-top:3px; }
+.tl-dot.current { background:var(--em); }
+.tl-line { position:absolute; top:11px; left:3.5px; width:1px; height:calc(100% - 4px); background:var(--outline-v); opacity:0.3; }
+
+/* ── REVISÃO SCORE ── */
+.review-hero { background:linear-gradient(135deg,var(--pri-deep),var(--pri-deep2)); border-radius:12px; padding:14px 16px; margin-bottom:10px; color:#fff; position:relative; overflow:hidden; }
+.review-hero::before { content:''; position:absolute; inset:0; background-image:linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px); background-size:100% 3px; }
+
+/* ── REVIEW CARD ── */
+.review-card { background:var(--surface); border-radius:12px; padding:10px 12px; box-shadow:var(--sh-card); border-left:2.5px solid var(--pri-400); }
+
+/* ── GRID ── */
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; }
+
+/* ── SHA BOX ── */
+.sha-box { background:var(--sur-high); border-radius:9px; padding:7px 11px; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+
+/* ── SEPARATOR ── */
+.page-sep { border:none; border-top:1.5px dashed var(--border); margin:28px 0; }
+.section-divider { height:1px; background:var(--sur-high); margin:20px 0 16px; }
+
+/* ── DOWNLOAD BTN ── */
+.btn-download { display:flex; align-items:center; gap:8px; background:linear-gradient(135deg,var(--pri-deep),var(--pri-deep2)); color:#fff; border-radius:9999px; padding:10px 20px; font-family:var(--font-b); font-size:12px; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.55); border:none; transition:opacity .2s; }
+.btn-download:hover { opacity:.88; }
+
+
+.signature{padding:0 30px 30px 30px;text-align:center;background:url("signature.png");background-size:200px;background-position:center;background-repeat:no-repeat;mix-blend-mode:multiply}
+.line{margin-top:40px;border-top:1px solid #aaa;width:60%;margin-left:auto;margin-right:auto}
+
+/* ── FOOTER ── */
+.doc-footer { margin-top:32px; padding-top:14px; border-top:0.5px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+.footer-text { font-family:var(--font-m); font-size:8px; color:var(--text-s); letter-spacing:0.3px; }
+</style>
+</head>
+<body>
+
+<!-- Download button (no print) -->
+<!-- <div class="no-print" style="display:flex;justify-content:flex-end;margin-bottom:16px;gap:8px">
+  <button class="btn-download" onclick="window.print()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+    Exportar / Imprimir PDF
+  </button>
+</div> -->
+
+<div class="top-bar"></div>
+
+<!-- ═══════════════════════════════════════════════
+     CABEÇALHO DO DOCUMENTO
+═══════════════════════════════════════════════ -->
+<div class="doc-header">
+  <div class="doc-meta">
+    <div class="doc-logo">VerifCar</div>
+    <div class="doc-sub">Relatório de Inspeção e Ficha do Veículo</div>
+    <div style="margin-top:4px"><span class="doc-id">#VERIFCAR-9928-X</span></div>
+  </div>
+  <div class="doc-stamp">
+    <div style="font-family:var(--font-m);font-size:8px;color:var(--text-s);margin-bottom:2px">EMITIDO EM</div>
+    <div style="font-family:var(--font-m);font-size:11px;font-weight:600;color:var(--text-h)">26 Mar 2026 · 14:35</div>
+    <div style="font-family:var(--font-m);font-size:8px;color:var(--text-s);margin-top:4px">Grupo Almeida · Rede</div>
+    <div style="margin-top:5px;display:flex;justify-content:flex-end">
+      <span class="badge badge-warn" style="font-size:8px">⚠ Revisão Pendente</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PARTE 1 — REVISÃO FINAL
+═══════════════════════════════════════════════ -->
+<div style="font-family:var(--font-d);font-size:14px;font-weight:800;color:var(--pri-800);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+  <div style="width:24px;height:24px;border-radius:7px;background:var(--pri-50);display:flex;align-items:center;justify-content:center">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--pri-600)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+  </div>
+  Parte 1 · Relatório de Revisão
+</div>
+
+<!-- Hero score -->
+<div class="review-hero">
+  <div style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between">
+    <div>
+      <div style="font-size:8px;font-weight:700;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Placa do Veículo</div>
+      <div style="font-family:var(--font-m);font-size:26px;font-weight:800;color:#fff;letter-spacing:2px;line-height:1">BRA-2E19</div>
+      <div style="display:flex;align-items:center;gap:5px;margin-top:6px">
+        <div style="width:6px;height:6px;border-radius:50%;background:#4FDCB0"></div>
+        <span style="font-size:12px;color:rgba(255,255,255,0.75)">Porsche Taycan · 2024</span>
+      </div>
+    </div>
+    <div style="text-align:center">
+      <svg width="56" height="56" viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r="23" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4"/>
+        <circle cx="28" cy="28" r="23" fill="none" stroke="#4FDCB0" stroke-width="4" stroke-dasharray="144.5" stroke-dashoffset="11.5" stroke-linecap="round" transform="rotate(-90 28 28)"/>
+        <text x="28" y="33" text-anchor="middle" font-family="'Space Grotesk',sans-serif" font-size="14" font-weight="800" fill="white">98</text>
+      </svg>
+      <div style="font-size:8px;color:rgba(255,255,255,0.55);margin-top:2px">SCORE GERAL</div>
+    </div>
+  </div>
+</div>
+
+<!-- Grid de verificações -->
+<!-- <div class="grid-2">
+  <div class="review-card">
+    <div class="sec-title" style="margin-top:0">Chassi</div>
+    <div style="font-family:var(--font-m);font-size:10px;color:var(--pri-800);margin-bottom:5px;line-height:1.4">9BW AB05W<br>7FT 002143</div>
+    <span class="badge badge-ok">✓ Verificado</span>
+  </div>
+  <div class="review-card">
+    <div class="sec-title" style="margin-top:0">Placa</div>
+    <div style="font-family:var(--font-m);font-size:13px;font-weight:800;color:var(--pri-800);margin-bottom:5px">BRA-2E19</div>
+    <span class="badge badge-ok">✓ Verificado</span>
+  </div>
+  <div class="review-card">
+    <div class="sec-title" style="margin-top:0">CRLV</div>
+    <div style="font-size:11px;color:var(--text-h);font-weight:600;margin-bottom:5px">Válido · 2026</div>
+    <span class="badge badge-ok">✓ Conferido</span>
+  </div>
+  <div class="review-card">
+    <div class="sec-title" style="margin-top:0">Identidade</div>
+    <div style="font-size:11px;color:var(--text-h);font-weight:600;margin-bottom:5px">R. A. Tavares</div>
+    <span class="badge badge-ok">✓ Conferida</span>
+  </div>
+</div> -->
+<div style="display:grid;grid-template-columns: 1fr 1fr; gap:16px;">
+  <div>
+      <div id="img-titulo-a" style="font-family:var(--font-d);font-size:13px;font-weight:800;color:var(--pri-800)">Imagem ·
+        Chassi</div>
+      <div id="img-sub-a" style="font-size:8.5px;color:var(--text-m)">Verificação biométrica</div>
+
+    <span class="badge badge-ok" id="img-badge-a">✓ 98.4%</span>
+
+    <div style="display:flex;gap:6px;margin-bottom:10px">
+      <div 
+        style="width:100%;aspect-ratio:27/22;background:#2A2E3C;border-radius:10px;overflow:hidden;cursor:zoom-in">
+        <img src="../fotos/chassi-captura.png" style="width:100%;height:100%;object-fit:cover" />
+      </div>
+      <div 
+        style="width:100%;aspect-ratio:27/22;background:#2A2E3C;border-radius:10px;overflow:hidden;cursor:zoom-in">
+        <img id="img-t2-a" src="../fotos/chassi-modelo.png" style="width:100%;height:100%;object-fit:cover" />
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:8px">
+      <div class="data-row"><span class="data-label">Integridade</span><span class="data-value" id="img-integ-a"
+          style="color:var(--em)">99% Original</span></div>
+      <div class="divider"></div>
+      <div class="data-row"><span class="data-label">Capturado em</span><span class="data-value">14:28 · 26 Mar 2026</span>
+      </div>
+      <div class="divider"></div>
+      <div class="data-row"><span class="data-label">Confiança IA</span><span class="data-value"
+          id="img-conf-a">98.4%</span>
+      </div>
+      </div>
+    
+
+  </div>
+<div>
+      <div id="img-titulo-a" style="font-family:var(--font-d);font-size:13px;font-weight:800;color:var(--pri-800)">Imagem ·
+        Vin</div>
+      <div id="img-sub-a" style="font-size:8.5px;color:var(--text-m)">Verificação biométrica</div>
+
+    <span class="badge badge-ok" id="img-badge-a">✓ 98.4%</span>
+
+    <div style="display:flex;gap:6px;margin-bottom:10px">
+      <div 
+        style="width:100%;aspect-ratio:27/22;background:#2A2E3C;border-radius:10px;overflow:hidden;cursor:zoom-in">
+        <img src="../fotos/vin-captura.png" style="width:100%;height:100%;object-fit:cover" />
+      </div>
+      <div 
+        style="width:100%;aspect-ratio:27/22;background:#2A2E3C;border-radius:10px;overflow:hidden;cursor:zoom-in">
+        <img id="img-t2-a" src="../fotos/vin-modelo.png" style="width:100%;height:100%;object-fit:cover" />
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:8px">
+      <div class="data-row"><span class="data-label">Integridade</span><span class="data-value" id="img-integ-a"
+          style="color:var(--em)">99% Original</span></div>
+      <div class="divider"></div>
+      <div class="data-row"><span class="data-label">Capturado em</span><span class="data-value">14:28 · 26 Mar 2026</span>
+      </div>
+      <div class="divider"></div>
+      <div class="data-row"><span class="data-label">Confiança IA</span><span class="data-value"
+          id="img-conf-a">98.4%</span>
+      </div>
+      </div>
+    
+
+  </div>
+  <div>
+      <div id="img-titulo-a" style="font-family:var(--font-d);font-size:13px;font-weight:800;color:var(--pri-800)">Imagem ·
+        Vidro</div>
+      <div id="img-sub-a" style="font-size:8.5px;color:var(--text-m)">Verificação biométrica</div>
+
+    <span class="badge badge-ok" id="img-badge-a">✓ 98.4%</span>
+
+    <div style="display:flex;gap:6px;margin-bottom:10px">
+      <div 
+        style="width:100%;aspect-ratio:27/22;background:#2A2E3C;border-radius:10px;overflow:hidden;cursor:zoom-in">
+        <img src="../fotos/vidro-captura.png" style="width:100%;height:100%;object-fit:cover" />
+      </div>
+      <div 
+        style="width:100%;aspect-ratio:27/22;background:#2A2E3C;border-radius:10px;overflow:hidden;cursor:zoom-in">
+        <img id="img-t2-a" src="../fotos/vidro-modelo.png" style="width:100%;height:100%;object-fit:cover" />
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:8px">
+      <div class="data-row"><span class="data-label">Integridade</span><span class="data-value" id="img-integ-a"
+          style="color:var(--em)">99% Original</span></div>
+      <div class="divider"></div>
+      <div class="data-row"><span class="data-label">Capturado em</span><span class="data-value">14:28 · 26 Mar 2026</span>
+      </div>
+      <div class="divider"></div>
+      <div class="data-row"><span class="data-label">Confiança IA</span><span class="data-value"
+          id="img-conf-a">98.4%</span>
+      </div>
+      </div>
+    
+
+  </div>
+  <div>
+      <div id="img-titulo-a" style="font-family:var(--font-d);font-size:13px;font-weight:800;color:var(--pri-800)">Imagem ·
+        Motor</div>
+      <div id="img-sub-a" style="font-size:8.5px;color:var(--text-m)">Verificação biométrica</div>
+
+    <span class="badge badge-ok" id="img-badge-a">✓ 98.4%</span>
+
+    <div style="display:flex;gap:6px;margin-bottom:10px">
+      <div 
+        style="width:100%;aspect-ratio:27/22;background:#2A2E3C;border-radius:10px;overflow:hidden;cursor:zoom-in">
+        <img src="../fotos/motor-captura.png" style="width:100%;height:100%;object-fit:cover" />
+      </div>
+      <div 
+        style="width:100%;aspect-ratio:27/22;background:#2A2E3C;border-radius:10px;overflow:hidden;cursor:zoom-in">
+        <img id="img-t2-a" src="../fotos/motor-modelo.png" style="width:100%;height:100%;object-fit:cover" />
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:8px">
+      <div class="data-row"><span class="data-label">Integridade</span><span class="data-value" id="img-integ-a"
+          style="color:var(--em)">99% Original</span></div>
+      <div class="divider"></div>
+      <div class="data-row"><span class="data-label">Capturado em</span><span class="data-value">14:28 · 26 Mar 2026</span>
+      </div>
+      <div class="divider"></div>
+      <div class="data-row"><span class="data-label">Confiança IA</span><span class="data-value"
+          id="img-conf-a">98.4%</span>
+      </div>
+      </div>
+    
+
+  </div>
+</div>
+
+
+<!-- Linha do tempo da verificação -->
+<div class="sec-title">Linha do Tempo da Verificação</div>
+<div class="card">
+  <div style="display:flex;align-items:center;gap:0;position:relative;padding:6px 0">
+    <div style="position:absolute;top:50%;left:0;right:0;height:1px;background:var(--sur-high);transform:translateY(-50%)"></div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;z-index:1">
+      <div style="width:9px;height:9px;border-radius:50%;background:var(--em);box-shadow:0 0 6px rgba(0,0,0,0.88)"></div>
+      <div style="font-family:var(--font-m);font-size:9px;color:var(--text-s);text-align:center;line-height:1.3">14:20<br>Ident.</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;z-index:1">
+      <div style="width:9px;height:9px;border-radius:50%;background:var(--em);box-shadow:0 0 6px rgba(0,0,0,0.88)"></div>
+      <div style="font-family:var(--font-m);font-size:9px;color:var(--text-s);text-align:center;line-height:1.3">14:28<br>Marcações</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;z-index:1">
+      <div style="width:9px;height:9px;border-radius:50%;background:var(--outline-v)"></div>
+      <div style="font-family:var(--font-m);font-size:9px;color:var(--outline-v);text-align:center;line-height:1.3">—<br>Revisão</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;z-index:1">
+      <div style="width:9px;height:9px;border-radius:50%;background:var(--outline-v)"></div>
+      <div style="font-family:var(--font-m);font-size:9px;color:var(--outline-v);text-align:center;line-height:1.3">—<br>Assinatura</div>
+    </div>
+  </div>
+</div>
+
+<!-- SHA-256 -->
+<div class="sha-box">
+  <div style="flex:1;overflow:hidden">
+    <div style="font-size:10px;font-weight:700;color:var(--text-s);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">SHA-256 · Hash do Dossiê</div>
+    <div style="font-family:var(--font-m);font-size:8.5px;color:var(--pri-800);word-break:break-all">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</div>
+  </div>
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-s)" stroke-width="1.8"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap: 16px">
+</div>
+<!-- Resumo situação geral -->
+ <div >
+<div class="sec-title">Resultado da Revisão</div>
+<div class="card-ok"><div style="font-size:12px;color:var(--em);font-weight:600">✓ Chassi: Sem adulteração — integridade 99%</div></div>
+<div class="card-ok"><div style="font-size:12px;color:var(--em);font-weight:600">✓ Placa: Sem irregularidades — legível e original</div></div>
+<div class="card-ok"><div style="font-size:12px;color:var(--em);font-weight:600">✓ CRLV: Documento válido até 2026</div></div>
+<div class="card-ok"><div style="font-size:12px;color:var(--em);font-weight:600">✓ Identidade do proprietário confirmada</div></div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     SEPARADOR DE PÁGINA
+═══════════════════════════════════════════════ -->
+<hr class="page-sep page-break">
+
+<!-- ═══════════════════════════════════════════════
+     PARTE 2 — FICHA COMPLETA DO VEÍCULO
+═══════════════════════════════════════════════ -->
+<div style="font-family:var(--font-d);font-size:14px;font-weight:800;color:var(--pri-800);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+  <div style="width:24px;height:24px;border-radius:7px;background:var(--pri-50);display:flex;align-items:center;justify-content:center">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--pri-600)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h4"/></svg>
+  </div>
+  Parte 2 · Ficha Completa do Veículo
+</div>
+
+<!-- Hero veículo -->
+<div class="veh-hero">
+  <div class="hero-z" style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+    <div style="flex:1">
+      <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">FICHA DO VEÍCULO</div>
+      <div style="font-family:var(--font-d);font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.3px;line-height:1.1">Porsche - Taycan</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.65);margin-top:4px">2024 · Deep Indigo · Elétrico</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <span style="font-family:var(--font-m);font-size:9px;color:rgba(255,255,255,0.75)">476 cv</span>
+        <div style="width:1px;height:10px;background:rgba(255,255,255,0.2)"></div>
+        <span style="font-family:var(--font-m);font-size:9px;color:rgba(255,255,255,0.75)">2.795 kg</span>
+        <div style="width:1px;height:10px;background:rgba(255,255,255,0.2)"></div>
+        <span style="font-family:var(--font-m);font-size:9px;color:rgba(255,255,255,0.75)">Elétrico</span>
+      </div>
+      <div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap">
+        <span class="badge badge-ok-lg">✓ Sem Restrições</span>
+        <span class="badge badge-neutral">Base Nacional</span>
+      </div>
+    </div>
+    <div class="placa-badge">
+      <div style="font-size:7px;color:rgba(255,255,255,0.5);font-weight:700;letter-spacing:0.5px;margin-bottom:1px">BRASIL</div>
+      <div style="font-family:var(--font-m);font-size:13px;font-weight:700;color:#fff;letter-spacing:1px">BRA</div>
+      <div style="height:0.5px;background:rgba(255,255,255,0.25);margin:2px 0"></div>
+      <div style="font-family:var(--font-m);font-size:11px;font-weight:700;color:#fff;letter-spacing:1px">2E19</div>
+    </div>
+  </div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap: 16px">
+<!-- ── CADASTRAL ── -->
+ <div>
+<div class="sec-title">Identificação</div>
+<div class="card">
+  <div class="data-row"><span class="data-label">Chassi</span><span class="data-mono">WP0ZZZ9YZ…02143</span></div>
+  <div class="data-row"><span class="data-label">RENAVAM</span><span class="data-mono">00218345672</span></div>
+  <div class="data-row"><span class="data-label">Categoria</span><span class="data-value">Particular</span></div>
+  <div class="data-row"><span class="data-label">Combustível</span><span class="data-value">Elétrico</span></div>
+  <div class="data-row"><span class="data-label">Potência</span><span class="data-mono">476 cv</span></div>
+  <div class="data-row"><span class="data-label">Peso bruto</span><span class="data-mono">2.795 kg</span></div>
+  <div class="data-row"><span class="data-label">Cor</span><span class="data-value">Deep Indigo</span></div>
+</div>
+</div>
+<div>
+<div class="sec-title">Proprietário Atual</div>
+<div class="card">
+  <div class="data-row"><span class="data-label">Nome</span><span class="data-value">R. A. Tavares</span></div>
+  <div class="data-row"><span class="data-label">CPF</span><span class="data-mono">•••.456.•••-72</span></div>
+  <div class="data-row"><span class="data-label">UF</span><span class="data-value">DF</span></div>
+  <div class="data-row"><span class="data-label">Desde</span><span class="data-value">Abr / 2024</span></div>
+</div>
+<div class="sec-title">Sinistros e Ocorrências</div>
+<div class="card-ok"><div style="font-size:12px;font-weight:700;color:var(--em)">✓ Nenhum sinistro registrado</div></div>
+</div>
+<!-- ── LEGAL ── -->
+<!-- <div class="section-divider"></div> -->
+<div>
+<div class="sec-title">Situação Legal</div>
+<div class="card-ok"><div style="font-size:12px;color:var(--em)">✓ Sem débitos · IPVA, multas e DPVAT em dia</div></div>
+<div class="card-ok"><div style="font-size:12px;color:var(--em)">✓ Sem restrições judiciais ou administrativas</div></div>
+
+<div class="sec-title">Documentação</div>
+<div class="card">
+  <div class="data-row"><span class="data-label">CRLV</span><span class="data-value" style="color:var(--em)">Válido · 2026</span></div>
+  <div class="data-row"><span class="data-label">Última vistoria</span><span class="data-value">Nov / 2023</span></div>
+  <div class="data-row"><span class="data-label">Resultado</span><span class="badge badge-ok">✓ Aprovada</span></div>
+  <div class="data-row"><span class="data-label">Seguro obrig.</span><span class="data-value" style="color:var(--em)">Ativo</span></div>
+</div>
+
+
+</div>
+
+<!-- <div class="section-divider"></div> -->
+<!-- ── HISTÓRICO ── -->
+ <div>
+
+<div class="sec-title">Cadeia de Proprietários</div>
+<div style="padding:4px 0">
+  <div class="tl-item">
+    <div class="tl-dot current"></div>
+    <div class="tl-line"></div>
+    <div style="flex:1">
+      <div style="font-size:12px;font-weight:700;color:var(--text-h)">R. A. Tavares</div>
+      <div style="font-size:10px;color:var(--text-s)">Desde Abr/2024 · DF · Proprietário atual</div>
+      <span class="badge badge-ok" style="margin-top:3px;display:inline-flex">Atual</span>
+    </div>
+  </div>
+  <div class="tl-item">
+    <div class="tl-dot"></div>
+    <div class="tl-line"></div>
+    <div style="flex:1">
+      <div style="font-size:12px;font-weight:600;color:var(--text-h)">Concessionária Porsche SP</div>
+      <div style="font-size:10px;color:var(--text-s)">Jan/2024 – Abr/2024 · SP</div>
+    </div>
+  </div>
+  <div class="tl-item">
+    <div class="tl-dot"></div>
+    <div style="flex:1">
+      <div style="font-size:12px;font-weight:600;color:var(--text-h)">Importadora Porsche Brasil</div>
+      <div style="font-size:10px;color:var(--text-s)">Dez/2023 · Origem</div>
+    </div>
+  </div>
+</div>
+<div class="sec-title">Vistorias Anteriores</div>
+<div class="card">
+  <div class="data-row"><span class="data-label">Nov / 2023</span><span class="badge badge-ok">✓ Aprovada</span></div>
+</div>
+</div>
+<div>
+
+
+
+</div> 
+
+ </div>
+ <div class="sec-title" style="margin-top:0;">Alertas</div>
+<div class="card-pri"><div style="font-size:12px;color:var(--text-b);">Próxima vistoria obrigatória: <strong>Nov / 2025</strong></div></div>
+<div style="display: flex;margin-top:16px">
+ 
+   <div class="card" style="margin-top:4px;flex:1">
+  <div class="data-row"><span class="data-label">Inspetores responsável</span><span class="data-value">A. Silva — Mat. 8821</span></div>
+  <div class="data-row"><span class="data-label">Data / hora</span><span class="data-value">26 Mar 2026 · 14:35</span></div>
+  <div class="data-row"><span class="data-label">Local</span><span class="data-value">Posto Base Oficial-ES · Vitória</span></div>
+  <div class="data-row"><span class="data-label">Status</span><span class="badge badge-warn">⚠ Aguarda Assinatura</span></div>
+  </div>  
+  <div class="signature" style="flex:1;width:100%;height: 100px;margin-top:16px;">
+    <div>Responsável pela inspeção</div>
+    <div class="line"></div>
+    <strong>Inspetor Carlos Silva</strong><br>
+    Usuário: 84729-BR
+  </div>
+
+</div>
+</div>
+  
+<!-- ── RODAPÉ ── -->
+<div class="doc-footer">
+  <div class="footer-text">VerifCar · Base Oficial-ES · Documento gerado em 26 Mar 2026 às 14:35</div>
+  <div class="footer-text">Hash: e3b0c44…b855</div>
+</div>
+
+</body>
+</html>

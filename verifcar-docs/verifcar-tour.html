@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VerifCar · Tour — Como funciona</title>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"></noscript>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+html,body{overflow:hidden;height:100%}
+:root{--pri-deep:#0C6B4E;--pri-deep2:#149B72;
+  --pri:#23CB97;--pri-50:#0F221D;--pri-100:#16352C;
+  --pri-400:#23CB97;--pri-600:#4FDCB0;--pri-800:#93EED3;
+  --em:#23CB97;--em-50:#0F221D;--em-400:#35D9A4;
+  --am:#F0A92B;--am-50:#2A1F0E;--am-400:#F0A92B;
+  --co:#FF3B63;--co-50:#2B1119;--co-400:#FF3B63;
+  --bg:#12141C;--surface:#1A1D28;
+  --sur-low:#222431;--sur-mid:#282B39;--sur-high:#33374A;
+  --text-h:#F3F5F9;--text-b:#CBD0DC;--text-m:#8D94A6;--text-s:#666D80;
+  --border:rgba(255,255,255,0.10);
+  --font-d:'Space Grotesk',sans-serif;
+  --font-b:'Inter',sans-serif;
+  --font-m:'JetBrains Mono',monospace;
+  --sh-card:0 1px 3px rgba(0,0,0,.45),0 6px 20px rgba(0,0,0,.30);
+}
+
+body{height:100dvh;font-family:var(--font-b);background:var(--bg)}
+
+.phone{
+  width:100%;height:100dvh;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+  overflow:hidden;position:relative;
+}
+
+/* ── top bar ── */
+.top-bar{
+  height:5px;flex-shrink:0;
+  background:linear-gradient(90deg,var(--pri-800),var(--pri-400),var(--em-400),var(--pri-400),var(--pri-800));
+  box-shadow:0 1px 8px rgba(0,0,0,0.55);
+}
+
+/* ── status bar ── */
+.status-bar{
+  padding:7px 18px 0;display:flex;justify-content:space-between;
+  align-items:center;font-size:11px;font-weight:600;color:var(--text-h);flex-shrink:0;
+}
+
+/* ── nav header ── */
+.app-header{
+  padding:9px 14px;display:flex;justify-content:space-between;align-items:center;
+  flex-shrink:0;background:rgba(26,29,40,0.92);
+  backdrop-filter:blur(18px);border-bottom:0.5px solid rgba(35,203,151,0.07);
+}
+.back-btn{
+  width:30px;height:30px;border-radius:50%;background:var(--sur-mid);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;
+}
+
+/* ── slides wrapper ── */
+.slides-track{
+  flex:1;display:flex;flex-direction:column;
+  overflow:hidden;position:relative;min-height:0;
+}
+
+/* ── single slide ── */
+.slide{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  opacity:0;pointer-events:none;
+  transform:translateX(40px);
+  transition:opacity .35s cubic-bezier(.4,0,.2,1), transform .35s cubic-bezier(.4,0,.2,1);
+}
+.slide.active{
+  opacity:1;pointer-events:all;transform:translateX(0);
+}
+.slide.exit-left{
+  opacity:0;transform:translateX(-40px);
+}
+
+/* ── visual area ── */
+.visual{
+  flex-shrink:0;
+  height:52%;
+  position:relative;overflow:hidden;
+  background:#12141C;
+}
+
+/* dark cam texture */
+.cam-scanline{
+  position:absolute;inset:0;z-index:1;pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,0.012) 1px,transparent 1px);
+  background-size:100% 3px;
+}
+.cam-grid-lines{position:absolute;inset:0;z-index:2;pointer-events:none}
+
+/* corner guide */
+.guide-box{
+  position:absolute;z-index:4;
+  top:50%;left:50%;transform:translate(-50%,-55%);
+}
+.guide-box::before,.guide-box::after{
+  content:'';position:absolute;width:16px;height:16px;
+  border-style:solid;border-color:rgba(255,255,255,0.9);
+}
+.guide-box::before{top:-2px;left:-2px;border-width:2px 0 0 2px;border-radius:3px 0 0 0}
+.guide-box::after{bottom:-2px;right:-2px;border-width:0 2px 2px 0;border-radius:0 0 3px 0}
+.g-tr{position:absolute;top:-2px;right:-2px;width:16px;height:16px;border-top:2px solid rgba(255,255,255,0.9);border-right:2px solid rgba(255,255,255,0.9);border-radius:0 3px 0 0}
+.g-bl{position:absolute;bottom:-2px;left:-2px;width:16px;height:16px;border-bottom:2px solid rgba(255,255,255,0.9);border-left:2px solid rgba(255,255,255,0.9);border-radius:0 0 0 3px}
+
+/* scan line animada */
+@keyframes scanMove{
+  0%{top:10%}100%{top:90%}
+}
+.scan-line{
+  position:absolute;left:0;right:0;height:1.5px;
+  background:linear-gradient(90deg,transparent,rgba(35,203,151,0.8),transparent);
+  z-index:5;animation:scanMove 2.2s ease-in-out infinite alternate;pointer-events:none;
+}
+
+/* pulse ring */
+@keyframes pulse-ring{
+  0%{transform:translate(-50%,-55%) scale(1);opacity:0.6}
+  100%{transform:translate(-50%,-55%) scale(1.14);opacity:0}
+}
+.pulse-ring{
+  position:absolute;z-index:3;border-radius:8px;
+  border:1.5px solid rgba(35,203,151,0.6);
+  top:50%;left:50%;
+  animation:pulse-ring 1.8s ease-out infinite;
+}
+
+/* car silhouette placeholder */
+.car-shape{
+  position:absolute;z-index:3;
+  top:50%;left:50%;transform:translate(-50%,-55%);
+  opacity:0.15;
+}
+
+/* ia pill */
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:0.35}}
+.ia-pill{
+  position:absolute;bottom:64px;left:50%;transform:translateX(-50%);
+  z-index:6;background:rgba(0,0,0,0.55);backdrop-filter:blur(10px);
+  border:0.5px solid rgba(255,255,255,0.12);border-radius:9999px;
+  padding:4px 12px;display:flex;align-items:center;gap:6px;white-space:nowrap;
+}
+.ia-dot{width:6px;height:6px;border-radius:50%;background:#4FDCB0;box-shadow:0 0 6px #4FDCB0;animation:pulse-dot 1.4s ease-in-out infinite}
+.ia-txt{font-family:var(--font-m);font-size:9px;color:rgba(255,255,255,0.88);letter-spacing:0.8px;text-transform:uppercase}
+
+/* step badge no visual */
+.step-badge-visual{
+  position:absolute;top:14px;left:14px;z-index:6;
+  background:rgba(0,0,0,0.5);backdrop-filter:blur(8px);
+  border:0.5px solid rgba(255,255,255,0.15);border-radius:9999px;
+  padding:3px 10px;display:flex;align-items:center;gap:5px;
+}
+.step-badge-visual span{font-family:var(--font-m);font-size:8px;color:rgba(255,255,255,0.75);font-weight:700;letter-spacing:0.5px}
+
+/* bottom cam controls hint */
+.cam-bottom-hint{
+  position:absolute;bottom:0;left:0;right:0;z-index:6;
+  padding:8px 16px 10px;
+  background:linear-gradient(to top,rgba(10,12,26,0.95) 60%,transparent);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.shutter-hint{
+  width:46px;height:46px;border-radius:50%;
+  background:linear-gradient(135deg,var(--pri-deep),var(--pri-deep2));
+  border:3px solid rgba(255,255,255,0.14);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 14px rgba(0,0,0,1.0);
+}
+
+/* ── info area ── */
+.info{
+  flex:1;min-height:0;overflow:hidden;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+  padding:16px 20px 0;
+}
+
+.step-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--pri-50);border:1px solid var(--pri-100);border-radius:9999px;
+  padding:3px 10px;margin-bottom:10px;width:fit-content;
+}
+.step-chip-num{
+  width:16px;height:16px;border-radius:50%;
+  background:var(--pri-deep2);display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-d);font-size:9px;font-weight:800;color:#fff;
+}
+.step-chip span{font-family:var(--font-m);font-size:9px;color:var(--pri-600);font-weight:700;letter-spacing:0.4px}
+
+.slide-title{font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--text-h);margin-bottom:6px;letter-spacing:-0.3px;line-height:1.2}
+.slide-desc{font-size:13px;color:var(--text-m);line-height:1.6;margin-bottom:12px}
+
+/* tip box */
+.tip-box{
+  background:var(--sur-low);border-radius:11px;padding:10px 12px;
+  display:flex;align-items:flex-start;gap:9px;
+  border-left:3px solid var(--pri-400);
+  flex-shrink:0;
+}
+.tip-icon{
+  width:28px;height:28px;border-radius:8px;background:var(--pri-50);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.tip-text{font-size:11px;color:var(--text-b);line-height:1.5}
+.tip-text strong{color:var(--text-h)}
+
+/* ── bottom navigation ── */
+.tour-nav{
+  padding:12px 20px 28px;background:var(--bg);
+  border-top:0.5px solid var(--sur-high);flex-shrink:0;
+}
+.dots-row{display:flex;gap:5px;justify-content:center;margin-bottom:12px}
+.dot{
+  height:5px;border-radius:9999px;background:var(--sur-high);
+  transition:width .3s cubic-bezier(.4,0,.2,1), background .3s;
+  cursor:pointer;
+}
+.dot.active{background:var(--pri-400);width:20px}
+.dot:not(.active){width:5px}
+.dot:not(.active):hover{background:var(--pri-400)}
+
+.nav-buttons{display:flex;gap:8px;align-items:center}
+.btn-primary{
+  background:linear-gradient(135deg,var(--pri-deep),var(--pri-deep2));
+  color:#fff;border-radius:9999px;padding:13px 16px;
+  font-family:var(--font-b);font-size:13px;font-weight:600;
+  box-shadow:0 4px 12px rgba(0,0,0,0.55);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  flex:1;border:none;
+}
+.btn-secondary{
+  background:var(--sur-mid);border-radius:9999px;padding:13px 16px;
+  font-size:13px;font-weight:600;color:var(--text-b);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  flex:1;border:none;
+}
+.btn-ghost{
+  background:transparent;border:none;padding:13px 14px;
+  font-size:12px;font-weight:600;color:var(--text-s);cursor:pointer;
+  white-space:nowrap;
+}
+
+/* slides com visual diferente */
+/* slide 0 — login/overview — bg azul */
+.visual-intro{
+  background:linear-gradient(135deg,#132C26 0%,#17A87C 55%,#1BA87C 100%);
+}
+/* slide de ficha — bg claro */
+.visual-light{
+  background:var(--sur-low);
+}
+
+/* ficha preview no slide de ficha */
+.ficha-preview{
+  position:absolute;inset:12px;
+  background:var(--surface);border-radius:14px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.396);
+  overflow:hidden;padding:12px;z-index:3;
+}
+
+/* ─ revisão preview ─ */
+.review-preview{
+  position:absolute;inset:12px;
+  background:var(--surface);border-radius:14px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.396);
+  overflow:hidden;z-index:3;
+}
+
+/* ── Slide 0 — intro illustration ── */
+.intro-illustration{
+  position:absolute;top:0;left:0;right:0;bottom:0;z-index:3;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+}
+.intro-logo-ring{
+  width:68px;height:68px;border-radius:50%;
+  background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.18);
+  display:flex;align-items:center;justify-content:center;position:relative;
+}
+@keyframes spin-ring{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.spin-arc{
+  position:absolute;inset:-4px;border-radius:50%;
+  border:2px solid transparent;
+  border-top-color:rgba(255,255,255,0.5);
+  border-right-color:rgba(255,255,255,0.2);
+  animation:spin-ring 2.4s linear infinite;
+}
+.intro-steps-row{display:flex;gap:10px;align-items:center}
+.intro-step-chip{
+  background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);
+  border-radius:10px;padding:6px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;
+}
+.intro-step-chip .n{font-family:var(--font-d);font-size:18px;font-weight:800;color:#fff;line-height:1}
+.intro-step-chip .l{font-family:var(--font-m);font-size:7px;color:rgba(255,255,255,0.6);letter-spacing:0.5px;text-transform:uppercase}
+.intro-arrow{color:rgba(255,255,255,0.4)}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="top-bar"></div>
+
+  <!-- status -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <span style="font-size:9px">● ● ●</span>
+  </div>
+
+  <!-- header -->
+  <div class="app-header">
+    <button class="back-btn" onclick="goBack()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-b)" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    </button>
+    <div style="display:flex;align-items:center;gap:6px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--pri-400)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+      <span style="font-family:var(--font-d);font-size:13px;font-weight:800;color:var(--text-h)">Como funciona</span>
+    </div>
+    <div style="font-family:var(--font-m);font-size:9px;color:var(--text-s)" id="step-counter">1 / 5</div>
+  </div>
+
+  <!-- slides track -->
+  <div class="slides-track" id="slides-track">
+
+    <!-- ══ SLIDE 0 — Visão geral ══ -->
+    <div class="slide active" data-index="0">
+      <div class="visual visual-intro">
+        <!-- bg deco -->
+        <div style="position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.05);z-index:1"></div>
+        <div style="position:absolute;bottom:-50px;left:-20px;width:130px;height:130px;border-radius:50%;background:rgba(35,203,151,0.15);z-index:1"></div>
+        <!-- intro illustration -->
+        <div class="intro-illustration">
+          <div class="intro-logo-ring">
+            <div class="spin-arc"></div>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" stroke-linecap="round">
+              <rect x="3" y="3" width="18" height="18" rx="3"/>
+              <path d="M8 12l3 3 5-5"/>
+            </svg>
+          </div>
+          <div style="font-family:var(--font-m);font-size:9px;color:rgba(255,255,255,0.55);letter-spacing:1px;text-transform:uppercase">Fluxo de verificação</div>
+          <div class="intro-steps-row">
+            <div class="intro-step-chip"><div class="n">4</div><div class="l">Fotos</div></div>
+            <div class="intro-arrow">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+            <div class="intro-step-chip"><div class="n">1</div><div class="l">Ficha</div></div>
+            <div class="intro-arrow">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+            <div class="intro-step-chip"><div class="n">1</div><div class="l">relatório</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info">
+        <div class="step-chip">
+          <div class="step-chip-num">1</div>
+          <span>VISÃO GERAL</span>
+        </div>
+        <div class="slide-title">Verificação em<br>3 etapas simples</div>
+        <div class="slide-desc">O VerifCar guia você pelo processo completo: 4 fotos do veículo, preenchimento da ficha e geração automática do relatório.</div>
+        <div class="tip-box">
+          <div class="tip-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--pri-400)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+          </div>
+          <div class="tip-text">Todo o processo leva <strong>menos de 5 minutos</strong>. A IA analisa as imagens em tempo real e preenche a ficha automaticamente.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 1 — Foto traseira ══ -->
+    <div class="slide" data-index="1">
+      <div class="visual">
+        <div class="cam-scanline"></div>
+        <div class="cam-grid-lines">
+          <div style="position:absolute;left:33%;top:0;bottom:0;width:0.5px;background:rgba(255,255,255,0.1)"></div>
+          <div style="position:absolute;left:66%;top:0;bottom:0;width:0.5px;background:rgba(255,255,255,0.1)"></div>
+          <div style="position:absolute;top:33%;left:0;right:0;height:0.5px;background:rgba(255,255,255,0.1)"></div>
+          <div style="position:absolute;top:66%;left:0;right:0;height:0.5px;background:rgba(255,255,255,0.1)"></div>
+        </div>
+        <!-- guide box traseira -->
+        <div class="guide-box" style="width:240px;height:190px">
+          <div class="g-tr"></div><div class="g-bl"></div>
+        </div>
+        <div class="pulse-ring" style="width:240px;height:190px;top:50%;left:50%;transform:translate(-50%,-55%)"></div>
+        <div class="scan-line"></div>
+        <!-- car shape traseira SVG inline simples -->
+        <div class="car-shape" style="width:200px">
+          <svg viewBox="0 0 200 100" width="200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="30" width="180" height="55" rx="8" fill="white"/>
+            <rect x="30" y="15" width="140" height="30" rx="6" fill="white"/>
+            <circle cx="45" cy="88" r="14" fill="white"/>
+            <circle cx="155" cy="88" r="14" fill="white"/>
+            <rect x="10" y="65" width="180" height="10" rx="2" fill="rgba(0,0,0,0.3)"/>
+          </svg>
+        </div>
+        <!-- ia pill -->
+        <div class="ia-pill">
+          <div class="ia-dot"></div>
+          <span class="ia-txt">ANALISANDO PLACA</span>
+        </div>
+        <!-- step badge -->
+        <div class="step-badge-visual">
+          <span>FOTO 1 · TRASEIRA</span>
+        </div>
+        <!-- cam bottom hint -->
+        <div class="cam-bottom-hint">
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.5"><path d="M12 3C7 3 3 7 3 12s4 9 9 9 9-4 9-9-4-9-9-9z"/><path d="M12 8v4M12 16h.01"/></svg>
+          </div>
+          <div class="shutter-hint">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="6"/></svg>
+          </div>
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.5"><polyline points="15 10 20 15 15 20"/><path d="M4 4v7a4 4 0 004 4h12"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="info">
+        <div class="step-chip">
+          <div class="step-chip-num">2</div>
+          <span>FOTO TRASEIRA</span>
+        </div>
+        <div class="slide-title">Aponte para a<br>traseira do veículo</div>
+        <div class="slide-desc">Posicione o veículo dentro do guia branco. A IA detecta e lê a placa automaticamente antes de liberar o disparo.</div>
+        <div class="tip-box">
+          <div class="tip-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--pri-400)" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          </div>
+          <div class="tip-text">Quando a placa for reconhecida, o guia fica <strong>verde</strong> e o botão de captura é liberado automaticamente.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 2 — Fotos laterais e frontal ══ -->
+    <div class="slide" data-index="2">
+      <div class="visual">
+        <div class="cam-scanline"></div>
+        <div class="cam-grid-lines">
+          <div style="position:absolute;left:33%;top:0;bottom:0;width:0.5px;background:rgba(255,255,255,0.1)"></div>
+          <div style="position:absolute;left:66%;top:0;bottom:0;width:0.5px;background:rgba(255,255,255,0.1)"></div>
+          <div style="position:absolute;top:33%;left:0;right:0;height:0.5px;background:rgba(255,255,255,0.1)"></div>
+          <div style="position:absolute;top:66%;left:0;right:0;height:0.5px;background:rgba(255,255,255,0.1)"></div>
+        </div>
+        <!-- guide lateral mais largo -->
+        <div class="guide-box" style="width:270px;height:160px">
+          <div class="g-tr"></div><div class="g-bl"></div>
+        </div>
+        <div class="pulse-ring" style="width:270px;height:160px;top:50%;left:50%;transform:translate(-50%,-55%)"></div>
+        <div class="scan-line"></div>
+        <!-- car lateral shape -->
+        <div class="car-shape" style="width:220px">
+          <svg viewBox="0 0 220 90" width="220" fill="none">
+            <rect x="5" y="32" width="210" height="45" rx="6" fill="white"/>
+            <path d="M40 32 Q55 10 90 8 L140 8 Q175 8 185 32 Z" fill="white"/>
+            <circle cx="50" cy="80" r="12" fill="white"/>
+            <circle cx="170" cy="80" r="12" fill="white"/>
+          </svg>
+        </div>
+        <!-- progress fotos -->
+        <div style="position:absolute;top:14px;right:14px;z-index:6;display:flex;gap:4px">
+          <div style="width:18px;height:4px;border-radius:2px;background:#4FDCB0"></div>
+          <div style="width:18px;height:4px;border-radius:2px;background:rgba(255,255,255,0.9)"></div>
+          <div style="width:18px;height:4px;border-radius:2px;background:rgba(255,255,255,0.3)"></div>
+          <div style="width:18px;height:4px;border-radius:2px;background:rgba(255,255,255,0.3)"></div>
+        </div>
+        <div class="ia-pill">
+          <div class="ia-dot"></div>
+          <span class="ia-txt">CAPTURA ASSISTIDA</span>
+        </div>
+        <div class="step-badge-visual"><span>FOTO 2 · LATERAL ESQ.</span></div>
+        <div class="cam-bottom-hint">
+          <div style="width:28px;height:28px"></div>
+          <div class="shutter-hint">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="6"/></svg>
+          </div>
+          <div style="width:28px;height:28px"></div>
+        </div>
+      </div>
+
+      <div class="info">
+        <div class="step-chip">
+          <div class="step-chip-num">3</div>
+          <span>FOTOS LATERAIS + FRONTAL</span>
+        </div>
+        <div class="slide-title">Mais 3 ângulos<br>com guia na tela</div>
+        <div class="slide-desc">Depois da traseira, o app pede lateral esquerda, lateral direita e frontal. A barra de progresso mostra quantas fotos faltam.</div>
+        <div class="tip-box">
+          <div class="tip-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--em-400)" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div class="tip-text">A IA verifica <strong>nitidez, ângulo e iluminação</strong> antes de cada captura. Se algo estiver errado, você recebe um alerta antes de disparar.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 3 — Ficha ══ -->
+    <div class="slide" data-index="3">
+      <div class="visual visual-light">
+        <!-- ficha preview mockup -->
+        <div class="ficha-preview">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <div style="width:32px;height:32px;border-radius:9px;background:var(--pri-50);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--pri-400)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
+            </div>
+            <div>
+              <div style="font-family:var(--font-d);font-size:11px;font-weight:800;color:var(--text-h)">Ficha do Veículo</div>
+              <div style="font-size:9px;color:var(--text-m)">Preenchida automaticamente pela IA</div>
+            </div>
+            <div style="margin-left:auto;background:var(--em-50);border-radius:9999px;padding:2px 8px">
+              <span style="font-size:8px;font-weight:700;color:var(--em)">AUTO</span>
+            </div>
+          </div>
+          <!-- campos faked -->
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <div style="display:flex;gap:6px">
+              <div style="flex:1;background:var(--sur-low);border-radius:8px;padding:6px 8px">
+                <div style="font-size:8px;color:var(--text-s);margin-bottom:2px">Placa</div>
+                <div style="font-family:var(--font-m);font-size:12px;font-weight:700;color:var(--pri-800)">ABC-1D34</div>
+              </div>
+              <div style="flex:1;background:var(--sur-low);border-radius:8px;padding:6px 8px">
+                <div style="font-size:8px;color:var(--text-s);margin-bottom:2px">Ano</div>
+                <div style="font-family:var(--font-m);font-size:12px;font-weight:700;color:var(--text-h)">2021</div>
+              </div>
+            </div>
+            <div style="background:var(--sur-low);border-radius:8px;padding:6px 8px">
+              <div style="font-size:8px;color:var(--text-s);margin-bottom:2px">Modelo</div>
+              <div style="font-size:12px;font-weight:600;color:var(--text-h)">Volkswagen Polo 1.0 TSI</div>
+            </div>
+            <div style="display:flex;gap:6px">
+              <div style="flex:1;background:var(--sur-low);border-radius:8px;padding:6px 8px">
+                <div style="font-size:8px;color:var(--text-s);margin-bottom:2px">Chassi</div>
+                <div style="font-family:var(--font-m);font-size:9px;font-weight:600;color:var(--text-b)">9BW···</div>
+              </div>
+              <div style="flex:1;background:var(--em-50);border-radius:8px;padding:6px 8px;border:1px solid rgba(35,203,151,0.15)">
+                <div style="font-size:8px;color:var(--em-400);margin-bottom:2px">RENAVAM</div>
+                <div style="font-size:9px;font-weight:700;color:var(--em)">✓ OK</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info">
+        <div class="step-chip">
+          <div class="step-chip-num">4</div>
+          <span>FICHA DO VEÍCULO</span>
+        </div>
+        <div class="slide-title">A IA preenche<br>tudo sozinha</div>
+        <div class="slide-desc">Com as fotos capturadas, o VerifCar extrai placa, chassi, modelo e cor automaticamente, e ainda consulta o RENAVAM em tempo real.</div>
+        <div class="tip-box">
+          <div class="tip-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--am-400)" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </div>
+          <div class="tip-text">Você pode <strong>corrigir qualquer campo</strong> antes de finalizar. Campos preenchidos pela IA ficam marcados com o selo AUTO.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 4 — Revisão e relatório ══ -->
+    <div class="slide" data-index="4">
+      <div class="visual visual-light">
+        <div class="review-preview">
+          <!-- header revisão -->
+          <div style="background:linear-gradient(135deg,var(--pri-deep),var(--pri-deep2));padding:10px 12px;display:flex;align-items:center;gap:8px">
+            <div style="width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            </div>
+            <div>
+              <div style="font-family:var(--font-d);font-size:11px;font-weight:800;color:#fff">Revisão Final</div>
+              <div style="font-size:8px;color:rgba(255,255,255,0.65)">Confirme antes de emitir o relatório</div>
+            </div>
+            <div style="margin-left:auto;background:rgba(35,203,151,0.25);border-radius:9999px;padding:2px 8px;border:1px solid rgba(35,203,151,0.4)">
+              <span style="font-size:8px;font-weight:700;color:#4FDCB0">APROVADO</span>
+            </div>
+          </div>
+          <!-- fotos miniatura -->
+          <div style="padding:8px;display:grid;grid-template-columns:1fr 1fr;gap:4px">
+            <div style="aspect-ratio:4/3;background:var(--sur-mid);border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-s)" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <div style="position:absolute;bottom:4px;left:4px;background:rgba(0,0,0,0.5);border-radius:4px;padding:1px 5px;font-family:var(--font-m);font-size:7px;color:#fff">TRAS.</div>
+              <div style="position:absolute;top:4px;right:4px;width:12px;height:12px;border-radius:50%;background:var(--em);display:flex;align-items:center;justify-content:center">
+                <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </div>
+            <div style="aspect-ratio:4/3;background:var(--sur-mid);border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-s)" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <div style="position:absolute;bottom:4px;left:4px;background:rgba(0,0,0,0.5);border-radius:4px;padding:1px 5px;font-family:var(--font-m);font-size:7px;color:#fff">LAT.E</div>
+              <div style="position:absolute;top:4px;right:4px;width:12px;height:12px;border-radius:50%;background:var(--em);display:flex;align-items:center;justify-content:center">
+                <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </div>
+            <div style="aspect-ratio:4/3;background:var(--sur-mid);border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-s)" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <div style="position:absolute;bottom:4px;left:4px;background:rgba(0,0,0,0.5);border-radius:4px;padding:1px 5px;font-family:var(--font-m);font-size:7px;color:#fff">LAT.D</div>
+              <div style="position:absolute;top:4px;right:4px;width:12px;height:12px;border-radius:50%;background:var(--em);display:flex;align-items:center;justify-content:center">
+                <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </div>
+            <div style="aspect-ratio:4/3;background:var(--sur-mid);border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-s)" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <div style="position:absolute;bottom:4px;left:4px;background:rgba(0,0,0,0.5);border-radius:4px;padding:1px 5px;font-family:var(--font-m);font-size:7px;color:#fff">FRONT.</div>
+              <div style="position:absolute;top:4px;right:4px;width:12px;height:12px;border-radius:50%;background:var(--em);display:flex;align-items:center;justify-content:center">
+                <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info">
+        <div class="step-chip">
+          <div class="step-chip-num">5</div>
+          <span>REVISÃO E relatório</span>
+        </div>
+        <div class="slide-title">Revise e emita<br>o relatório em 1 toque</div>
+        <div class="slide-desc">Na tela final, você confere todas as fotos e os dados. Um toque em "Emitir relatório" gera o documento e salva no histórico.</div>
+        <div class="tip-box">
+          <div class="tip-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--em-400)" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div class="tip-text">O relatório fica disponível no histórico para consulta offline. Você pode <strong>compartilhar em PDF</strong> direto pelo app.</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /slides-track -->
+
+  <!-- ── bottom nav ── -->
+  <div class="tour-nav">
+    <div class="dots-row" id="dots-row">
+      <div class="dot active" onclick="goToSlide(0)"></div>
+      <div class="dot" onclick="goToSlide(1)"></div>
+      <div class="dot" onclick="goToSlide(2)"></div>
+      <div class="dot" onclick="goToSlide(3)"></div>
+      <div class="dot" onclick="goToSlide(4)"></div>
+    </div>
+    <div class="nav-buttons" id="nav-buttons">
+      <button class="btn-ghost" id="btn-skip" onclick="goBack()">Pular</button>
+      <button class="btn-primary" id="btn-next" onclick="nextSlide()">
+        Próximo
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const TOTAL = 5;
+let current = 0;
+
+const slides = document.querySelectorAll('.slide');
+const dots   = document.querySelectorAll('.dot');
+const counter = document.getElementById('step-counter');
+const btnNext = document.getElementById('btn-next');
+const btnSkip = document.getElementById('btn-skip');
+
+function goToSlide(idx, dir) {
+  if (idx < 0 || idx >= TOTAL) return;
+
+  const prevSlide = slides[current];
+  prevSlide.classList.add('exit-left');
+
+  // if going back, reverse animation
+  if (dir === 'back') {
+    prevSlide.classList.remove('exit-left');
+    prevSlide.style.transform = 'translateX(40px)';
+    prevSlide.style.opacity   = '0';
+  }
+
+  setTimeout(() => {
+    prevSlide.classList.remove('active','exit-left');
+    prevSlide.style.transform = '';
+    prevSlide.style.opacity   = '';
+  }, 350);
+
+  current = idx;
+
+  const nextSlide = slides[current];
+  if (dir === 'back') {
+    nextSlide.style.transform = 'translateX(-40px)';
+    nextSlide.style.opacity   = '0';
+    nextSlide.style.pointerEvents = 'all';
+    // force reflow
+    nextSlide.getBoundingClientRect();
+    nextSlide.style.transition = 'opacity .35s cubic-bezier(.4,0,.2,1), transform .35s cubic-bezier(.4,0,.2,1)';
+    requestAnimationFrame(() => {
+      nextSlide.style.transform = 'translateX(0)';
+      nextSlide.style.opacity   = '1';
+    });
+    setTimeout(() => {
+      nextSlide.classList.add('active');
+      nextSlide.style.transform = '';
+      nextSlide.style.opacity   = '';
+      nextSlide.style.transition = '';
+    }, 350);
+  } else {
+    nextSlide.classList.add('active');
+  }
+
+  // update dots
+  dots.forEach((d,i) => d.classList.toggle('active', i === current));
+
+  // update counter
+  counter.textContent = `${current + 1} / ${TOTAL}`;
+
+  // update buttons
+  if (current === TOTAL - 1) {
+    btnNext.innerHTML = `Começar agora <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+    btnSkip.style.display = 'none';
+  } else {
+    btnNext.innerHTML = `Próximo <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+    btnSkip.style.display = '';
+  }
+}
+
+function nextSlide() {
+  if (current === TOTAL - 1) {
+    goBack();
+  } else {
+    goToSlide(current + 1);
+  }
+}
+
+function goBack() {
+  if (window.parent && window.parent.goTo) window.parent.goTo('home');
+  else window.history.back();
+}
+
+// swipe support
+let touchStartX = 0;
+let touchStartY = 0;
+document.querySelector('.slides-track').addEventListener('touchstart', e => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+document.querySelector('.slides-track').addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
+  if (Math.abs(dx) > 50 && dy < 60) {
+    if (dx < 0) nextSlide();
+    else if (current > 0) goToSlide(current - 1, 'back');
+  }
+}, { passive: true });
+</script>
+</body>
+</html>

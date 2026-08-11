@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VerifCar · Análise Tática</title>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"></noscript>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+:root{
+  --pri:#23CB97;--pri-50:#0F221D;--pri-100:#16352C;--pri-400:#23CB97;--pri-600:#4FDCB0;--pri-800:#93EED3;
+  --em:#23CB97;--em-50:#0F221D;--em-400:#35D9A4;
+  --am:#F0A92B;--am-50:#2A1F0E;--am-400:#F0A92B;--am-800:#FFD48A;
+  --co:#FF3B63;--co-50:#2B1119;--co-400:#FF3B63;--co-800:#FF95AC;
+  --bg:#12141C;--surface:#1A1D28;--sur-low:#222431;--sur-mid:#282B39;--sur-high:#33374A;
+  --text-h:#F3F5F9;--text-b:#CBD0DC;--text-m:#8D94A6;--text-s:#666D80;--border:rgba(255,255,255,0.10);
+  --font-d:'Space Grotesk',sans-serif;--font-b:'Inter',sans-serif;--font-m:'JetBrains Mono',monospace;
+  --sh-card:0 1px 3px rgba(0,0,0,.45),0 6px 20px rgba(0,0,0,.30);
+}
+html,body{height:100%;overflow-y:auto;font-family:var(--font-b);background:var(--bg);color:var(--text-h)}
+body::-webkit-scrollbar{width:6px}
+body::-webkit-scrollbar-track{background:transparent}
+body::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.page{padding:20px 24px}
+
+/* KPI strip */
+.kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.kpi-card{background:var(--surface);border-radius:14px;padding:14px 16px;box-shadow:var(--sh-card);border:1px solid var(--border);border-top:3px solid var(--border)}
+.kpi-card.blue{border-top-color:var(--pri-400)}.kpi-card.red{border-top-color:var(--co-400)}
+.kpi-card.amber{border-top-color:var(--am-400)}.kpi-card.green{border-top-color:var(--em-400)}
+.kpi-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-s);margin-bottom:6px}
+.kpi-value{font-family:var(--font-d);font-size:24px;font-weight:800;color:var(--text-h);line-height:1}
+.kpi-change{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;margin-top:6px;padding:2px 7px;border-radius:9999px}
+.kpi-change.up{background:var(--em-50);color:var(--em)}
+.kpi-change.up-bad{background:var(--co-50);color:var(--co-400)}
+.kpi-change.down-good{background:var(--em-50);color:var(--em)}
+
+/* Layout */
+.main-grid{display:grid;grid-template-columns:1fr 340px;gap:16px;margin-bottom:16px}
+.panel{background:var(--surface);border-radius:14px;border:1px solid var(--border);box-shadow:var(--sh-card);overflow:hidden}
+.panel-header{padding:14px 18px 0;display:flex;align-items:center;justify-content:space-between}
+.panel-title{font-family:var(--font-d);font-size:12px;font-weight:800;color:var(--text-h)}
+.panel-subtitle{font-size:10px;color:var(--text-s);margin-top:2px}
+.panel-body{padding:12px 16px 16px;display: flex;flex-direction: column;height: 100%;}
+
+/* Badge */
+.badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--font-b);font-size:10px;font-weight:700;padding:2px 8px;border-radius:9999px}
+.badge-ok{background:var(--em-50);color:var(--em);border:1px solid rgba(35,203,151,.15)}
+.badge-warn{background:var(--am-50);color:var(--am-800);border:1px solid rgba(240,169,43,.2)}
+.badge-err{background:var(--co-50);color:var(--co-800);border:1px solid rgba(255,59,99,.15)}
+.badge-info{background:var(--pri-50);color:var(--pri-600);border:1px solid var(--pri-100)}
+.mono-sm{font-family:var(--font-m);font-size:9px;color:var(--text-s)}
+.mono{font-family:var(--font-m);font-size:11px;color:var(--text-m)}
+
+/* Map canvas */
+.map-canvas{
+  background:linear-gradient(160deg,#e8ecf8,#eef0fa);
+  border-radius:10px;position:relative;overflow:hidden;
+}
+.map-canvas::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(35,203,151,.035) 28px,rgba(35,203,151,.035) 29px),
+             repeating-linear-gradient(90deg,transparent,transparent 28px,rgba(35,203,151,.035) 28px,rgba(35,203,151,.035) 29px);
+}
+.map-label-chip{
+  position:absolute;font-family:var(--font-m);font-size:8px;font-weight:700;
+  padding:2px 8px;border-radius:9999px;backdrop-filter:blur(6px);
+  cursor:pointer;transition:transform .15s;
+}
+.map-label-chip:hover{transform:translate(-50%,-50%) scale(1.08) !important}
+.heat-blob{position:absolute;border-radius:50%;pointer-events:none}
+
+/* Alert items */
+.alert-item{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--sur-low)}
+.alert-item:last-child{border-bottom:none}
+.alert-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.alert-dot.red{background:var(--co-400);box-shadow:0 0 5px rgba(0,0,0,1.0)}
+.alert-dot.amber{background:var(--am-400)}
+.alert-text{font-size:12px;font-weight:700;color:var(--text-b);line-height:1.4}
+.alert-meta{font-size:10px;color:var(--text-s);margin-top:2px}
+
+/* Progress bar */
+.progress-bar{height:5px;background:var(--sur-high);border-radius:3px;overflow:hidden;margin-top:4px}
+.progress-fill{height:100%;border-radius:3px}
+
+/* Buttons */
+.btn-secondary{background:var(--sur-mid);border:1px solid var(--border);border-radius:9999px;padding:6px 14px;font-size:11px;font-weight:600;color:var(--text-b);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn-secondary:hover{background:var(--sur-high)}
+
+/* Table */
+.data-table{width:100%;border-collapse:collapse}
+.data-table thead th{font-size:10px;font-weight:700;color:var(--text-s);text-align:left;text-transform:uppercase;letter-spacing:.7px;padding:10px 14px;background:var(--sur-low);border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap}
+.data-table thead th:hover{background:var(--sur-mid)}
+.data-table thead th.sorted{color:var(--pri-600)}
+.data-table tbody td{font-size:12px;color:var(--text-b);padding:10px 14px;border-bottom:1px solid var(--sur-low)}
+.data-table tbody tr:last-child td{border-bottom:none}
+.data-table tbody tr:hover td{background:var(--sur-low);cursor:pointer}
+.data-table tbody tr.top td{background:rgba(255,59,99,.025)}
+
+/* Sparkline */
+.spark{display:inline-flex;align-items:flex-end;gap:1px;height:16px;vertical-align:middle}
+.spark-bar{width:4px;border-radius:1px 1px 0 0;background:var(--pri-400);opacity:.6}
+.spark-bar.hi{opacity:1;background:var(--co-400)}
+
+/* Rodapé */
+.footer{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--sur-high);margin-top:4px}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- KPI strip -->
+  <div id="kpi-strip" class="kpi-strip"></div>
+
+  <!-- Mapa + Alertas táticos -->
+  <div class="main-grid">
+
+    <!-- Mapa -->
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Mapa de calor · Espírito Santo</div>
+          <div class="panel-subtitle">Concentração de divergências por região</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="btn-secondary" style="font-size:10px;padding:3px 10px" id="btn-verif" onclick="setLayer('verif',this)">Volume</button>
+          <button id="btn-diverg" style="font-size:10px;padding:3px 10px;background:var(--co-50);color:var(--co-800);border:1px solid rgba(255,59,99,.2);border-radius:9999px;cursor:pointer" onclick="setLayer('diverg',this)">Divergências</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div id="mapCanvas"
+     style="position:relative;height:calc(100% - 44px);flex:none;border-radius:10px;overflow:hidden">
+          <!-- <iframe id="map-iframe"
+            width="100%" height="100%"
+            style="position:absolute;inset:0;border:0;filter:grayscale(100%) contrast(100%) brightness(110%)"
+            loading="lazy"></iframe> -->
+            <img id="map-img" src="mapa.webp"
+              style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:10px;">
+          <canvas id="heatmap-canvas"
+            style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
+          <!-- chips e blobs gerados pelo JS ficam aqui -->
+          <div style="position:absolute;top:8px;left:12px;font-family:var(--font-m);font-size:9px;font-weight:700;color:var(--text-s);letter-spacing:1.5px;z-index:5;background:rgba(255,255,255,.85);padding:2px 8px;border-radius:9999px;backdrop-filter:blur(4px)">ESTADO · ES</div>
+          <div style="position:absolute;bottom:10px;right:12px;display:flex;align-items:center;gap:6px;z-index:5;background:rgba(255,255,255,.85);padding:3px 10px;border-radius:9999px;backdrop-filter:blur(4px)">
+            <span class="mono-sm">Maior risco</span>
+            <div style="width:50px;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--em-400),var(--am-400),var(--co-400))"></div>
+            <span class="mono-sm">Menor</span>
+          </div>
+        </div>
+
+        
+      </div>
+    </div>
+
+    <!-- Coluna direita: alertas táticos + top marcas -->
+    <div style="display:flex;flex-direction:column;gap:14px">
+
+      <div class="panel">
+        <div class="panel-header">
+          <div><div class="panel-title">Alertas táticos</div><div class="panel-subtitle">Regiões com tendência de alta</div></div>
+          <span class="badge badge-err" id="alerts-count"></span>
+        </div>
+        <div class="panel-body" id="alerts-list"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Top marcas divergentes</div>
+          <div class="panel-subtitle">Últimos 30 dias</div>
+        </div>
+        <div class="panel-body" id="marcas-list"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Tabela por município -->
+  <div class="panel">
+    <div class="panel-header">
+      <div><div class="panel-title">Tabela por município</div><div class="panel-subtitle">Todas as cidades · ordenável</div></div>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="filter-input" placeholder="Filtrar cidade..." style="font-size:11px;padding:5px 12px;border:1px solid var(--border);border-radius:9999px;background:var(--sur-low);color:var(--text-h);outline:none" oninput="filterTable(this.value)">
+        <button class="btn-secondary" style="font-size:11px;padding:5px 12px">Exportar CSV</button>
+      </div>
+    </div>
+    <div style="padding:0">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th onclick="sortMuni('rank')"># <span style="opacity:.4">↕</span></th>
+            <th onclick="sortMuni('nome')">Município <span style="opacity:.4">↕</span></th>
+            <th onclick="sortMuni('total')">Verificações <span style="opacity:.4">↕</span></th>
+            <th onclick="sortMuni('compat')">Compatível <span style="opacity:.4">↕</span></th>
+            <th onclick="sortMuni('atencao')">Atenção <span style="opacity:.4">↕</span></th>
+            <th onclick="sortMuni('diverg')">Divergentes <span style="opacity:.4">↕</span></th>
+            <th onclick="sortMuni('taxa')" class="sorted">Taxa div. <span style="opacity:1">↓</span></th>
+            <th>Tendência</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="muni-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span class="mono-sm">VerifCar TÁTICA · <span id="footer-versao"></span></span>
+    <span class="mono-sm" id="fbar"></span>
+  </div>
+
+</div>
+
+<script src="data.js"></script>
+<script>
+function goTo(r) {
+  try {
+    if (window.parent && window.parent.goTo) window.parent.goTo(r);
+    else window.postMessage({ goTo: r }, '*');
+  } catch(e) { window.postMessage({ goTo: r }, '*'); }
+}
+
+// ── Dados da tabela derivados de DB.unidades ─────────────
+// Enriquece cada unidade com dados adicionais para a tabela
+const MUNI_DATA = DB.unidades.map((u, i) => {
+  const taxa = u.taxa_diverg;
+  const total = [412,331,287,217,89,112,76,58,44,32][i] || 50;
+  const diverg = Math.round(total * taxa / 100);
+  const atencao = Math.round(total * 0.07);
+  const compat = total - diverg - atencao;
+  return {
+    rank:   i + 1,
+    nome:   u.nome,
+    total,
+    compat: Math.max(0, compat),
+    atencao,
+    diverg,
+    taxa,
+    trend:  [1,2,3,2,3,4,Math.round(taxa)].map(v => Math.min(v, 10)),
+    status: taxa >= 7 ? 'alert' : taxa >= 4 ? 'warn' : 'ok',
+  };
+});
+
+let muniData = [...MUNI_DATA];
+let muniSort = { col: 'taxa', dir: -1 };
+
+// ── KPIs derivados ───────────────────────────────────────
+function renderKpis() {
+  const tots = DB.totais();
+  const alertCount = DB.unidades.filter(u => u.taxa_diverg >= 7).length;
+  const taxaMedia = (DB.unidades.reduce((s,u) => s + u.taxa_diverg, 0) / DB.unidades.length).toFixed(1);
+  document.getElementById('kpi-strip').innerHTML = `
+    <div class="kpi-card blue"><div class="kpi-label">Total verificações</div><div class="kpi-value">${tots.verificacoes.toLocaleString('pt-BR')}</div><div class="kpi-change up">↑ 12%</div></div>
+    <div class="kpi-card red"><div class="kpi-label">Divergências</div><div class="kpi-value">${tots.err}</div><div class="kpi-change up-bad">↑ 8%</div></div>
+    <div class="kpi-card amber"><div class="kpi-label">Municípios com alerta</div><div class="kpi-value">${alertCount}</div><div class="kpi-change up-bad">+1 vs. mês ant.</div></div>
+    <div class="kpi-card green"><div class="kpi-label">Taxa média ES</div><div class="kpi-value">${taxaMedia}%</div><div class="kpi-change down-good">↓ 0.3%</div></div>
+  `;
+}
+
+// ── Mapa: blobs e chips a partir de DB.unidades ──────────
+const MAP_POS = {
+  'Vitória':                    { x:61, y:38, blobR:65  },
+  'Serra':                      { x:67, y:40, blobR:55  },
+  'Cariacica':                  { x:52, y:48, blobR:60  },
+  'Vila Velha':                 { x:60, y:55, blobR:80  },
+  'Guarapari':                  { x:52, y:66, blobR:35  },
+  'Linhares':                   { x:55, y:22, blobR:30  },
+  'Colatina':                   { x:38, y:32, blobR:25  },
+  'Cachoeiro de Itapemirim':    { x:46, y:72, blobR:25  },
+  'São Mateus':                 { x:62, y:12, blobR:18  },
+  'Aracruz':                    { x:65, y:28, blobR:18  },
+};
+
+function renderMapa() {
+  // const { lat, lng, zoom } = DB.mapa;
+  // document.getElementById('map-iframe').src =
+  //   `https://www.google.com/maps?q=${lat},${lng}&z=${zoom}&output=embed`;
+ 
+  // Chips de cidade sobrepostos
+  const canvas = document.getElementById('mapCanvas');
+  canvas.querySelectorAll('.map-label-chip').forEach(el => el.remove());
+  DB.unidades.forEach(u => {
+    const pos = MAP_POS[u.nome];
+    if (!pos) return;
+    const taxa = u.taxa_diverg;
+    const chipBg = taxa >= 7 ? 'rgba(255,59,99,.85)' : taxa >= 4 ? 'rgba(240,169,43,.85)' : 'rgba(35,203,151,.7)';
+    const chip = document.createElement('div');
+    chip.className = 'map-label-chip';
+    chip.style.cssText = `top:${pos.y}%;left:${pos.x}%;transform:translate(-50%,-50%);background:${chipBg};color:#fff;z-index:5`;
+    chip.textContent = `${u.nome.split(' ')[0]} · ${taxa.toFixed(1)}%`;
+    chip.onclick = () => filterTable(u.nome);
+    canvas.appendChild(chip);
+  });
+ 
+  // const tryDraw = () => {
+  //   const wrap = document.getElementById('mapCanvas');
+  //   if (wrap && wrap.offsetWidth > 0) renderHeatmap();
+  //   else requestAnimationFrame(tryDraw);
+  // };
+  // tryDraw();
+  setTimeout(renderHeatmap, 100);
+}
+
+
+// ── Alertas táticos: unidades com taxa >= 4 ──────────────
+function renderHeatmap() {
+  const canvas = document.getElementById('heatmap-canvas');
+  const wrap   = document.getElementById('mapCanvas');
+  if (!wrap) return;
+
+  const rect = wrap.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+
+  const W = rect.width;
+  const H = rect.height;
+
+  if (!W || !H) return;
+
+  // resolução real (corrige blur e desalinhamento)
+  canvas.width  = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
+
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  ctx.clearRect(0, 0, W, H);
+
+  const R = W * 0.09;
+
+  // 👉 OFFSET (se quiser subir como antes)
+  const OFFSET_Y = -H * 0.05;
+
+  DB.mapa.pontos.forEach(p => {
+    const cx = (p.x / 100) * W;
+    const cy = (p.y / 100) * H + OFFSET_Y;
+
+    const r = Math.round(p.intensidade > 0.5 ? 255 : 60 + 160 * p.intensidade);
+    const g = Math.round(p.intensidade > 0.5 ? 80 : 200 - 120 * p.intensidade);
+    const b = 50;
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+
+    const alpha = 0.25 + p.intensidade * 0.5;
+    ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
+
+    ctx.shadowBlur = 30;
+    ctx.shadowColor = `rgba(${r},${g},${b},0.6)`;
+
+    ctx.fill();
+  });
+
+  ctx.shadowBlur = 0;
+}
+
+function renderAlertas() {
+  const alertas = DB.unidades
+    .filter(u => u.taxa_diverg >= 4)
+    .sort((a,b) => b.taxa_diverg - a.taxa_diverg);
+
+  document.getElementById('alerts-count').textContent = alertas.length;
+  document.getElementById('alerts-list').innerHTML = alertas.map(u => {
+    const dot = u.taxa_diverg >= 7 ? 'red' : 'amber';
+    const destino = u.taxa_diverg >= 7 ? 'busca' : 'inteligencia';
+    const label = u.taxa_diverg >= 7 ? 'Ver verificações →' : 'Ver grafo →';
+    return `
+      <div class="alert-item">
+        <div class="alert-dot ${dot}"></div>
+        <div>
+          <div class="alert-text">${u.nome} · ${u.taxa_diverg.toFixed(1)}% divergência</div>
+          <div class="alert-meta">${u.taxa_diverg >= 7 ? 'Concentração crescente' : 'Tendência de alta'}</div>
+          <div style="margin-top:5px">
+            <button class="btn-secondary" style="font-size:10px;padding:3px 10px" onclick="goTo('${destino}')">${label}</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── Top marcas divergentes derivado de DB.veiculos ───────
+function renderMarcas() {
+  const contagem = {};
+  DB.verificacoes
+    .filter(v => v.status === 'err')
+    .forEach(v => {
+      const vei = DB.veiculo(v.veiculo_id);
+      if (vei) contagem[vei.marca] = (contagem[vei.marca] || 0) + 1;
+    });
+  const sorted = Object.entries(contagem).sort((a,b) => b[1]-a[1]).slice(0,5);
+  const max = sorted[0]?.[1] || 1;
+  const colors = [
+    'var(--co-400)', 'var(--am-400)', 'var(--am-400)', 'var(--pri-400)', 'var(--pri-400)'
+  ];
+  document.getElementById('marcas-list').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${sorted.map(([marca, n], i) => `
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:12px;font-weight:600">${marca}</span>
+            <span class="mono" style="font-weight:700;color:${colors[i]}">${n}</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:${Math.round(n/max*100)}%;background:${colors[i]}"></div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+// ── Tabela de municípios ─────────────────────────────────
+function taxaColor(t) { return t >= 7 ? 'var(--co-400)' : t >= 4 ? 'var(--am-800)' : 'var(--em)'; }
+function badgeForStatus(s) { return s==='alert'?'badge-err':s==='warn'?'badge-warn':'badge-ok'; }
+function labelForStatus(s) { return s==='alert'?'Alerta':s==='warn'?'Atenção':'Normal'; }
+function sparkHTML(trend) {
+  const mx = Math.max(...trend, 1);
+  return '<span class="spark">' + trend.map((v,i) =>
+    `<div class="spark-bar${i===trend.length-1&&v===Math.max(...trend)?' hi':''}" style="height:${Math.max(2,Math.round(v/mx*16))}px"></div>`
+  ).join('') + '</span>';
+}
+
+function renderMuni() {
+  document.getElementById('muni-body').innerHTML = muniData.map(r => `
+    <tr class="${r.status==='alert'?'top':''}" onclick="goTo('busca')" style="cursor:pointer">
+      <td style="font-family:var(--font-m);font-size:10px;color:var(--text-s)">${r.rank}</td>
+      <td style="font-weight:700;color:var(--text-h)">${r.nome}</td>
+      <td style="font-family:var(--font-m);font-size:11px">${r.total}</td>
+      <td style="color:var(--em);font-weight:600">${r.compat}</td>
+      <td style="color:var(--am-800);font-weight:600">${r.atencao}</td>
+      <td style="color:var(--co-800);font-weight:600">${r.diverg}</td>
+      <td><span style="font-family:var(--font-m);font-size:12px;font-weight:800;color:${taxaColor(r.taxa)}">${r.taxa.toFixed(1)}%</span></td>
+      <td>${sparkHTML(r.trend)}</td>
+      <td><span class="badge ${badgeForStatus(r.status)}" style="font-size:9px">${labelForStatus(r.status)}</span></td>
+    </tr>`).join('');
+}
+
+function sortMuni(col) {
+  if (muniSort.col === col) muniSort.dir *= -1;
+  else { muniSort.col = col; muniSort.dir = -1; }
+  muniData.sort((a,b) => {
+    const va = a[col], vb = b[col];
+    return typeof va === 'string' ? muniSort.dir * va.localeCompare(vb) : muniSort.dir * (va - vb);
+  });
+  renderMuni();
+}
+
+function filterTable(q) {
+  muniData = q
+    ? MUNI_DATA.filter(r => r.nome.toLowerCase().includes(q.toLowerCase()))
+    : [...MUNI_DATA];
+  renderMuni();
+  // Sincroniza o input
+  const inp = document.getElementById('filter-input');
+  if (inp && inp.value !== q) inp.value = q;
+}
+
+function setLayer(l, btn) {
+  document.querySelectorAll('#btn-verif,#btn-diverg').forEach(b => {
+    b.style.background=''; b.style.color=''; b.style.borderColor='';
+  });
+  btn.style.background = 'var(--pri-50)';
+  btn.style.color = 'var(--pri-600)';
+  btn.style.borderColor = 'var(--pri-100)';
+}
+
+function tick() {
+  const t = new Date().toTimeString().slice(0, 8);
+  const f = document.getElementById('fbar');
+  if (f) f.innerHTML = `SYNC: ${t} · <span style="color:var(--em-400)">ONLINE</span>`;
+}
+
+function render() {
+  renderKpis();
+  renderMapa();
+  renderAlertas();
+  renderMarcas();
+  renderMuni();
+  document.getElementById('footer-versao').textContent = DB.sistema.versao;
+  tick();
+}
+
+render();
+setInterval(tick, 1000);
+</script>
+</body>
+</html>

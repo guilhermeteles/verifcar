@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=100%, initial-scale=1">
+<title>VerifCar · 03 Câmera Traseira</title>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"></noscript>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+:root{--pri-deep:#0C6B4E;--pri-deep2:#149B72;
+  --pri:#23CB97;--pri-50:#0F221D;--pri-100:#16352C;
+  --pri-400:#23CB97;--pri-600:#4FDCB0;--pri-800:#93EED3;
+  --em:#23CB97;--em-50:#0F221D;--em-400:#35D9A4;
+  --am:#F0A92B;--am-400:#F0A92B;--am-50:#2A1F0E;
+  --bg:#12141C;--surface:#1A1D28;
+  --sur-low:#222431;--sur-mid:#282B39;--sur-high:#33374A;
+  --text-h:#F3F5F9;--text-b:#CBD0DC;--text-m:#8D94A6;--text-s:#666D80;
+  --border:rgba(255,255,255,0.10);
+  --font-d:'Space Grotesk',sans-serif;
+  --font-b:'Inter',sans-serif;
+  --font-m:'JetBrains Mono',monospace;
+  --sh-card:0 1px 3px rgba(0,0,0,.45),0 6px 20px rgba(0,0,0,.30);
+  --sh-lg:0 24px 48px rgba(0,0,0,.52),0 6px 14px rgba(0,0,0,.34);
+}
+body{
+  min-height:100vh;font-family:var(--font-b);
+  margin:0;padding:0;overflow-x:hidden;
+}
+h1{font-family:var(--font-d);font-weight:800;font-size:28px;color:var(--pri-800);margin-bottom:5px;letter-spacing:-0.6px;text-align:center}
+.sub{font-size:12px;color:var(--text-m);margin-bottom:4px;font-weight:500;text-align:center}
+.meta{font-family:var(--font-m);font-size:9.5px;color:var(--text-s);margin-bottom:32px;letter-spacing:0.4px;text-align:center}
+.flow-tag{font-family:var(--font-m);font-size:10px;color:var(--pri-600);background:var(--pri-50);padding:2px 8px;border-radius:10px;border:1px solid var(--pri-100);margin-bottom:10px}
+
+/* phone */
+.phone{width:100%;height:100dvh;background:#12141C;position:relative;overflow:hidden;display:flex;flex-direction:column;}
+.top-bar{
+  height:5px;
+  background:linear-gradient(90deg,var(--pri-800),var(--pri-400),var(--em-400),var(--pri-400),var(--pri-800));
+  box-shadow:0 1px 8px rgba(0,0,0,0.55);flex-shrink:0
+}
+/* camera */
+.cam-wrap{flex:1;position:relative;overflow:hidden}
+.cam-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  background:linear-gradient(160deg,#12141C 0%,#1A1D28 60%,#0c0e1c 100%)
+
+}
+.cam-scanline{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.015) 1px,transparent 1px);background-size:100% 3px;pointer-events:none;z-index:1}
+.cam-grid{position:absolute;inset:0;z-index:2;pointer-events:none;bottom:69px;}
+
+/* silhueta */
+.car-sil{position:absolute;top:45%;left:50%;transform:translate(-50%,-52%);z-index:2;opacity:0.18;width:250px}
+
+/* guia */
+.cam-guide{position:absolute;z-index:3;border-radius:10px;top:45%;left:50%;transform:translate(-50%,-52%);width:270px;height:220px}
+.cam-guide::before,.cam-guide::after{content:'';position:absolute;width:14px;height:14px;border-color:#fff;border-style:solid}
+.cam-guide::before{top:-1.5px;left:-1.5px;border-width:2px 0 0 2px;border-radius:3px 0 0 0}
+.cam-guide::after{bottom:-1.5px;right:-1.5px;border-width:0 2px 2px 0;border-radius:0 0 3px 0}
+.cam-corner-tr{position:absolute;top:-1.5px;right:-1.5px;width:14px;height:14px;border-top:2px solid #fff;border-right:2px solid #fff;border-radius:0 3px 0 0}
+.cam-corner-bl{position:absolute;bottom:-1.5px;left:-1.5px;width:14px;height:14px;border-bottom:2px solid #fff;border-left:2px solid #fff;border-radius:0 0 0 3px}
+
+/* ia pill */
+.ia-pill{position:absolute;bottom:140px;left:50%;transform:translateX(-50%);z-index:4;background:rgba(0,0,0,0.5);backdrop-filter:blur(12px);border:0.5px solid rgba(255,255,255,0.12);border-radius:9999px;padding:4px 12px;display:flex;align-items:center;gap:6px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.ia-dot{width:6px;height:6px;border-radius:50%;background:#4FDCB0;box-shadow:0 0 6px #4FDCB0;animation:pulse 1.4s ease-in-out infinite}
+.ia-txt{font-family:var(--font-m);font-size:12px;color:rgba(255,255,255,0.9);letter-spacing:0.8px;text-transform:uppercase;white-space: nowrap;}
+
+/* tip */
+.cam-tip{position:absolute;bottom:200px;left:50%;transform:translateX(-50%);z-index:4;white-space:nowrap}
+
+/* bottom controls */
+.cam-bottom{position:absolute;bottom:0;left:0;right:0;z-index:5;padding:10px 14px 18px;background:linear-gradient(to top,rgba(10,12,26,0.95) 60%,transparent)}
+.conf-wrap{margin-bottom:10px}
+.conf-labels{display:flex;justify-content:space-between;margin-bottom:3px}
+.conf-labels span{font-family:var(--font-m);font-size:8px;color:rgba(255,255,255,0.55);letter-spacing:0.4px}
+.conf-bar{height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden}
+.conf-fill{height:100%;background:linear-gradient(90deg,var(--pri-400),#4FDCB0);width:0%;transition:width 0.4s ease}
+.cam-controls{display:flex;align-items:center;justify-content:space-between}
+.cam-btn{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.shutter{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--pri-deep),var(--pri-deep2));box-shadow:0 4px 14px rgba(0,0,0,1.0);display:flex;align-items:center;justify-content:center;cursor:pointer;border:3px solid rgba(255,255,255,0.12);transition:transform .1s}
+.shutter:active{transform:scale(0.93)}
+
+/* FAB */
+.fab-container{position:absolute;bottom:88px;right:14px;z-index:6}
+.fab-btn{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--pri-deep),var(--pri-deep2));box-shadow:0 4px 16px rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;cursor:pointer;border:none}
+.fab-btn svg{stroke:#fff;width:18px;height:18px;transition:transform 0.25s ease}
+.fab-panel{position:absolute;bottom:52px;right:0;width:240px;background:var(--surface);border-radius:14px;box-shadow:var(--sh-lg);padding:12px;transform-origin:bottom right;transform:scale(0.85) translateY(8px);opacity:0;transition:all 0.22s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none}
+.fab-container.open .fab-panel{transform:scale(1) translateY(0);opacity:1;pointer-events:all}
+.fab-container.open .fab-btn svg{transform:rotate(45deg)}
+.fab-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:0.5px solid var(--sur-low)}
+.fab-row:last-child{border-bottom:none}
+.fab-lbl{font-size:10px;color:var(--text-m)}
+.fab-val{font-family:var(--font-m);font-size:10px;color:var(--pri-800);font-weight:500}
+
+/* modal resultado */
+.modal-overlay{position:absolute;inset:0;background:rgba(8,9,13,0.52);backdrop-filter:blur(14px);z-index:20;display:none;align-items:flex-end}
+.modal-overlay.open{display:flex}
+.modal-sheet{background:var(--surface);border-radius:20px 20px 0 0;width:100%;padding:13px 14px 22px;max-height:86%;overflow-y:auto;box-shadow:0 -6px 28px rgba(0,0,0,0.286)}
+.modal-sheet::-webkit-scrollbar{display:none}
+.modal-handle{width:32px;height:3.5px;background:var(--border);border-radius:2px;margin:0 auto 10px;opacity:0.65}
+.card{background:var(--surface);border-radius:12px;padding:10px 12px;margin-bottom:7px;box-shadow:var(--sh-card)}
+.divider{height:0.5px;background:var(--sur-high);margin:5px 0}
+.data-row{display:flex;justify-content:space-between;align-items:center;padding:3.5px 0}
+.data-label{font-size:12px;color:var(--text-m)}
+.data-value{font-size:12px;font-weight:600;color:var(--text-h)}
+.badge{display:inline-flex;align-items:center;font-size:12px;font-weight:700;padding:2.5px 7px;border-radius:9999px;gap:3px}
+.badge-ok{background:var(--em-50);color:var(--em);border:0.5px solid rgba(35,203,151,0.2)}
+.btn-primary{background:linear-gradient(135deg,var(--pri-deep),var(--pri-deep2));color:#fff;border-radius:9999px;padding:9px 14px;font-family:var(--font-b);font-size:10.5px;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,0.55);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;flex:1}
+.btn-secondary{background:var(--sur-mid);border-radius:9999px;padding:9px 14px;font-size:10.5px;font-weight:600;color:var(--text-b);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;flex:1}
+
+/* topo da câmera (overlay) */
+.cam-header{position:absolute;top:3px;left:0;right:0;z-index:6}
+
+/* corner transition */
+.cam-guide::before,.cam-guide::after,.cam-corner-tr,.cam-corner-bl{
+  transition:border-color 0.6s ease}
+.cam-guide.quality-ok::before,.cam-guide.quality-ok::after{border-color:#4FDCB0}
+.cam-guide.quality-ok .cam-corner-tr{border-color:#4FDCB0}
+.cam-guide.quality-ok .cam-corner-bl{border-color:#4FDCB0}
+
+/* lanterna overlay */
+.flash-overlay{position:absolute;inset:0;background:rgba(255,230,100,0.07);pointer-events:none;z-index:2;opacity:0;transition:opacity 0.3s}
+.flash-overlay.on{opacity:1}
+
+/* toast */
+.toast{position:absolute;bottom:90px;left:50%;transform:translateX(-50%) translateY(10px);z-index:10;background:rgba(20,22,40,0.92);backdrop-filter:blur(10px);border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:7px 14px;font-family:var(--font-m);font-size:8px;color:rgba(255,255,255,0.85);white-space:nowrap;letter-spacing:0.4px;opacity:0;transition:all 0.25s ease;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="top-bar"></div>
+
+  <!-- header câmera -->
+  <div style="position:absolute;top:3px;left:0;right:0;z-index:6">
+    <div style="padding:7px 12px 0;display:flex;justify-content:space-between;align-items:center;color:rgba(255,255,255,0.8);font-size:10px;font-weight:600;font-family:var(--font-b)">
+      <span>9:41</span><span style="font-size:9px">● ● ●</span>
+    </div>
+    <div style="padding:5px 12px 6px;display:flex;justify-content:space-between;align-items:center;backdrop-filter:blur(14px)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="cursor:pointer;margin-top:3px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
+        
+    <img src="assets/logos/logo-white.svg" alt="" height="16px" onclick="goTo('home')"  style="cursor: pointer;">
+        
+         
+
+        <!-- <svg width="38" height="15" viewBox="0 0 38 15"><text x="0" y="12" font-family="'Space Grotesk',sans-serif" font-size="13" font-weight="800" fill="white" letter-spacing="0.5">VerifCar</text></svg> -->
+      </div>
+      <div style="background:rgba(255,255,255,0.1);border:0.5px solid rgba(255,255,255,0.15);border-radius:9999px;padding:3px 9px;display:flex;align-items:center;gap:5px">
+        <span class="ia-dot" style="width:5px;height:5px;animation:pulse 1.4s ease-in-out infinite"></span>
+        <span style="font-family:var(--font-m);font-size:10px;color:rgba(255,255,255,0.85)">LIVE</span>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- câmera -->
+  <div class="cam-wrap">
+    <!-- <div class="cam-bg"></div> -->
+    <!-- <img class="cam-bg" src="assets/videos/traseira.gif" alt=""> -->
+     <video class="cam-bg" autoplay muted loop playsinline preload="none">
+        <source src="assets/videos/traseira.mp4" type="video/mp4">
+      </video>
+    <div class="cam-scanline"></div>
+    <div class="flash-overlay" id="flash-overlay"></div>
+    <div class="toast" id="toast"></div>
+
+    <!-- grid de terços -->
+    <div class="cam-grid">
+      <div style="position:absolute;left:33%;top:0;bottom:0;width:0.5px;background:rgba(255,255,255,0.12)"></div>
+      <div style="position:absolute;left:66%;top:0;bottom:0;width:0.5px;background:rgba(255,255,255,0.12)"></div>
+      <div style="position:absolute;top:33%;left:0;right:0;height:0.5px;background:rgba(255,255,255,0.12)"></div>
+      <div style="position:absolute;top:66%;left:0;right:0;height:0.5px;background:rgba(255,255,255,0.12)"></div>
+    </div>
+
+    <!-- silhueta traseira -->
+    <div class="car-sil">
+      <img src="assets/logos/traseira.svg" alt="" width="250">
+      
+    </div>
+
+    <!-- guia de alinhamento -->
+    <div class="cam-guide" id="cam-guide">
+      <div class="cam-corner-tr"></div>
+      <div class="cam-corner-bl"></div>
+    </div>
+
+    <!-- dica alinhamento -->
+    <div class="cam-tip" id="cam-tip">
+      <div style="background:rgba(0,0,0,0.45);border-radius:9999px;padding:0px 10px 4px 10px">
+        <span id="tip-txt" style="font-family:var(--font-m);font-size:16px;color:rgba(255,255,255,0.7);letter-spacing:0.5px;transition:opacity 0.4s">Alinhe a traseira à silhueta</span>
+      </div>
+    </div>
+
+    <!-- pill IA -->
+    <div class="ia-pill">
+      <span class="ia-dot" id="ia-dot"></span>
+      <span class="ia-txt" id="ia-txt">Detecção inteligente · 0%</span>
+    </div>
+
+
+    <!-- controles inferiores -->
+    <div class="cam-bottom">
+      <div class="cam-controls">
+        <!-- lanterna -->
+        <div class="cam-btn" id="btn-lanterna" onclick="toggleLanterna()" title="Lanterna">
+          <svg id="ico-lanterna" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.8"><circle cx="12" cy="12" r="5"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+        </div>
+        <!-- obturador -->
+        <div class="shutter" id="shutter" onclick="openResultado()" title="Capturar">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <!-- zoom -->
+        <div class="cam-btn" id="btn-zoom" onclick="toggleZoom()" title="Zoom">
+          <span id="zoom-label" style="font-family:var(--font-m);font-size:9px;color:rgba(255,255,255,0.7);font-weight:500">1×</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /cam-wrap -->
+
+  <!-- ══ DRAWER RESULTADO IA ══ -->
+  <div class="modal-overlay" id="modal-resultado" onclick="if(event.target===this)closeResultado()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+
+      <!-- header -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="width:28px;height:28px;border-radius:8px;background:var(--pri-50);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--pri-800)" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <div>
+          <div style="font-family:var(--font-d);font-size:13px;font-weight:800;color:var(--pri-800)">Análise de Placa</div>
+          <div style="font-size:10px;color:var(--text-m)">Identificação via visão computacional</div>
+        </div>
+        <div style="margin-left:auto"><span class="badge badge-ok" id="res-score-badge"></span></div>
+      </div>
+
+      <!-- thumbs capturas -->
+      <div style="display:flex;gap:4px;margin-bottom:8px">
+        <div id="res-thumb1" style="flex:1;border-radius:10px;height:72px;position:relative;overflow:hidden;cursor:zoom-in"></div>
+        <div id="res-thumb2" style="flex:1;border-radius:10px;height:72px;position:relative;overflow:hidden;cursor:zoom-in"></div>
+      </div>
+
+      <!-- placa extraída -->
+      <div style="background:var(--sur-low);border-radius:9px;padding:8px 10px;border-left:2.5px solid var(--pri-400);margin-bottom:7px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:10px;color:var(--text-s);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:2px">Placa Extraída</div>
+          <div id="res-placa" style="font-family:var(--font-m);font-size:13px;font-weight:700;color:var(--pri-800);letter-spacing:2px"></div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;color:var(--text-s);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:2px">Conf. OCR</div>
+          <div id="res-ocr" style="font-family:var(--font-m);font-size:10px;color:var(--em);font-weight:600"></div>
+        </div>
+      </div>
+
+      <!-- dados identificados -->
+      <div class="card" style="margin-bottom:8px" id="res-dados"></div>
+
+      <!-- banner Mercosul (visível só se placa Mercosul for detectada) -->
+      <div id="mercosul-banner" style="display:none;background:var(--am-50);border-radius:10px;padding:9px 11px;margin-bottom:8px;border-left:2.5px solid var(--am-400)">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--am)" stroke-width="2.2" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span style="font-size:11px;font-weight:700;color:var(--am)">Placa Mercosul detectada</span>
+          <span style="font-family:var(--font-m);font-size:7.5px;color:var(--am);background:rgba(240,169,43,0.15);border-radius:9999px;padding:1px 6px;border:0.5px solid rgba(240,169,43,0.3)">QR CODE</span>
+        </div>
+        <span style="font-size:10px;color:#8a6010;line-height:1.4">Esta placa possui QR Code. Fotografe-o na próxima etapa para completar a verificação.</span>
+      </div>
+
+      <!-- campo obs -->
+      <div style="background:var(--sur-low);border-radius:9px;padding:8px 10px;margin-bottom:10px;min-height:38px">
+  <div style="font-size:12px;font-weight:600;color:var(--text-m);margin-bottom:3px">
+    Observações do Inspetor
+  </div>
+
+  <textarea
+    placeholder="Descreva anomalias aqui..."
+    style="
+      width:100%;
+      border:none;
+      outline:none;
+      resize:none;
+      background:transparent;
+      font-size:10px;
+      color:var(--text-s);
+      font-style:italic;
+      padding:0;
+      margin:0;
+    "
+  ></textarea>
+</div>
+
+      <!-- ações -->
+      <div style="display:flex;gap:5px;margin-bottom:6px">
+        <div class="btn-secondary" onclick="closeResultado()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--text-b)" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          Re-digitalizar
+        </div>
+        <div class="btn-primary" id="btn-salvar" onclick="btnSalvarClick()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          <span id="btn-salvar-txt">Salvar</span>
+        </div>
+      </div>
+      <!-- ver ficha completa -->
+      <div style="background:var(--pri-50);border:1px solid var(--pri-100);border-radius:9999px;padding:9px;text-align:center;font-size:10.5px;font-weight:600;color:var(--pri-800);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px" onclick="goTo('ficha')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--pri-800)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h4"/></svg>
+        Ver Ficha Completa
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL QR CODE ══ -->
+  <div class="modal-overlay" id="modal-qr" onclick="if(event.target===this)this.classList.remove('open')">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="width:28px;height:28px;border-radius:8px;background:var(--em-50);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--em)" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h.01M14 17h3M17 14v3M20 17h.01M17 20h3"/></svg>
+        </div>
+        <div>
+          <div style="font-family:var(--font-d);font-size:13px;font-weight:800;color:var(--pri-800)">QR Code Lido</div>
+          <div style="font-size:10px;color:var(--text-m)">Verificação da placa Mercosul concluída</div>
+        </div>
+        <span class="badge badge-ok" style="margin-left:auto">✓ Válido</span>
+      </div>
+
+      <div style="background:var(--em-50);border-radius:10px;padding:9px 11px;border-left:2.5px solid var(--em-400);margin-bottom:8px">
+        <div style="font-size:10px;color:var(--text-s);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:2px">Código Decodificado</div>
+        <div style="font-family:var(--font-m);font-size:11px;font-weight:700;color:var(--em);letter-spacing:1px">Base Oficial·BR-BRA2E19·2024</div>
+      </div>
+
+      <div class="card" style="margin-bottom:10px">
+        <div class="data-row"><span class="data-label">Autenticidade</span><span class="data-value" style="color:var(--em)">Confirmada</span></div>
+        <div class="divider"></div>
+        <div class="data-row"><span class="data-label">Empresa Emissor</span><span class="data-value">Base Oficial-SP</span></div>
+      </div>
+
+      <div style="display:flex;gap:5px;margin-bottom:6px">
+        <div class="btn-secondary" onclick="document.getElementById('modal-qr').classList.remove('open')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--text-b)" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          Re-fotografar
+        </div>
+        <div class="btn-primary" onclick="goTo('captura')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Salvar
+        </div>
+      </div>
+      <div style="background:var(--pri-50);border:1px solid var(--pri-100);border-radius:9999px;padding:9px;text-align:center;font-size:10.5px;font-weight:600;color:var(--pri-800);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px" onclick="goTo('ficha')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--pri-800)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h4"/></svg>
+        Ver Ficha Completa
+      </div>
+    </div>
+  </div>
+
+</div><!-- /phone -->
+
+<script>
+// ── DADOS DO RESULTADO IA ─────────────────────────────────────────────────────
+const RESULTADO = {
+  placa:       'BRA-2E19',
+  mercosul:    true,
+  score:       89.4,
+  fotoTirada:  'assets/fotos/traseira-captura.png',
+  fotoModelo:  'assets/fotos/traseira-modelo.png',
+  dados: [
+    { label: 'Modelo',      value: 'Porsche Taycan',   cor: null },
+    { label: 'Cor',         value: 'Deep Indigo',      cor: null },
+    { label: 'Ano',         value: '2024',             cor: null },
+    { label: 'Restrições',  value: 'Nenhuma',          cor: 'var(--em)' },
+  ]
+};
+
+function renderResultado() {
+  const r = RESULTADO;
+  const scoreStr = '✓ ' + r.score + '%';
+
+  document.getElementById('res-score-badge').textContent = scoreStr;
+  document.getElementById('res-placa').textContent = r.placa;
+  document.getElementById('res-ocr').textContent = r.score + '%';
+
+  // thumb 1 — foto tirada com bounding box
+  const t1 = document.getElementById('res-thumb1');
+  t1.style.background = '#2A2E3C';
+  t1.onclick = () => openThumb(r.fotoTirada, r.fotoModelo);
+  t1.innerHTML = `
+    <img src="${r.fotoTirada}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+    <div style="position:absolute;z-index:2;border:1.5px solid var(--em);width:88px;height:22px;border-radius:3px;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none">
+      <div style="position:absolute;top:-1.5px;left:-1.5px;width:6px;height:6px;border-top:2px solid var(--em);border-left:2px solid var(--em)"></div>
+      <div style="position:absolute;bottom:-1.5px;right:-1.5px;width:6px;height:6px;border-bottom:2px solid var(--em);border-right:2px solid var(--em)"></div>
+      <div style="position:absolute;top:-14px;left:0;background:var(--em);border-radius:3px;padding:1px 5px;font-family:var(--font-m);font-size:6.5px;color:#fff;white-space:nowrap">PLACA: ${r.score}%</div>
+    </div>
+    <div style="position:absolute;bottom:6px;right:6px;z-index:3;background:var(--em);border-radius:9999px;padding:2px 7px;display:flex;align-items:center;gap:3px">
+      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      <span style="font-size:8px;font-weight:700;color:#fff">Compatível</span>
+    </div>`;
+
+  // thumb 2 — foto modelo
+  const t2 = document.getElementById('res-thumb2');
+  t2.style.background = '#2A2E3C';
+  t2.onclick = () => openThumb(r.fotoTirada, r.fotoModelo);
+  t2.innerHTML = `<img src="${r.fotoModelo}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">`;
+
+  // dados identificados
+  const dadosEl = document.getElementById('res-dados');
+  dadosEl.innerHTML = r.dados.map((d, i) => `
+    ${i > 0 ? '<div class="divider"></div>' : ''}
+    <div class="data-row">
+      <span class="data-label">${d.label}</span>
+      <span class="data-value"${d.cor ? ` style="color:${d.cor}"` : ''}>${d.value}</span>
+    </div>`).join('');
+
+  // Mercosul
+  const banner = document.getElementById('mercosul-banner');
+  const btnTxt = document.getElementById('btn-salvar-txt');
+  if (r.mercosul) {
+    banner.style.display = 'block';
+    btnTxt.textContent = 'Fotografar QR Code';
+    document.getElementById('btn-salvar').style.background = 'linear-gradient(135deg,var(--am),#e5a820)';
+  } else {
+    banner.style.display = 'none';
+    btnTxt.textContent = 'Salvar';
+    document.getElementById('btn-salvar').style.background = '';
+  }
+}
+
+const THRESHOLD = 75;
+let quality = 0;
+let isReady = false;
+
+// ── dicas de orientação ──────────────────────────────────────
+const TIPS = [
+  'Alinhe a traseira à silhueta',
+  'Ajuste o ângulo do dispositivo',
+  'Aproxime-se do veículo',
+  'Reduza o movimento',
+  'Centralize a placa no guia',
+];
+let tipIndex = 0;
+let tipTimer;
+
+function rotateTip() {
+  const el = document.getElementById('tip-txt');
+  el.style.opacity = '0';
+  setTimeout(() => {
+    tipIndex = (tipIndex + 1) % TIPS.length;
+    el.textContent = TIPS[tipIndex];
+    el.style.opacity = '1';
+  }, 400);
+}
+
+function startTips() {
+  tipTimer = setInterval(rotateTip, 2800);
+}
+
+function showReady() {
+  clearInterval(tipTimer);
+  const el = document.getElementById('tip-txt');
+  el.style.opacity = '0';
+  setTimeout(() => {
+    el.style.color = '#4FDCB0';
+    el.textContent = '✓ Pronto para capturar';
+    el.style.opacity = '1';
+  }, 400);
+}
+
+function resetTips() {
+  const el = document.getElementById('tip-txt');
+  el.style.opacity = '0';
+  setTimeout(() => {
+    el.style.color = 'rgba(255,255,255,0.7)';
+    tipIndex = 0;
+    el.textContent = TIPS[0];
+    el.style.opacity = '1';
+  }, 400);
+  startTips();
+}
+
+// ── qualidade randômica ──────────────────────────────────────
+function updateQuality(val) {
+  quality = Math.max(0, Math.min(100, val));
+  const pct = quality + '%';
+  document.getElementById('ia-txt').textContent = 'Detecção inteligente · ' + pct;
+
+  const guide   = document.getElementById('cam-guide');
+  const dot     = document.getElementById('ia-dot');
+  const shutter = document.getElementById('shutter');
+
+  const ok = quality >= THRESHOLD;
+
+  if (ok && !isReady) {
+    isReady = true;
+    guide.classList.add('quality-ok');
+    dot.style.background     = '#4FDCB0';
+    dot.style.boxShadow      = '0 0 6px #4FDCB0';
+    shutter.style.background = 'linear-gradient(135deg,#15803d,#22c55e)';
+    shutter.style.boxShadow  = '0 4px 14px rgba(34,197,94,0.5)';
+    showReady();
+  } else if (!ok && isReady) {
+    isReady = false;
+    guide.classList.remove('quality-ok');
+    dot.style.background     = '#FFC94D';
+    dot.style.boxShadow      = '0 0 6px #FFC94D';
+    shutter.style.background = 'linear-gradient(135deg,var(--pri-deep),var(--pri-deep2))';
+    shutter.style.boxShadow  = '0 4px 14px rgba(35,203,151,0.5)';
+    resetTips();
+  } else if (!ok) {
+    dot.style.background = '#FFC94D';
+    dot.style.boxShadow  = '0 0 6px #FFC94D';
+  }
+}
+
+function animateQuality() {
+  // fase 1: sobe de 0 até ~55 rapidamente
+  let cur = 0;
+  const rise = () => {
+    if (cur < 55) {
+      cur += Math.ceil(Math.random() * 5);
+      cur = Math.min(cur, 55);
+      updateQuality(cur);
+      setTimeout(rise, 100 + Math.random() * 150);
+    } else {
+      // fase 2: flutua aleatoriamente, podendo passar do threshold
+      fluctuate(cur);
+    }
+  };
+
+  const fluctuate = (base) => {
+    let v = base;
+    setInterval(() => {
+      const delta = (Math.random() - 0.35) * 18; // leve tendência de alta
+      v = Math.max(30, Math.min(95, v + delta));
+      updateQuality(Math.round(v));
+    }, 900 + Math.random() * 600);
+  };
+
+  setTimeout(rise, 600);
+}
+
+startTips();
+animateQuality();
+
+// ── lanterna ────────────────────────────────────────────────
+let lantOn = false;
+function toggleLanterna() {
+  lantOn = !lantOn;
+  const overlay = document.getElementById('flash-overlay');
+  const btn     = document.getElementById('btn-lanterna');
+  overlay.classList.toggle('on', lantOn);
+  btn.style.background = lantOn ? 'rgba(255,220,80,0.25)' : 'rgba(255,255,255,0.1)';
+  showToast(lantOn ? '🔦 Lanterna ativada' : '🔦 Lanterna desativada');
+}
+
+// ── zoom ─────────────────────────────────────────────────────
+let zoomOn = false;
+function toggleZoom() {
+  zoomOn = !zoomOn;
+  const btn   = document.getElementById('btn-zoom');
+  const label = document.getElementById('zoom-label');
+  const camBg = document.querySelector('.cam-bg');
+  label.textContent    = zoomOn ? '2×' : '1×';
+  label.style.color    = zoomOn ? '#fff' : 'rgba(255,255,255,0.7)';
+  btn.style.background = zoomOn ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)';
+  camBg.style.transition = 'transform 0.35s ease';
+  camBg.style.transform  = zoomOn ? 'scale(1.5)' : 'scale(1)';
+  showToast(zoomOn ? '🔍 Zoom 2×' : '🔍 Zoom 1×');
+}
+
+// ── toast ───────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── fullscreen thumb ────────────────────────────────────────
+function openThumb(name1, name2) {
+  const existing = document.getElementById('thumb-fs');
+  if (existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'thumb-fs';
+  overlay.style.cssText = 'position:absolute;inset:0;z-index:50;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:zoom-out;backdrop-filter:blur(4px);padding:12px';
+  const img2 = name2 ? `
+      <div style="width:100%;aspect-ratio:27/22;background:#2A2E3C;border-radius:8px;overflow:hidden;flex-shrink:0">
+        <img src="${name2}" style="width:100%;height:100%;object-fit:cover">
+      </div>` : '';
+  overlay.innerHTML = `
+    <div style="width:100%;display:flex;flex-direction:column;gap:8px;overflow-y:auto">
+      <div style="width:100%;aspect-ratio:27/22;background:#2A2E3C;border-radius:8px;overflow:hidden;flex-shrink:0">
+        <img src="${name1}" style="width:100%;height:100%;object-fit:cover">
+      </div>${img2}
+    </div>
+    <span style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:0.5px;flex-shrink:0">toque para fechar</span>`;
+  overlay.onclick = () => overlay.remove();
+  document.querySelector('.phone').appendChild(overlay);
+}
+
+// ── modal ───────────────────────────────────────────────────
+function openResultado() {
+  renderResultado();
+  document.getElementById('modal-resultado').classList.add('open');
+  const fab = document.getElementById('fab'); if(fab) fab.classList.remove('open');
+}
+function closeResultado() {
+  document.getElementById('modal-resultado').classList.remove('open');
+}
+
+// ── Mercosul: ação do botão salvar ──────────────────────────
+function btnSalvarClick() {
+  if (RESULTADO.mercosul) {
+    enterQRMode();
+  } else {
+    goTo('captura');
+  }
+}
+
+// ── Mercosul: transição para modo QR Code ───────────────────
+function enterQRMode() {
+  closeResultado();
+
+  // Guia quadrado para QR code
+  const guide = document.getElementById('cam-guide');
+  guide.style.width  = '190px';
+  guide.style.height = '190px';
+  guide.style.top    = '45%';
+
+  // Tip
+  const tip = document.getElementById('tip-txt');
+  tip.style.transition = 'opacity 0.3s';
+  tip.style.opacity = '0';
+  setTimeout(() => {
+    tip.style.color = 'rgba(255,255,255,0.8)';
+    tip.textContent = 'Aponte para o QR Code da placa';
+    tip.style.opacity = '1';
+  }, 300);
+
+  // Pill IA
+  document.getElementById('ia-txt').textContent = 'Leitura de QR Code · Aguardando';
+  document.getElementById('ia-dot').style.background = '#f59e0b';
+  document.getElementById('ia-dot').style.boxShadow  = '0 0 6px #f59e0b';
+
+  // Shutter passa a capturar QR
+  document.getElementById('shutter').onclick = openResultadoQR;
+
+  showToast('📷 Fotografe o QR Code da placa Mercosul');
+}
+
+function openResultadoQR() {
+  document.getElementById('modal-qr').classList.add('open');
+}
+
+function goTo(rota) {
+  if (window.parent && window.parent.goTo) {
+    sessionStorage.setItem('verifcar_ficha_from', '03');
+    window.parent.goTo(rota);
+  } else {
+    
+    const map = { ficha:'verifcar-04-ficha-completa.html', captura:'verifcar-05-captura-assistida.html' };
+    if (map[rota]) window.location.href = map[rota];
+  }
+}
+</script>
+</body>
+</html>

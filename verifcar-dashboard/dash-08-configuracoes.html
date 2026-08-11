@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VerifCar · Configurações</title>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"></noscript>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+:root{--pri-deep:#0C6B4E;--pri-deep2:#149B72;
+  --pri:#23CB97;--pri-50:#0F221D;--pri-100:#16352C;
+  --pri-400:#23CB97;--pri-600:#4FDCB0;--pri-800:#93EED3;
+  --em:#23CB97;--em-50:#0F221D;--em-400:#35D9A4;
+  --am:#F0A92B;--am-50:#2A1F0E;--am-400:#F0A92B;--am-800:#FFD48A;
+  --co:#FF3B63;--co-50:#2B1119;--co-400:#FF3B63;--co-800:#FF95AC;
+  --bg:#12141C;--surface:#1A1D28;
+  --sur-low:#222431;--sur-mid:#282B39;--sur-high:#33374A;
+  --text-h:#F3F5F9;--text-b:#CBD0DC;--text-m:#8D94A6;--text-s:#666D80;
+  --border:rgba(255,255,255,0.10);
+  --font-d:'Space Grotesk',sans-serif;
+  --font-b:'Inter',sans-serif;
+  --font-m:'JetBrains Mono',monospace;
+  --sh-card:0 1px 3px rgba(0,0,0,.45),0 6px 20px rgba(0,0,0,.30);
+  --sidebar-w:220px;--topbar-h:52px;
+}
+html,body{height:100%;font-family:var(--font-b);background:var(--bg);color:var(--text-h);overflow-y:auto}
+.dash-shell{display:block;height:100%}
+.rainbow-bar{position:fixed;top:0;left:0;right:0;height:3px;z-index:100;background:linear-gradient(90deg,var(--pri-800),var(--pri-400),var(--em-400),var(--pri-400),var(--pri-800));box-shadow:0 1px 8px rgba(0,0,0,0.55)}
+.sidebar{grid-area:sidebar;background:var(--sur-low);display:flex;flex-direction:column;height:100vh;box-shadow:2px 0 24px rgba(0,0,0,0.176);padding-top:3px;position:relative;z-index:50;overflow:hidden}
+.sb-logo{display:flex;align-items:center;gap:10px;padding:16px 18px 14px;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}
+.sb-logo-mark{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--pri-400),var(--pri-600));border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.3);flex-shrink:0}
+.sb-logo-text{font-family:var(--font-d);font-size:15px;font-weight:800;color:#fff;letter-spacing:2px}
+.sb-logo-badge{font-family:var(--font-m);font-size:7px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:1px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:1px 5px;margin-left:auto}
+.sb-nav{flex:1;padding:10px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.sb-nav::-webkit-scrollbar{display:none}
+.sb-section-label{font-family:var(--font-m);font-size:8px;font-weight:700;color:rgba(255,255,255,.25);letter-spacing:1.5px;text-transform:uppercase;padding:8px 8px 4px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;font-family:var(--font-b);font-size:12px;font-weight:500;color:rgba(255,255,255,.5);cursor:pointer;transition:all .15s;text-decoration:none;border:none;background:none;width:100%;text-align:left}
+.sb-item:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.8)}
+.sb-item.active{background:rgba(35,203,151,.25);color:#fff;font-weight:600;border:1px solid rgba(35,203,151,.35)}
+.sb-item svg{flex-shrink:0;opacity:.7}
+.sb-item.active svg{opacity:1}
+.sb-item-label{flex:1}
+.sb-badge{font-family:var(--font-m);font-size:8px;font-weight:700;background:var(--co-400);color:#fff;border-radius:9999px;padding:1px 6px;min-width:16px;text-align:center}
+.sb-footer{border-top:1px solid rgba(255,255,255,.08);padding:12px 10px;flex-shrink:0}
+.sb-user{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;cursor:pointer;transition:background .15s}
+.sb-user:hover{background:rgba(255,255,255,.06)}
+.sb-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--pri-400),var(--pri-600));border:1.5px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--font-d);font-size:11px;font-weight:800;color:#fff}
+.sb-user-info{flex:1;min-width:0}
+.sb-user-name{font-size:11px;font-weight:600;color:rgba(255,255,255,.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-user-role{font-family:var(--font-m);font-size:8px;color:rgba(255,255,255,.35);margin-top:1px}
+.sb-online{width:7px;height:7px;border-radius:50%;background:var(--em-400);box-shadow:0 0 6px var(--em);flex-shrink:0}
+.topbar{grid-area:topbar;height:var(--topbar-h);background:rgba(26,29,40,.92);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 24px;position:sticky;top:0;z-index:40;padding-top:3px}
+.topbar-title{font-family:var(--font-d);font-size:15px;font-weight:800;color:var(--text-h);flex:1}
+.topbar-divider{width:1px;height:20px;background:var(--border)}
+.topbar-btn{width:34px;height:34px;border-radius:10px;background:var(--sur-low);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;color:var(--text-m)}
+.topbar-btn:hover{background:var(--sur-mid);color:var(--text-h)}
+.topbar-avatar{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--pri-50),var(--pri-100));border:1.5px solid var(--pri-100);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:11px;font-weight:800;color:var(--pri-800);cursor:pointer}
+.content{padding:24px 28px;background:var(--bg);min-height:100%}
+.content::-webkit-scrollbar{width:6px}
+.content::-webkit-scrollbar-track{background:transparent}
+.content::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* Page specific */
+.config-tabs{display:flex;gap:4px;margin-bottom:24px;border-bottom:1px solid var(--border);padding-bottom:0}
+.config-tab{font-family:var(--font-b);font-size:12px;font-weight:600;padding:8px 16px;border-radius:8px 8px 0 0;cursor:pointer;color:var(--text-m);border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.config-tab:hover{color:var(--text-h);background:var(--sur-low)}
+.config-tab.active{color:var(--pri-800);border-bottom-color:var(--pri-400);background:transparent}
+
+.config-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.config-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+.panel{background:var(--surface);border-radius:14px;border:1px solid var(--border);box-shadow:var(--sh-card);overflow:hidden;margin-bottom:16px}
+.panel-header{padding:16px 20px 0;display:flex;align-items:center;justify-content:space-between}
+.panel-title{font-family:var(--font-d);font-size:13px;font-weight:800;color:var(--text-h)}
+.panel-subtitle{font-size:10px;color:var(--text-s);margin-top:2px}
+.panel-body{padding:16px 20px 20px}
+
+.config-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--sur-low)}
+.config-row:last-child{border-bottom:none}
+.config-row-label{font-size:12px;font-weight:600;color:var(--text-b)}
+.config-row-sub{font-size:10px;color:var(--text-s);margin-top:1px}
+.config-row-ctrl{display:flex;align-items:center;gap:10px;flex-shrink:0}
+
+.toggle{width:36px;height:20px;border-radius:10px;background:var(--sur-high);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2);transition:left .2s}
+.toggle.on{background:var(--em-400)}
+.toggle.on::after{left:19px}
+.toggle.amber.on{background:var(--am-400)}
+.toggle.pri.on{background:var(--pri-400)}
+
+.config-input{font-family:var(--font-m);font-size:12px;font-weight:700;color:var(--text-h);background:var(--sur-low);border:1px solid var(--border);border-radius:8px;padding:5px 10px;width:80px;text-align:center}
+.config-select{font-size:12px;font-weight:600;color:var(--text-b);background:var(--sur-low);border:1px solid var(--border);border-radius:8px;padding:5px 10px;cursor:pointer}
+
+.badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--font-b);font-size:10px;font-weight:700;padding:2px 8px;border-radius:9999px}
+.badge-ok{background:var(--em-50);color:var(--em);border:1px solid rgba(35,203,151,.15)}
+.badge-warn{background:var(--am-50);color:var(--am-800);border:1px solid rgba(240,169,43,.2)}
+.badge-err{background:var(--co-50);color:var(--co-800);border:1px solid rgba(255,59,99,.15)}
+.badge-info{background:var(--pri-50);color:var(--pri-600);border:1px solid var(--pri-100)}
+
+.btn-primary{background:linear-gradient(135deg,var(--pri-deep),var(--pri-deep2));color:#fff;border-radius:9999px;padding:8px 18px;font-family:var(--font-b);font-size:12px;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,0.55);cursor:pointer;display:inline-flex;align-items:center;gap:7px;border:none;transition:opacity .15s}
+.btn-primary:hover{opacity:.9}
+.btn-secondary{background:var(--sur-mid);border:1px solid var(--border);border-radius:9999px;padding:7px 16px;font-size:12px;font-weight:600;color:var(--text-b);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .15s}
+.btn-secondary:hover{background:var(--sur-high)}
+.btn-danger{background:var(--co-50);border:1px solid rgba(255,59,99,.2);border-radius:9999px;padding:7px 16px;font-size:12px;font-weight:600;color:var(--co-800);cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+
+.data-table{width:100%;border-collapse:collapse}
+.data-table thead th{font-size:10px;font-weight:700;color:var(--text-s);text-align:left;text-transform:uppercase;letter-spacing:.7px;padding:10px 12px;background:var(--sur-low);border-bottom:1px solid var(--border)}
+.data-table tbody td{font-size:12px;color:var(--text-b);padding:10px 12px;border-bottom:1px solid var(--sur-low)}
+.data-table tbody tr:last-child td{border-bottom:none}
+.data-table tbody tr:hover td{background:var(--sur-low)}
+
+.rbac-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--sur-low)}
+.rbac-row:last-child{border-bottom:none}
+.rbac-avatar{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:11px;font-weight:800;flex-shrink:0}
+.rbac-info{flex:1;min-width:0}
+.rbac-name{font-size:12px;font-weight:700;color:var(--text-h)}
+.rbac-desc{font-size:10px;color:var(--text-s);margin-top:1px}
+.rbac-perms{display:flex;gap:4px;flex-wrap:wrap}
+.perm-tag{font-family:var(--font-m);font-size:8px;font-weight:700;padding:2px 7px;border-radius:4px;background:var(--pri-50);color:var(--pri-600);border:1px solid var(--pri-100)}
+.perm-tag.read{background:var(--em-50);color:var(--em);border-color:rgba(35,203,151,.15)}
+.perm-tag.write{background:var(--am-50);color:var(--am-800);border-color:rgba(240,169,43,.2)}
+.perm-tag.admin{background:var(--co-50);color:var(--co-800);border-color:rgba(255,59,99,.15)}
+
+.mono-sm{font-family:var(--font-m);font-size:9px;color:var(--text-s)}
+
+/* Tab panels */
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* AI meter */
+.ai-metric{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--sur-low)}
+.ai-metric:last-child{border-bottom:none}
+.ai-metric-label{font-size:12px;color:var(--text-m)}
+.ai-metric-bar{flex:1;margin:0 12px;height:5px;background:var(--sur-high);border-radius:3px;overflow:hidden}
+.ai-metric-fill{height:100%;border-radius:3px}
+.ai-metric-val{font-family:var(--font-m);font-size:11px;font-weight:700;color:var(--text-h);min-width:36px;text-align:right}
+
+/* Notif toast */
+.save-toast{position:fixed;bottom:24px;right:24px;background:var(--pri-deep2);color:#fff;padding:10px 20px;border-radius:12px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,0.77);opacity:0;pointer-events:none;transition:opacity .3s;z-index:200}
+.save-toast.show{opacity:1}
+</style>
+</head>
+<body>
+<main class="content">
+
+    <!-- Tabs -->
+    <div class="config-tabs">
+      <button class="config-tab active" onclick="switchTab('acesso',this)">Controle de acesso</button>
+      <button class="config-tab" onclick="switchTab('alertas',this)">Alertas & Scoring</button>
+      <button class="config-tab" onclick="switchTab('ia',this)">Modelo de IA</button>
+      <button class="config-tab" onclick="switchTab('auditoria',this)">Auditoria</button>
+      <button class="config-tab" onclick="switchTab('sistema',this)">Sistema</button>
+    </div>
+
+    <!-- TAB: Controle de acesso -->
+    <div id="tab-acesso" class="tab-content active">
+      <div class="config-grid">
+        <div>
+          <div class="panel">
+            <div class="panel-header">
+              <div><div class="panel-title">Perfis de acesso (RBAC)</div><div class="panel-subtitle">5 perfis configurados</div></div>
+              <button class="btn-secondary" style="font-size:11px;padding:5px 12px">+ Novo perfil</button>
+            </div>
+            <div class="panel-body">
+              <div class="rbac-row">
+                <div class="rbac-avatar" style="background:var(--em-50);color:var(--em)">AF</div>
+                <div class="rbac-info"><div class="rbac-name">Inspetores de Inspeção</div><div class="rbac-desc">47 usuários ativos</div></div>
+                <div class="rbac-perms"><span class="perm-tag read">Verificar</span><span class="perm-tag read">Registrar</span></div>
+                <button class="btn-secondary" style="font-size:10px;padding:4px 10px">Editar</button>
+              </div>
+              <div class="rbac-row">
+                <div class="rbac-avatar" style="background:var(--am-50);color:var(--am-800)">IP</div>
+                <div class="rbac-info"><div class="rbac-name">Investigador Policial</div><div class="rbac-desc">12 usuários ativos</div></div>
+                <div class="rbac-perms"><span class="perm-tag read">Verificar</span><span class="perm-tag read">Buscar</span><span class="perm-tag write">Intel</span></div>
+                <button class="btn-secondary" style="font-size:10px;padding:4px 10px">Editar</button>
+              </div>
+              <div class="rbac-row">
+                <div class="rbac-avatar" style="background:var(--pri-50);color:var(--pri-600)">PT</div>
+                <div class="rbac-info"><div class="rbac-name">Perito Técnico</div><div class="rbac-desc">8 usuários ativos</div></div>
+                <div class="rbac-perms"><span class="perm-tag read">Verificar</span><span class="perm-tag read">Detalhe</span><span class="perm-tag write">Relatório</span></div>
+                <button class="btn-secondary" style="font-size:10px;padding:4px 10px">Editar</button>
+              </div>
+              <div class="rbac-row">
+                <div class="rbac-avatar" style="background:var(--co-50);color:var(--co-800)">GI</div>
+                <div class="rbac-info"><div class="rbac-name">Gestor Institucional</div><div class="rbac-desc">3 usuários ativos</div></div>
+                <div class="rbac-perms"><span class="perm-tag write">Dashboard</span><span class="perm-tag write">Performance</span></div>
+                <button class="btn-secondary" style="font-size:10px;padding:4px 10px">Editar</button>
+              </div>
+              <div class="rbac-row">
+                <div class="rbac-avatar" style="background:linear-gradient(135deg,var(--pri-400),var(--pri-600));color:#fff">SA</div>
+                <div class="rbac-info"><div class="rbac-name">Super Administrador</div><div class="rbac-desc">2 usuários ativos</div></div>
+                <div class="rbac-perms"><span class="perm-tag admin">Acesso total</span></div>
+                <button class="btn-secondary" style="font-size:10px;padding:4px 10px">Editar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="panel" style="margin-bottom:16px">
+            <div class="panel-header"><div class="panel-title">Política de sessão</div></div>
+            <div class="panel-body">
+              <div class="config-row">
+                <div><div class="config-row-label">Timeout de sessão</div><div class="config-row-sub">Após inatividade</div></div>
+                <select class="config-select"><option>30 minutos</option><option selected>1 hora</option><option>4 horas</option></select>
+              </div>
+              <div class="config-row">
+                <div><div class="config-row-label">Autenticação dupla (2FA)</div><div class="config-row-sub">Para perfis Admin e Perito</div></div>
+                <button class="toggle on pri" id="t-2fa" onclick="toggleBtn(this)"></button>
+              </div>
+              <div class="config-row">
+                <div><div class="config-row-label">Login com SSO corporativo</div><div class="config-row-sub">Entra ID · Google Workspace · Okta</div></div>
+                <button class="toggle on" id="t-govbr" onclick="toggleBtn(this)"></button>
+              </div>
+              <div class="config-row">
+                <div><div class="config-row-label">Bloqueio após falhas</div><div class="config-row-sub">Tentativas incorretas</div></div>
+                <input class="config-input" type="number" value="5" style="width:64px">
+              </div>
+              <div class="config-row">
+                <div><div class="config-row-label">Forçar troca de senha</div><div class="config-row-sub">Periodicidade</div></div>
+                <select class="config-select"><option>Nunca</option><option>90 dias</option><option selected>180 dias</option></select>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><div class="panel-title">Restrições por unidade</div></div>
+            <div class="panel-body">
+              <div class="config-row">
+                <div><div class="config-row-label">Acesso cross-unidade</div><div class="config-row-sub">Inspetores veem outras unidades</div></div>
+                <button class="toggle" id="t-cross" onclick="toggleBtn(this)"></button>
+              </div>
+              <div class="config-row">
+                <div><div class="config-row-label">Exportação de dados</div><div class="config-row-sub">Restrito a Gestores+</div></div>
+                <button class="toggle on pri" id="t-export" onclick="toggleBtn(this)"></button>
+              </div>
+              <div class="config-row">
+                <div><div class="config-row-label">Log de consultas obrigatório</div><div class="config-row-sub">Justificativa para busca RENAVAM</div></div>
+                <button class="toggle on" id="t-log" onclick="toggleBtn(this)"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: Alertas & Scoring -->
+    <div id="tab-alertas" class="tab-content">
+      <div class="config-grid">
+        <div>
+          <div class="panel">
+            <div class="panel-header"><div class="panel-title">Limiares de scoring</div><div class="panel-subtitle">Score de risco (0–100)</div></div>
+            <div class="panel-body">
+              <div class="config-row">
+                <div><div class="config-row-label">Limiar Atenção (Amarelo)</div><div class="config-row-sub">Score acima deste valor → alerta</div></div>
+                <input class="config-input" type="number" value="50">
+              </div>
+              <div class="config-row">
+                <div><div class="config-row-label">Limiar Divergente (Vermelho)</div><div class="config-row-sub">Score acima deste valor → crítico</div></div>
+                <input class="config-input" type="number" value="75">
+              </div>
+              <div class="config-row">
+                <div><div class="config-row-label">Peso do chassi</div><div class="config-row-sub">Importância no score final</div></div>
+                <input class="config-input" type="number" value="40" style="width:64px">
+              </div>
+              <div class="config-row">
+                <div><div class="config-row-label">Peso do VIN</div><div class="config-row-sub">Importância no score final</div></div>
+                <input class="config-input" type="number" value="30" style="width:64px">
+              </div>
+              <div class="config-row">
+                <div><div class="config-row-label">Peso dos vidros</div><div class="config-row-sub">Importância no score final</div></div>
+                <input class="config-input" type="number" value="20" style="width:64px">
+              </div>
+              <div class="config-row">
+                <div><div class="config-row-label">Peso da placa</div><div class="config-row-sub">Importância no score final</div></div>
+                <input class="config-input" type="number" value="10" style="width:64px">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="panel" style="margin-bottom:16px">
+            <div class="panel-header"><div class="panel-title">Canais de notificação</div></div>
+            <div class="panel-body">
+              <div class="config-row">
+                <div><div class="config-row-label">Alerta automático no app</div><div class="config-row-sub">Push para inspetor responsável</div></div>
+                <button class="toggle on" id="ta1" onclick="toggleBtn(this)"></button>
+              </div>
+              <div class="config-row">
+                <div><div class="config-row-label">Notificação no dashboard</div><div class="config-row-sub">Badge em tempo real</div></div>
+                <button class="toggle on" id="ta2" onclick="toggleBtn(this)"></button>
+              </div>
+              <div class="config-row">
+                <div><div class="config-row-label">E-mail para gestores</div><div class="config-row-sub">Resumo diário às 18h</div></div>
+                <button class="toggle amber" id="ta3" onclick="toggleBtn(this)"></button>
+              </div>
+              <div class="config-row">
+                <div><div class="config-row-label">SMS · Divergências críticas</div><div class="config-row-sub">Score > 75 apenas</div></div>
+                <button class="toggle" id="ta4" onclick="toggleBtn(this)"></button>
+              </div>
+              <div class="config-row">
+                <div><div class="config-row-label">Webhook externo</div><div class="config-row-sub">Integração Base Nacional/SINESP</div></div>
+                <button class="toggle on pri" id="ta5" onclick="toggleBtn(this)"></button>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><div class="panel-title">Escalada automática</div></div>
+            <div class="panel-body">
+              <div class="config-row">
+                <div><div class="config-row-label">Escalar para gestor</div><div class="config-row-sub">Se divergente sem ação em</div></div>
+                <select class="config-select"><option>15 min</option><option selected>30 min</option><option>1 hora</option></select>
+              </div>
+              <div class="config-row">
+                <div><div class="config-row-label">Auto-fechamento</div><div class="config-row-sub">Alertas sem ação após</div></div>
+                <select class="config-select"><option>4 horas</option><option selected>24 horas</option><option>72 horas</option></select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: Modelo de IA -->
+    <div id="tab-ia" class="tab-content">
+      <div class="config-grid">
+        <div>
+          <div class="panel">
+            <div class="panel-header">
+              <div><div class="panel-title">Versão do modelo</div><div class="panel-subtitle">VerifCar Neural Engine</div></div>
+              <span class="badge badge-ok">Estável</span>
+            </div>
+            <div class="panel-body">
+              <div style="background:var(--pri-50);border:1px solid var(--pri-100);border-radius:10px;padding:14px;margin-bottom:16px">
+                <div style="font-family:var(--font-m);font-size:11px;font-weight:700;color:var(--pri-800);margin-bottom:4px">v2.4.1 · PROD</div>
+                <div style="font-size:11px;color:var(--text-m)">Treinado com 1,2M de verificações · Dataset ES 2023–2026</div>
+                <div style="font-size:10px;color:var(--text-s);margin-top:4px">Atualizado em 15/03/2026 · Deploy por Admin Silva</div>
+              </div>
+              <div class="ai-metric">
+                <span class="ai-metric-label">Acurácia OCR (placa)</span>
+                <div class="ai-metric-bar"><div class="ai-metric-fill" style="width:98.7%;background:var(--em-400)"></div></div>
+                <span class="ai-metric-val" style="color:var(--em)">98.7%</span>
+              </div>
+              <div class="ai-metric">
+                <span class="ai-metric-label">Detecção adulteração</span>
+                <div class="ai-metric-bar"><div class="ai-metric-fill" style="width:94.2%;background:var(--em-400)"></div></div>
+                <span class="ai-metric-val" style="color:var(--em)">94.2%</span>
+              </div>
+              <div class="ai-metric">
+                <span class="ai-metric-label">Reconhecimento VIN</span>
+                <div class="ai-metric-bar"><div class="ai-metric-fill" style="width:96.1%;background:var(--em-400)"></div></div>
+                <span class="ai-metric-val" style="color:var(--em)">96.1%</span>
+              </div>
+              <div class="ai-metric">
+                <span class="ai-metric-label">Análise de vidros</span>
+                <div class="ai-metric-bar"><div class="ai-metric-fill" style="width:91.8%;background:var(--am-400)"></div></div>
+                <span class="ai-metric-val" style="color:var(--am-800)">91.8%</span>
+              </div>
+              <div class="ai-metric">
+                <span class="ai-metric-label">Falsos positivos</span>
+                <div class="ai-metric-bar"><div class="ai-metric-fill" style="width:2.3%;background:var(--co-400)"></div></div>
+                <span class="ai-metric-val" style="color:var(--co-400)">2.3%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="panel" style="margin-bottom:16px">
+            <div class="panel-header"><div class="panel-title">Controles do modelo</div></div>
+            <div class="panel-body">
+              <div class="config-row">
+                <div><div class="config-row-label">Confiança mínima OCR</div><div class="config-row-sub">Abaixo disso → revisão manual</div></div>
+                <input class="config-input" type="number" value="80">
+              </div>
+              <div class="config-row">
+                <div><div class="config-row-label">Modo de inferência</div><div class="config-row-sub">Velocidade vs. precisão</div></div>
+                <select class="config-select"><option>Rápido</option><option selected>Balanceado</option><option>Preciso</option></select>
+              </div>
+              <div class="config-row">
+                <div><div class="config-row-label">Aprendizado contínuo</div><div class="config-row-sub">Retroalimentação de relatórios revisados</div></div>
+                <button class="toggle on pri" id="ti1" onclick="toggleBtn(this)"></button>
+              </div>
+              <div class="config-row">
+                <div><div class="config-row-label">Análise de motor</div><div class="config-row-sub">Verificação opcional (beta)</div></div>
+                <button class="toggle amber" id="ti2" onclick="toggleBtn(this)"></button>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><div class="panel-title">Versão candidata</div><div class="panel-subtitle">Aguardando validação</div></div>
+            <div class="panel-body">
+              <div style="background:var(--am-50);border:1px solid rgba(240,169,43,.2);border-radius:10px;padding:12px;margin-bottom:12px">
+                <div style="font-family:var(--font-m);font-size:11px;font-weight:700;color:var(--am-800);margin-bottom:2px">v2.5.0-rc · STAGING</div>
+                <div style="font-size:10px;color:var(--text-m)">Melhoria adulteração +2.1% · Motor estável · Em teste desde 20/03</div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="btn-secondary" style="font-size:11px;padding:6px 14px">Ver relatório de validação</button>
+                <button class="btn-primary" style="font-size:11px;padding:6px 14px">Promover para PROD</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: Auditoria -->
+    <div id="tab-auditoria" class="tab-content">
+      <div class="panel">
+        <div class="panel-header">
+          <div><div class="panel-title">Log de auditoria</div><div class="panel-subtitle">Todas as ações administrativas · Últimos 30 dias</div></div>
+          <div style="display:flex;gap:8px">
+            <select class="config-select">
+              <option>Todos os usuários</option><option>Admin Silva</option><option>Gestor Lima</option><option>Analista Rocha</option>
+            </select>
+            <button class="btn-secondary" style="font-size:11px;padding:6px 14px">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Exportar CSV
+            </button>
+          </div>
+        </div>
+        <div class="panel-body" style="padding:0">
+          <table class="data-table">
+            <thead>
+              <tr><th>Timestamp</th><th>Usuário</th><th>Perfil</th><th>Ação</th><th>Detalhe</th><th>IP</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><span style="font-family:var(--font-m);font-size:10px">23/03 14:30:12</span></td><td>Admin Silva</td><td><span class="badge badge-info" style="font-size:9px">Super Admin</span></td><td>Alterou configuração</td><td style="font-size:10px;color:var(--text-s)">Limiar scoring 60→75</td><td><span style="font-family:var(--font-m);font-size:9px">192.168.1.4</span></td><td><span class="badge badge-ok" style="font-size:9px">OK</span></td></tr>
+              <tr><td><span style="font-family:var(--font-m);font-size:10px">23/03 13:15:44</span></td><td>Gestor Lima</td><td><span class="badge badge-warn" style="font-size:9px">Gestor</span></td><td>Export PDF</td><td style="font-size:10px;color:var(--text-s)">Relatório Mensal Mar/26</td><td><span style="font-family:var(--font-m);font-size:9px">10.0.0.22</span></td><td><span class="badge badge-ok" style="font-size:9px">OK</span></td></tr>
+              <tr><td><span style="font-family:var(--font-m);font-size:10px">22/03 16:40:08</span></td><td>Admin Silva</td><td><span class="badge badge-info" style="font-size:9px">Super Admin</span></td><td>Criou perfil</td><td style="font-size:10px;color:var(--text-s)">Novo inspetor: Costa, J.</td><td><span style="font-family:var(--font-m);font-size:9px">192.168.1.4</span></td><td><span class="badge badge-ok" style="font-size:9px">OK</span></td></tr>
+              <tr><td><span style="font-family:var(--font-m);font-size:10px">22/03 15:20:33</span></td><td>Analista Rocha</td><td><span class="badge badge-info" style="font-size:9px">Investigador</span></td><td>Busca RENAVAM</td><td style="font-size:10px;color:var(--text-s)">VIN: 9BD195A...302</td><td><span style="font-family:var(--font-m);font-size:9px">172.16.0.8</span></td><td><span class="badge badge-ok" style="font-size:9px">OK</span></td></tr>
+              <tr><td><span style="font-family:var(--font-m);font-size:10px">22/03 10:05:17</span></td><td>–</td><td>–</td><td>Tentativa de login</td><td style="font-size:10px;color:var(--co-400)">Falha: usuário desconhecido</td><td><span style="font-family:var(--font-m);font-size:9px">189.5.22.11</span></td><td><span class="badge badge-err" style="font-size:9px">FALHOU</span></td></tr>
+              <tr><td><span style="font-family:var(--font-m);font-size:10px">21/03 18:00:01</span></td><td>Sistema</td><td><span class="badge badge-info" style="font-size:9px">Automático</span></td><td>Backup agendado</td><td style="font-size:10px;color:var(--text-s)">Backup diário concluído</td><td><span style="font-family:var(--font-m);font-size:9px">–</span></td><td><span class="badge badge-ok" style="font-size:9px">OK</span></td></tr>
+              <tr><td><span style="font-family:var(--font-m);font-size:10px">21/03 14:12:55</span></td><td>Gestor Lima</td><td><span class="badge badge-warn" style="font-size:9px">Gestor</span></td><td>Desativou usuário</td><td style="font-size:10px;color:var(--text-s)">Inspetor Souza bloqueado</td><td><span style="font-family:var(--font-m);font-size:9px">10.0.0.22</span></td><td><span class="badge badge-ok" style="font-size:9px">OK</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="config-grid" style="margin-top:0">
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">Retenção de logs</div></div>
+          <div class="panel-body">
+            <div class="config-row"><div><div class="config-row-label">Retenção de logs de acesso</div><div class="config-row-sub">Mínimo legal: 5 anos</div></div><select class="config-select"><option selected>5 anos</option><option>7 anos</option><option>10 anos</option></select></div>
+            <div class="config-row"><div><div class="config-row-label">Retenção de logs de busca</div></div><select class="config-select"><option>1 ano</option><option selected>3 anos</option><option>5 anos</option></select></div>
+            <div class="config-row"><div><div class="config-row-label">Backup automático</div><div class="config-row-sub">Cópia encriptada · AWS S3</div></div><button class="toggle on" id="tb1" onclick="toggleBtn(this)"></button></div>
+            <div class="config-row"><div><div class="config-row-label">Alerta de acesso anômalo</div><div class="config-row-sub">Horário, IP, volume</div></div><button class="toggle on pri" id="tb2" onclick="toggleBtn(this)"></button></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">Conformidade (LGPD)</div></div>
+          <div class="panel-body">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--em-50);border-radius:8px;border:1px solid rgba(35,203,151,.15)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--em)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span style="font-size:11px;color:var(--em);font-weight:600">Base legal documentada (Art. 7º, II e VI)</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--em-50);border-radius:8px;border:1px solid rgba(35,203,151,.15)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--em)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span style="font-size:11px;color:var(--em);font-weight:600">TLS 1.3 em trânsito · AES-256 em repouso</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--em-50);border-radius:8px;border:1px solid rgba(35,203,151,.15)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--em)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span style="font-size:11px;color:var(--em);font-weight:600">DPO designado · Ouvidoria ativa</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--am-50);border-radius:8px;border:1px solid rgba(240,169,43,.2)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--am-400)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+                <span style="font-size:11px;color:var(--am-800);font-weight:600">Relatório de impacto pendente (RIPD)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: Sistema -->
+    <div id="tab-sistema" class="tab-content">
+      <div class="config-grid">
+        <div>
+          <div class="panel" style="margin-bottom:16px">
+            <div class="panel-header"><div class="panel-title">Integrações externas</div></div>
+            <div class="panel-body">
+              <div class="config-row"><div><div class="config-row-label">Base RENAVAM</div><div class="config-row-sub" style="color:var(--em)">● Conectado · última sync 14:35</div></div><button class="toggle on" id="ts1" onclick="toggleBtn(this)"></button></div>
+              <div class="config-row"><div><div class="config-row-label">Base Nacional</div><div class="config-row-sub" style="color:var(--em)">● Conectado · última sync 14:30</div></div><button class="toggle on" id="ts2" onclick="toggleBtn(this)"></button></div>
+              <div class="config-row"><div><div class="config-row-label">SINESP</div><div class="config-row-sub" style="color:var(--am-800)">● Degradado · latência alta</div></div><button class="toggle amber" id="ts3" onclick="toggleBtn(this)"></button></div>
+              <div class="config-row"><div><div class="config-row-label">Base Oficial.ES</div><div class="config-row-sub" style="color:var(--em)">● Conectado</div></div><button class="toggle on" id="ts4" onclick="toggleBtn(this)"></button></div>
+              <div class="config-row"><div><div class="config-row-label">SSP · Boletins de ocorrência</div><div class="config-row-sub" style="color:var(--text-s)">○ Desabilitado</div></div><button class="toggle" id="ts5" onclick="toggleBtn(this)"></button></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><div class="panel-title">Versão do sistema</div></div>
+            <div class="panel-body">
+              <div class="config-row"><span class="config-row-label">Versão dashboard</span><span style="font-family:var(--font-m);font-size:11px;font-weight:700;color:var(--pri-800)">v2.4.1</span></div>
+              <div class="config-row"><span class="config-row-label">Versão app mobile</span><span style="font-family:var(--font-m);font-size:11px;font-weight:700;color:var(--pri-800)">v1.8.3</span></div>
+              <div class="config-row"><span class="config-row-label">API gateway</span><span style="font-family:var(--font-m);font-size:11px;font-weight:700;color:var(--em)">ONLINE</span></div>
+              <div class="config-row"><span class="config-row-label">Última atualização</span><span style="font-family:var(--font-m);font-size:11px">15/03/2026</span></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="panel" style="margin-bottom:16px">
+            <div class="panel-header"><div class="panel-title">Cache & performance</div></div>
+            <div class="panel-body">
+              <div class="config-row"><div><div class="config-row-label">Cache de consultas RENAVAM</div><div class="config-row-sub">TTL das respostas</div></div><select class="config-select"><option>5 min</option><option selected>15 min</option><option>1 hora</option></select></div>
+              <div class="config-row"><div><div class="config-row-label">Cache de imagens de referência</div></div><select class="config-select"><option>1 hora</option><option>12 horas</option><option selected>24 horas</option></select></div>
+              <div class="config-row"><div><div class="config-row-label">Compressão de imagens</div><div class="config-row-sub">Reduz uso de banda</div></div><button class="toggle on pri" id="tc1" onclick="toggleBtn(this)"></button></div>
+              <div class="config-row"><div><div class="config-row-label">Modo offline (app)</div><div class="config-row-sub">Verificações locais com sync posterior</div></div><button class="toggle on" id="tc2" onclick="toggleBtn(this)"></button></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><div class="panel-title">Zona de perigo</div><div class="panel-subtitle">Ações irreversíveis</div></div>
+            <div class="panel-body">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--co-50);border-radius:10px;border:1px solid rgba(255,59,99,.15)">
+                  <div><div style="font-size:12px;font-weight:700;color:var(--co-800)">Purgar logs de sessão</div><div style="font-size:10px;color:var(--text-s);margin-top:1px">Remove sessões > 90 dias</div></div>
+                  <button class="btn-danger" style="font-size:11px;padding:5px 12px">Executar</button>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--co-50);border-radius:10px;border:1px solid rgba(255,59,99,.15)">
+                  <div><div style="font-size:12px;font-weight:700;color:var(--co-800)">Reset configurações padrão</div><div style="font-size:10px;color:var(--text-s);margin-top:1px">Restaura valores de fábrica</div></div>
+                  <button class="btn-danger" style="font-size:11px;padding:5px 12px">Executar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--sur-high);margin-top:4px">
+      <span class="mono-sm">VerifCar CONFIG · v2.4.1</span>
+      <span class="mono-sm">ADMIN: Silva · <span style="color:var(--em-400)">SESSÃO ATIVA</span></span>
+    </div>
+  </main>
+
+<div class="save-toast" id="toast">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+  Configurações salvas com sucesso
+</div>
+
+<script>
+function goTo(r){try{if(window.parent&&window.parent.goTo)window.parent.goTo(r);else{const M={'visao-geral':'dash-01-visao-geral.html','monitoramento':'dash-02-monitoramento.html','tatica':'dash-03-tatica.html','inteligencia':'dash-04-inteligencia.html','detalhe':'dash-05-detalhe.html','performance':'dash-06-performance.html','busca':'dash-07-busca.html','configuracoes':'dash-08-configuracoes.html'};if(M[r])window.location.href=M[r];}}catch(e){window.postMessage({goTo:r},'*')}}
+
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.config-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function toggleBtn(el) {
+  el.classList.toggle('on');
+}
+
+function saveAll() {
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>

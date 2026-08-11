@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VerifCar · Documentação Técnica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+
+:root{--pri-deep:#0C6B4E;--pri-deep2:#149B72;
+  --pri:#23CB97;--pri-50:#0F221D;--pri-100:#16352C;
+  --pri-400:#23CB97;--pri-600:#4FDCB0;--pri-800:#93EED3;
+  --em:#23CB97;--em-50:#0F221D;--em-400:#35D9A4;
+  --am:#F0A92B;--am-50:#2A1F0E;--am-400:#F0A92B;--am-800:#FFD48A;
+  --co:#FF3B63;--co-50:#2B1119;--co-400:#FF3B63;--co-800:#FF95AC;
+  --bg:#12141C;--sur:#1A1D28;--sur2:#20232F;--sur3:#2A2E3C;
+  --border:rgba(255,255,255,0.10);--border2:rgba(255,255,255,0.15);
+  --text-h:#F3F5F9;--text-m:#8D94A6;--text-s:#666D80;
+  --font-d:'Space Grotesk',sans-serif;
+  --font-b:'Inter',sans-serif;
+  --font-m:'JetBrains Mono',monospace;
+}
+
+html,body{
+  width:100%;height:100%;
+  background:var(--bg);
+  font-family:var(--font-b);
+  color:var(--text-h);
+  overflow:hidden;
+}
+
+/* ── TOPBAR ─────────────────────────────────────────────── */
+.topbar{
+  position:fixed;top:0;left:0;right:0;height:52px;z-index:200;
+  background:rgba(8,11,24,0.94);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:0;padding:0 20px;
+}
+.tb-logo{
+  font-family:var(--font-d);font-size:15px;font-weight:800;
+  color:var(--text-h);letter-spacing:2px;
+}
+.tb-sep{width:1px;height:16px;background:var(--border2);margin:0 14px}
+.tb-tag{font-family:var(--font-m);font-size:9px;color:var(--text-s);letter-spacing:1px}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.tb-pill{
+  font-family:var(--font-m);font-size:8px;font-weight:700;
+  padding:3px 10px;border-radius:9999px;letter-spacing:.5px;
+  border:1px solid var(--border2);color:var(--text-s);
+  cursor:default;
+}
+.tb-pill.app{border-color:rgba(35,203,151,0.4);color:rgba(150,160,255,0.7);background:rgba(35,203,151,0.08)}
+.tb-pill.dash{border-color:rgba(35,203,151,0.4);color:rgba(100,200,110,0.7);background:rgba(35,203,151,0.08)}
+.tb-pill.ec{border-color:rgba(240,169,43,0.4);color:rgba(220,165,50,0.7);background:rgba(240,169,43,0.08)}
+
+.rainbow-bar{
+  position:fixed;top:0;left:0;right:0;height:3px;z-index:300;
+  background:linear-gradient(90deg,var(--pri-800),var(--pri-400),var(--em-400),var(--pri-400),var(--pri-800));
+  box-shadow:0 0 16px rgba(0,0,0,1.0);
+}
+
+/* ── CANVAS ─────────────────────────────────────────────── */
+#canvas{
+  position:fixed;top:52px;left:0;right:0;bottom:0;
+  overflow:hidden;
+  cursor:grab;
+  background:var(--bg);
+  background-image:
+    radial-gradient(rgba(35,203,151,0.12) 1px, transparent 1px);
+  background-size:28px 28px;
+}
+#canvas:active{cursor:grabbing}
+#world{
+  position:absolute;
+  transform-origin:0 0;
+  will-change:transform;
+}
+
+/* ── SECTION LABELS ─────────────────────────────────────── */
+.section-label{
+  position:absolute;
+  font-family:var(--font-m);font-size:9px;font-weight:700;
+  color:rgba(255,255,255,0.12);text-transform:uppercase;letter-spacing:2.5px;
+  pointer-events:none;user-select:none;
+}
+.section-bg{
+  position:absolute;border-radius:20px;
+  pointer-events:none;
+}
+
+/* ── NODE CARD ──────────────────────────────────────────── */
+.node{
+  position:absolute;
+  width:170px;
+  cursor:pointer;
+  user-select:none;
+}
+/* Dashboard nodes são mais largos */
+.node.node-dash{
+  width:240px;
+}
+.node-inner{
+  border-radius:16px;
+  overflow:hidden;
+  border:1.5px solid var(--border);
+  background:var(--sur);
+  box-shadow:0 4px 20px rgba(0,0,0,0.5);
+  transition:border-color .2s, box-shadow .2s, transform .2s;
+}
+.node:hover .node-inner{
+  border-color:rgba(35,203,151,0.6);
+  box-shadow:0 8px 40px rgba(0,0,0,1.0),0 0 0 1px rgba(0,0,0,0.55);
+  transform:translateY(-3px);
+}
+.node.active .node-inner{
+  border-color:var(--pri-400);
+  box-shadow:0 12px 48px rgba(0,0,0,1.0),0 0 0 2px rgba(0,0,0,0.77);
+}
+.node-topbar{
+  height:22px;display:flex;align-items:center;gap:5px;
+  padding:0 9px;
+  background:rgba(30,36,80,0.8);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.nd-dot{width:5px;height:5px;border-radius:50%}
+.nd-title{
+  font-family:var(--font-m);font-size:7px;font-weight:700;
+  color:rgba(255,255,255,0.3);margin-left:auto;letter-spacing:.8px;
+}
+/* preview mobile */
+.node-preview{
+  height:200px;overflow:hidden;position:relative;
+}
+.node-preview iframe{
+  width:390px;height:780px;
+  border:none;display:block;
+  pointer-events:none;
+  transform:scale(calc(170/390));
+  transform-origin:top left;
+}
+/* preview notebook — 240×150px mostrando 1280×800 */
+.node-preview.preview-dash{
+  height:150px;
+}
+.node-preview.preview-dash iframe{
+  width:1280px;height:800px;
+  transform:scale(calc(240/1280));
+  transform-origin:top left;
+}
+.node-label{
+  padding:9px 10px 10px;
+  background:linear-gradient(0deg,rgba(8,11,24,0.98),rgba(8,11,24,0.7) 70%,transparent);
+  position:relative;
+}
+.node-num{
+  font-family:var(--font-m);font-size:8px;font-weight:700;
+  color:var(--text-s);letter-spacing:.8px;margin-bottom:3px;
+}
+.node-name{
+  font-family:var(--font-d);font-size:11px;font-weight:800;
+  color:var(--text-h);line-height:1.2;
+}
+.node-badge{
+  display:inline-block;margin-top:5px;
+  font-family:var(--font-m);font-size:7px;font-weight:700;
+  padding:2px 8px;border-radius:9999px;letter-spacing:.4px;
+}
+.badge-app{background:rgba(35,203,151,0.15);color:rgba(150,160,255,0.8);border:1px solid rgba(35,203,151,0.3)}
+.badge-dash{background:rgba(35,203,151,0.12);color:rgba(80,190,90,0.85);border:1px solid rgba(35,203,151,0.25)}
+.badge-ec{background:rgba(240,169,43,0.1);color:rgba(220,165,50,0.85);border:1px dashed rgba(240,169,43,0.4)}
+.badge-ret{background:rgba(255,59,99,0.1);color:rgba(255,100,80,0.85);border:1px solid rgba(255,59,99,0.25)}
+
+/* ── SCREEN NAME TAG abaixo do card ─────────────────────── */
+.node-slot-label{
+  margin-top:8px;
+  text-align:center;
+}
+.node-slot-num{
+  font-family:var(--font-m);font-size:8px;
+  color:var(--text-s);letter-spacing:.8px;
+  display:block;margin-bottom:2px;
+}
+.node-slot-name{
+  font-family:var(--font-d);font-size:11px;font-weight:700;
+  color:var(--text-m);line-height:1.3;
+}
+
+/* ── PULSE NODE (sem iframe) ────────────────────────────── */
+.node-noprev{
+  height:200px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;
+  background:linear-gradient(135deg,rgba(35,203,151,0.06),rgba(35,203,151,0.12));
+}
+.node-icon{
+  width:44px;height:44px;border-radius:14px;
+  background:rgba(35,203,151,0.12);border:1px solid rgba(35,203,151,0.2);
+  display:flex;align-items:center;justify-content:center;
+}
+.node-noprev-label{
+  font-family:var(--font-m);font-size:8px;color:var(--text-s);letter-spacing:1px;
+}
+
+/* hover hint */
+.node-hint{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .2s;pointer-events:none;
+  background:rgba(8,11,24,0.4);
+  backdrop-filter:blur(2px);
+  border-radius:14px;
+}
+.node:hover .node-hint{opacity:1}
+.node-hint span{
+  font-family:var(--font-m);font-size:8px;color:rgba(255,255,255,0.9);
+  background:rgba(0,0,0,0.7);padding:5px 14px;
+  border-radius:9999px;letter-spacing:.5px;
+  border:1px solid rgba(255,255,255,0.1);
+}
+
+/* ── SVG ARROWS ─────────────────────────────────────────── */
+#arrows-svg{
+  position:absolute;top:0;left:0;
+  pointer-events:none;overflow:visible;
+}
+
+/* ── DETAIL PANEL ───────────────────────────────────────── */
+#panel{
+  position:fixed;right:0;top:52px;bottom:0;
+  width:340px;
+  background:rgba(10,13,28,0.97);
+  backdrop-filter:blur(20px);
+  border-left:1px solid var(--border2);
+  z-index:100;
+  display:flex;flex-direction:column;
+  transform:translateX(360px);
+  transition:transform .3s cubic-bezier(.32,1.1,.5,1);
+  overflow:hidden;
+}
+#panel.open{transform:translateX(0)}
+
+.panel-header{
+  padding:18px 20px 14px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.panel-close{
+  position:absolute;top:14px;right:16px;
+  width:28px;height:28px;border-radius:8px;
+  background:rgba(255,255,255,0.05);border:1px solid var(--border);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:var(--text-s);font-size:16px;font-family:var(--font-b);
+  transition:all .15s;
+}
+.panel-close:hover{background:rgba(255,255,255,0.1);color:var(--text-h)}
+
+.panel-num{
+  font-family:var(--font-m);font-size:9px;font-weight:700;
+  color:var(--pri-400);letter-spacing:1px;margin-bottom:4px;
+}
+.panel-title{
+  font-family:var(--font-d);font-size:17px;font-weight:800;
+  color:var(--text-h);margin-bottom:4px;
+  padding-right:36px;
+}
+.panel-desc{
+  font-size:11px;color:var(--text-m);line-height:1.6;
+}
+
+.panel-body{
+  flex:1;overflow-y:auto;padding:16px 20px 20px;
+}
+.panel-body::-webkit-scrollbar{width:4px}
+.panel-body::-webkit-scrollbar-thumb{background:rgba(35,203,151,0.3);border-radius:2px}
+.panel-body::-webkit-scrollbar-track{background:transparent}
+
+/* Section dentro do panel */
+.psec{margin-bottom:18px}
+.psec-title{
+  font-family:var(--font-m);font-size:8px;font-weight:700;
+  color:var(--text-s);text-transform:uppercase;letter-spacing:1.5px;
+  margin-bottom:8px;display:flex;align-items:center;gap:6px;
+}
+.psec-title::before{
+  content:'';display:block;width:3px;height:10px;
+  border-radius:2px;background:var(--pri-400);flex-shrink:0;
+}
+.psec-title.green::before{background:var(--em-400)}
+.psec-title.amber::before{background:var(--am-400)}
+.psec-title.red::before{background:var(--co-400)}
+
+.pitem{
+  display:flex;gap:9px;padding:7px 0;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  font-size:11px;color:var(--text-m);line-height:1.5;
+  align-items:flex-start;
+}
+.pitem:last-child{border-bottom:none}
+.pitem-dot{
+  width:5px;height:5px;border-radius:50%;
+  background:rgba(35,203,151,0.5);flex-shrink:0;margin-top:5px;
+}
+.pitem-dot.green{background:rgba(35,203,151,0.7)}
+.pitem-dot.amber{background:rgba(240,169,43,0.7)}
+.pitem-dot.red{background:rgba(255,59,99,0.7)}
+
+.pcode{
+  font-family:var(--font-m);font-size:9px;
+  background:rgba(35,203,151,0.08);
+  border:1px solid rgba(35,203,151,0.15);
+  border-radius:6px;padding:8px 10px;
+  color:rgba(160,170,255,0.8);
+  line-height:1.7;
+  margin-top:8px;
+  white-space:pre;
+  overflow-x:auto;
+}
+.pcode::-webkit-scrollbar{height:3px}
+.pcode::-webkit-scrollbar-thumb{background:rgba(35,203,151,0.3);border-radius:2px}
+
+.ptag{
+  display:inline-flex;align-items:center;gap:4px;
+  font-family:var(--font-m);font-size:8px;font-weight:700;
+  padding:2px 8px;border-radius:9999px;
+  margin:2px 2px 2px 0;
+}
+.ptag.blue{background:rgba(35,203,151,0.15);color:rgba(150,160,255,0.9);border:1px solid rgba(35,203,151,0.25)}
+.ptag.green{background:rgba(35,203,151,0.12);color:rgba(80,190,90,0.9);border:1px solid rgba(35,203,151,0.2)}
+.ptag.amber{background:rgba(240,169,43,0.12);color:rgba(220,165,50,0.9);border:1px solid rgba(240,169,43,0.2)}
+.ptag.red{background:rgba(255,59,99,0.1);color:rgba(255,100,80,0.9);border:1px solid rgba(255,59,99,0.2)}
+
+.panel-preview-btn{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  width:100%;padding:10px;border-radius:9999px;
+  background:linear-gradient(135deg,var(--pri-deep),var(--pri-deep2));
+  border:none;cursor:pointer;
+  font-family:var(--font-b);font-size:12px;font-weight:600;color:#fff;
+  box-shadow:0 4px 16px rgba(0,0,0,0.88);
+  margin-top:4px;margin-bottom:12px;
+  transition:opacity .15s;
+}
+.panel-preview-btn:hover{opacity:0.88}
+
+/* ── FULLSCREEN OVERLAY ─────────────────────────────────── */
+#fsOverlay{
+  position:fixed;inset:0;z-index:400;
+  background:rgba(4,5,14,0.92);
+  backdrop-filter:blur(20px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  opacity:0;pointer-events:none;
+  transition:opacity .22s ease;
+}
+#fsOverlay.open{opacity:1;pointer-events:all}
+#fsPhone{
+  width:375px;height:750px;border-radius:36px;overflow:hidden;
+  border:2px solid rgba(35,203,151,0.5);
+  box-shadow:0 32px 80px rgba(0,0,0,0.85);
+  transform:scale(0.88) translateY(20px);
+  transition:transform .3s cubic-bezier(.32,1.1,.5,1);
+}
+#fsOverlay.open #fsPhone{transform:scale(1) translateY(0)}
+#fsPhone iframe{width:100%;height:100%;border:none;display:block}
+#fsDashFrame{
+  width:calc(100vw - 80px);
+  max-width:1200px;
+  height:calc((100vw - 80px) * 0.625);
+  max-height:750px;
+  border-radius:12px;overflow:hidden;
+  border:1.5px solid rgba(35,203,151,0.4);
+  box-shadow:0 24px 60px rgba(0,0,0,0.8);
+  transform:scale(0.88) translateY(20px);
+  transition:transform .3s cubic-bezier(.32,1.1,.5,1);
+  display:none;
+}
+#fsOverlay.open #fsDashFrame{transform:scale(1) translateY(0)}
+#fsDashFrame iframe{width:100%;height:100%;border:none;display:block}
+#fsClose{
+  font-family:var(--font-m);font-size:10px;color:var(--text-m);
+  background:var(--sur);border:1px solid var(--border2);
+  padding:7px 20px;border-radius:9999px;cursor:pointer;letter-spacing:.5px;
+  transition:color .15s;
+}
+#fsClose:hover{color:var(--text-h)}
+
+/* ── CONTROLS ───────────────────────────────────────────── */
+.controls{
+  position:fixed;bottom:20px;right:20px;z-index:150;
+  display:flex;gap:6px;
+}
+.ctrl{
+  width:34px;height:34px;border-radius:10px;
+  background:rgba(15,20,40,0.9);
+  border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--text-m);font-size:15px;
+  transition:all .15s;backdrop-filter:blur(8px);
+}
+.ctrl:hover{background:var(--sur2);color:var(--text-h)}
+
+/* ── LEGEND ─────────────────────────────────────────────── */
+.legend{
+  position:fixed;bottom:20px;left:20px;z-index:150;
+  background:rgba(10,13,28,0.92);
+  backdrop-filter:blur(12px);
+  border:1px solid var(--border);
+  border-radius:12px;padding:12px 16px;
+  min-width:160px;
+}
+.leg-title{
+  font-family:var(--font-m);font-size:8px;font-weight:700;
+  color:var(--text-s);text-transform:uppercase;letter-spacing:1.2px;
+  margin-bottom:9px;
+}
+.leg-row{
+  display:flex;align-items:center;gap:8px;
+  font-size:10px;color:var(--text-m);padding:2px 0;
+  font-family:var(--font-b);
+}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.leg-line-sample{
+  width:26px;height:2px;border-radius:1px;flex-shrink:0;
+}
+
+/* ── TOOLTIP (arrow label) ──────────────────────────────── */
+.arrow-label-bg{fill:var(--bg)}
+.arrow-label-text{
+  font-family:'JetBrains Mono',monospace;
+  font-size:8px;fill:rgba(141,148,166,0.55);
+  letter-spacing:.3px;
+}
+
+/* shimmer on load */
+@keyframes shimmer{
+  0%{opacity:0;transform:translateY(12px)}
+  100%{opacity:1;transform:translateY(0)}
+}
+.node{animation:shimmer .4s ease both}
+</style>
+</head>
+<body>
+
+<div class="rainbow-bar"></div>
+
+<div class="topbar">
+  <span class="tb-logo">VerifCar</span>
+  <div class="tb-sep"></div>
+  <span class="tb-tag">DOCUMENTAÇÃO TÉCNICA · FLUXO COMPLETO</span>
+  <div class="tb-right">
+    <span class="tb-pill app">APP MOBILE</span>
+    <span class="tb-pill dash">DASHBOARD WEB</span>
+    <span class="tb-pill ec">EDGE CASES</span>
+    <div class="tb-sep"></div>
+    <span style="font-family:var(--font-m);font-size:9px;color:var(--text-s)">18 telas · 2 sistemas</span>
+  </div>
+</div>
+
+<div id="canvas">
+  <div id="world">
+    <svg id="arrows-svg"></svg>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="leg-title">Legenda</div>
+  <div class="leg-row"><span class="leg-dot" style="background:rgba(35,203,151,0.9)"></span>App Mobile</div>
+  <div class="leg-row"><span class="leg-dot" style="background:rgba(35,203,151,0.9)"></span>Dashboard Web</div>
+  <div class="leg-row"><span class="leg-dot" style="background:rgba(240,169,43,0.9)"></span>Edge Case</div>
+  <div style="margin-top:8px;border-top:1px solid rgba(255,255,255,0.05);padding-top:8px">
+  <div class="leg-row">
+    <div class="leg-line-sample" style="background:rgba(35,203,151,0.7)"></div>
+    Fluxo principal
+  </div>
+  <div class="leg-row">
+    <div class="leg-line-sample" style="background:rgba(35,203,151,0.4);background-image:repeating-linear-gradient(90deg,rgba(35,203,151,.5) 0,rgba(35,203,151,.5) 4px,transparent 4px,transparent 8px)"></div>
+    Alternativo
+  </div>
+  <div class="leg-row">
+    <div class="leg-line-sample" style="background:rgba(240,169,43,0.6);background-image:repeating-linear-gradient(90deg,rgba(240,169,43,.6) 0,rgba(240,169,43,.6) 3px,transparent 3px,transparent 7px)"></div>
+    Edge case
+  </div>
+  </div>
+  <div style="margin-top:8px;border-top:1px solid rgba(255,255,255,0.05);padding-top:8px">
+    <div class="leg-row" style="font-size:9px;color:var(--text-s)">· arraste para navegar</div>
+    <div class="leg-row" style="font-size:9px;color:var(--text-s)">· scroll para zoom</div>
+    <div class="leg-row" style="font-size:9px;color:var(--text-s)">· clique para detalhes</div>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="ctrl" id="btnZoomIn" title="Zoom in">+</div>
+  <div class="ctrl" id="btnZoomOut" title="Zoom out">−</div>
+  <div class="ctrl" id="btnReset" title="Resetar visão" style="font-size:11px">⌂</div>
+</div>
+
+<!-- Detail Panel -->
+<div id="panel">
+  <div class="panel-header">
+    <div class="panel-close" id="panelClose">✕</div>
+    <div class="panel-num" id="pNum"></div>
+    <div class="panel-title" id="pTitle"></div>
+    <div class="panel-desc" id="pDesc"></div>
+  </div>
+  <div class="panel-body" id="pBody"></div>
+</div>
+
+<!-- Fullscreen overlay -->
+<div id="fsOverlay">
+  <div id="fsPhone"><iframe id="fsIframe" src="" title="preview"></iframe></div>
+  <div id="fsDashWrap" style="display:none;flex-direction:column;align-items:center;gap:0">
+    <!-- bezel top do notebook -->
+    <div style="width:calc(100vw - 80px);max-width:1200px;height:28px;background:linear-gradient(180deg,#1a1c28,#141620);border-radius:10px 10px 0 0;border:1.5px solid rgba(35,203,151,0.35);border-bottom:none;display:flex;align-items:center;justify-content:center">
+      <div style="width:6px;height:6px;border-radius:50%;background:rgba(35,203,151,0.3);border:1px solid rgba(35,203,151,0.4)"></div>
+    </div>
+    <div id="fsDashFrame"><iframe id="fsDashIframe" src="" title="dashboard preview"></iframe></div>
+    <!-- base do notebook -->
+    <div style="width:calc(100vw - 40px);max-width:1280px;height:14px;background:linear-gradient(180deg,#0f1120,#0a0c18);border-radius:0 0 8px 8px;border:1px solid rgba(35,203,151,0.2);border-top:none"></div>
+    <div style="width:calc(100vw - 120px);max-width:1100px;height:6px;background:#0a0c18;border-radius:0 0 16px 16px;border:1px solid rgba(35,203,151,0.12);border-top:none"></div>
+  </div>
+  <div id="fsClose" onclick="closeFS()">✕ &nbsp;fechar</div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const NODES = [
+
+  // ═══════════════════════ APP MOBILE ════════════════════════════
+
+  {
+    id:'app-login', group:'app',
+    num:'APP · 01', name:'Login',
+    badge:'APP · ENTRADA', badgeClass:'badge-app',
+    src:'verifcar-01-login.html',
+    x:80, y:100,
+    desc:'Autenticação do inspetor via CPF + senha. Ponto de entrada do sistema móvel.',
+    sections:[
+      {
+        title:'O que o usuário vê', color:'blue',
+        items:[
+          'Campo CPF com máscara automática (000.000.000-00)',
+          'Campo senha com toggle show/hide',
+          'Botão "Entrar" com loading state',
+          'Logo VerifCar e gradiente de identidade visual',
+        ]
+      },
+      {
+        title:'Frontend / App', color:'blue',
+        items:[
+          'Validação local do CPF antes de qualquer request (algoritmo de dígito verificador)',
+          'Token JWT armazenado em Keychain (iOS) / Keystore (Android)',
+          'Biometria disponível em logins subsequentes via FaceID/TouchID',
+          'Redirect automático se token válido ainda presente',
+        ]
+      },
+      {
+        title:'Backend / API', color:'green',
+        items:[
+          'POST /auth/login → valida CPF + senha hash (bcrypt, 12 rounds)',
+          'Retorna: access_token (15min), refresh_token (7d), perfil do inspetor',
+          'Rate limiting: 5 tentativas, depois lock de 15 minutos por IP + CPF',
+          'Log de acesso gravado em audit_log com timestamp, IP, device_id',
+        ],
+        code: `POST /api/v1/auth/login
+{ cpf: "000.000.000-00", senha: "***" }
+→ 200 { access_token, refresh_token, inspetores: {...} }
+→ 401 { erro: "CREDENCIAIS_INVALIDAS" }
+→ 429 { erro: "RATE_LIMIT", retry_after: 900 }`
+      },
+      {
+        title:'Banco de Dados', color:'amber',
+        items:[
+          'SELECT em tabela inspetores WHERE cpf = $1 AND ativo = true',
+          'UPDATE inspetores SET ultimo_acesso = NOW(), device_id = $2',
+          'INSERT em audit_log (inspetor_id, ip, device, acao, ts)',
+        ]
+      }
+    ]
+  },
+
+  {
+    id:'app-home', group:'app',
+    num:'APP · 02', name:'Home / Lista de Verificações',
+    badge:'APP · PRINCIPAL', badgeClass:'badge-app',
+    src:'verifcar-02-home.html',
+    x:330, y:100,
+    desc:'Dashboard compacto do inspetor: verificações do dia, busca rápida e acesso ao histórico.',
+    sections:[
+      {
+        title:'O que o usuário vê', color:'blue',
+        items:[
+          'Contador de verificações do dia (meta diária com progress bar)',
+          'Lista de verificações recentes com status (Aprovado / Alerta / Reprovado)',
+          'Botão FAB "Nova Verificação" centralizado',
+          'Atalho para busca por placa',
+        ]
+      },
+      {
+        title:'Frontend / App', color:'blue',
+        items:[
+          'Pull-to-refresh atualiza a lista via GET /verificacoes',
+          'Cache local (SQLite) para modo offline — lista persiste sem rede',
+          'Badge de notificação para verificações pendentes de assinatura',
+          'Ordenação por data DESC com paginação infinita',
+        ]
+      },
+      {
+        title:'Backend / API', color:'green',
+        items:[
+          'GET /verificacoes?inspetor_id=&data=today&limit=20&offset=0',
+          'Retorna lista paginada com status, placa, modelo, timestamp',
+          'WebSocket opcional para atualização em tempo real de status',
+        ],
+        code:`GET /api/v1/verificacoes
+  ?inspetor_id=123&data=2025-06-01
+→ { total: 12, meta: 20, items: [
+    { id, placa, modelo, status, ts },
+    ...
+  ] }`
+      },
+      {
+        title:'Banco de Dados', color:'amber',
+        items:[
+          'SELECT verificacoes JOIN veiculos ON placa WHERE inspetor_id = $1 AND DATE(criado_em) = $2',
+          'View materializada para métricas diárias por inspetor (atualiza a cada 5min)',
+        ]
+      }
+    ]
+  },
+
+  {
+    id:'app-camera', group:'app',
+    num:'APP · 03', name:'Câmera Traseira',
+    badge:'APP · CAPTURA', badgeClass:'badge-app',
+    src:'verifcar-03-camera-traseira.html',
+    x:580, y:100,
+    desc:'Captura assistida por visão computacional. OCR em tempo real para leitura de placa.',
+    sections:[
+      {
+        title:'O que o usuário vê', color:'blue',
+        items:[
+          'Câmera ao vivo com guia de enquadramento animado',
+          'Overlay de reconhecimento: bounding box verde ao detectar placa',
+          'Placa lida exibida em tempo real no topo da tela',
+          'Captura automática quando confiança ≥ 92%',
+        ]
+      },
+      {
+        title:'Visão Computacional (On-Device)', color:'blue',
+        items:[
+          'Modelo CoreML (iOS) / TFLite (Android) rodando localmente, sem latência de rede',
+          'Pipeline: frame → detecção de região de placa → OCR → pós-processamento',
+          'Pós-processamento: normalização de caracteres ambíguos (0/O, 1/I, 8/B)',
+          'Suporte a placas Mercosul (ABC1D23) e antigas (ABC-1234)',
+          'Fallback para captura manual se confiança < 70% após 10s',
+        ]
+      },
+      {
+        title:'Backend / API', color:'green',
+        items:[
+          'Imagem enviada para POST /ocr/validate para dupla verificação server-side',
+          'Model server-side (PyTorch) processa frame de maior resolução',
+          'Retorna: placa_lida, confiança, bounding_box, sugestoes_alternativas',
+        ],
+        code:`POST /api/v1/ocr/validate
+  { frame_b64: "...", source: "mobile_camera" }
+→ {
+    placa: "ABC1D23",
+    confianca: 0.97,
+    alternativas: ["ABC1023"],
+    modelo_usado: "v2.4-mercosul"
+  }`
+      },
+      {
+        title:'IA / Modelos', color:'amber',
+        items:[
+          'Detecção: YOLOv8-nano (fine-tuned para placas BR) — 8ms/frame no device',
+          'OCR: CRNN customizado treinado em +500k placas brasileiras',
+          'Re-treinamento mensal com novos casos coletados em produção',
+        ]
+      }
+    ]
+  },
+
+  {
+    id:'app-ficha', group:'app',
+    num:'APP · 04', name:'Ficha Completa',
+    badge:'APP · RAMIFICAÇÃO', badgeClass:'badge-app',
+    src:'verifcar-04-ficha-completa.html',
+    x:580, y:480,
+    desc:'Visualização detalhada dos dados do veículo. Acessível durante ou após a verificação.',
+    sections:[
+      {
+        title:'O que o usuário vê', color:'blue',
+        items:[
+          'Dados completos do veículo: modelo, ano, cor, chassi, RENAVAM',
+          'Histórico de verificações anteriores para a mesma placa',
+          'Alertas de irregularidades (roubo, recall, IPVA em aberto)',
+          'Score de risco calculado pela IA com justificativas',
+        ]
+      },
+      {
+        title:'Backend / API', color:'green',
+        items:[
+          'GET /veiculos/:placa/ficha — agrega dados de múltiplas fontes',
+          'Consulta paralela: Base Oficial local + RENAVAM federal + base interna',
+          'Cache de 24h para dados estáticos, real-time para status de alerta',
+        ],
+        code:`GET /api/v1/veiculos/ABC1D23/ficha
+→ {
+    veiculo: { marca, modelo, ano, cor, chassi },
+    proprietario: { nome, cidade },
+    alertas: [{ tipo, severidade, descricao }],
+    score_risco: 0.23,
+    historico: [ ...verificacoes ],
+    fontes: ["Base Oficial-SP","RENAVAM","SINESP"]
+  }`
+      },
+      {
+        title:'Integrações Externas', color:'amber',
+        items:[
+          'RENAVAM (Base Nacional): consulta REST autenticada via certificado A3',
+          'Base Oficial estadual: SOAP/REST dependendo do estado',
+          'SINESP: verificação de restrições (roubo, furto, bloqueio judicial)',
+          'Timeout de 8s por integração; fallback gracioso com dados parciais',
+        ]
+      },
+      {
+        title:'IA / Score de Risco', color:'amber',
+        items:[
+          'Modelo XGBoost treinado em padrões históricos de irregularidades',
+          'Features: idade do veículo, histórico de verificações, alertas ativos, padrão de uso',
+          'Score 0–1 com threshold de alerta em 0.6 e crítico em 0.85',
+        ]
+      }
+    ]
+  },
+
+  {
+    id:'app-captura', group:'app',
+    num:'APP · 05', name:'Captura Assistida',
+    badge:'APP · INSPEÇÃO', badgeClass:'badge-app',
+    src:'verifcar-05-captura-assistida.html',
+    x:830, y:100,
+    desc:'Guia de inspeção passo a passo com IA. Detecta automaticamente o ponto de captura.',
+    sections:[
+      {
+        title:'O que o usuário vê', color:'blue',
+        items:[
+          'Checklist visual de pontos de inspeção (frente, lateral, traseira, chassi)',
+          'Câmera com overlay indicando o ponto correto de captura',
+          'Validação automática do ângulo e nitidez da foto',
+          'Indicador de progresso: quantos pontos faltam',
+        ]
+      },
+      {
+        title:'Visão Computacional', color:'blue',
+        items:[
+          'Classificador de perspectiva: valida se o ângulo corresponde ao ponto pedido',
+          'Detector de oclusão: identifica se partes essenciais estão cobertas',
+          'Detector de blur: rejeita imagens com nitidez abaixo do threshold',
+          'Detector de iluminação: alerta quando há sub ou super-exposição',
+        ]
+      },
+      {
+        title:'Backend / API', color:'green',
+        items:[
+          'POST /inspecao/foto — recebe imagem + metadados (ponto, GPS, timestamp)',
+          'Análise assíncrona: webhook notifica app quando processamento concluir',
+          'Armazenamento em S3 com URL assinada temporária para preview',
+        ],
+        code:`POST /api/v1/inspecao/foto
+{ verificacao_id, ponto: "traseira",
+  imagem_b64, gps, timestamp }
+→ { foto_id, status: "processando",
+    preview_url: "https://..." }
+
+# Webhook após processamento:
+POST app://webhook/foto
+{ foto_id, status: "ok"|"rejeitar",
+  motivo?, anomalias?: [...] }`
+      },
+      {
+        title:'IA / Detecção de Anomalias', color:'amber',
+        items:[
+          'Modelo de segmentação (Mask R-CNN) identifica partes do veículo',
+          'Comparação com modelo esperado: detecta amassados, pinturas refeitas, itens faltantes',
+          'Matching de chassi via OCR em foto de alta resolução',
+          'Resultado: lista de anomalias com bounding box e nível de confiança',
+        ]
+      }
+    ]
+  },
+
+  {
+    id:'app-revisao', group:'app',
+    num:'APP · 06', name:'Revisão e relatório',
+    badge:'APP · FINALIZAÇÃO', badgeClass:'badge-app',
+    src:'verifcar-06-revisao.html',
+    x:1080, y:100,
+    desc:'Tela final: revisão completa da verificação e geração do relatório com assinatura digital.',
+    sections:[
+      {
+        title:'O que o usuário vê', color:'blue',
+        items:[
+          'Resumo completo: fotos capturadas, dados do veículo, alertas encontrados',
+          'Score de risco final com destaque visual (verde/amarelo/vermelho)',
+          'Campo de observações livres para o inspetor',
+          'Botão de assinatura digital com biometria',
+          'Opção de reabrir verificação para editar algum ponto',
+        ]
+      },
+      {
+        title:'Assinatura Digital', color:'blue',
+        items:[
+          'Assinatura via FIDO2/WebAuthn usando biometria do dispositivo',
+          'Hash SHA-256 do conteúdo do relatório + timestamp + device_id',
+          'Certificado ICP-Brasil para validade jurídica (opcional, por contrato)',
+        ]
+      },
+      {
+        title:'Backend / API', color:'green',
+        items:[
+          'POST /verificacoes/:id/finalizar — gera relatório e fecha verificação',
+          'PDF gerado server-side (Puppeteer) com template oficial',
+          'Notificação push enviada ao supervisor via FCM/APNs',
+          'Webhook disparado para sistema do cliente (se configurado)',
+        ],
+        code:`POST /api/v1/verificacoes/456/finalizar
+{ observacoes, assinatura_hash, biometria_token }
+→ {
+    relatório_id: "LAU-2025-00456",
+    relatório_url: "https://.../pdf",
+    status: "CONCLUIDO",
+    score_final: 0.18,
+    notificacoes_enviadas: 2
+  }`
+      },
+      {
+        title:'Banco de Dados', color:'amber',
+        items:[
+          'UPDATE verificacoes SET status = "CONCLUIDO", finalizado_em = NOW()',
+          'INSERT em relatórios com hash de integridade e URL do PDF',
+          'INSERT em notificacoes_enviadas para rastreabilidade',
+          'Trigger atualiza métricas do dashboard em tempo real',
+        ]
+      }
+    ]
+  },
+
+  // ═══════════════════════ EDGE CASES ════════════════════════════
+
+  {
+    id:'ec-wifi', group:'ec',
+    num:'EC · 01', name:'Sem Conexão',
+    badge:'EDGE CASE', badgeClass:'badge-ec',
+    src:'verifcar-ec01-sem-wifi.html',
+    x:1380, y:100,
+    desc:'Tratamento de perda de conectividade durante qualquer etapa da verificação.',
+    sections:[
+      {
+        title:'Comportamento offline', color:'amber',
+        items:[
+          'Detecção de rede via NetworkInformation API + ping periódico ao backend',
+          'App detecta offline em até 3 segundos e exibe banner de aviso',
+          'Verificações em andamento são salvas localmente (SQLite) e continuam',
+          'Consultas RENAVAM/Base Oficial ficam suspensas — dados parciais exibidos',
+        ]
+      },
+      {
+        title:'Sincronização ao reconectar', color:'green',
+        items:[
+          'Fila de sync (background task) monitora conectividade',
+          'Ao reconectar: flush da fila em ordem cronológica',
+          'Conflitos resolvidos pelo servidor (last-write-wins com validação)',
+          'Usuário notificado de verificações sincronizadas com sucesso',
+        ],
+        code:`// Fila local (SQLite)
+sync_queue: [
+  { op: "POST", endpoint: "/inspecao/foto",
+    payload: {...}, ts: "14:32:01" },
+  { op: "POST", endpoint: "/verificacoes/456/finalizar",
+    payload: {...}, ts: "14:38:15" }
+]
+// Processado em ordem ao reconectar`
+      },
+      {
+        title:'relatórios offline', color:'amber',
+        items:[
+          'relatórios emitidos offline recebem flag "PENDENTE_VALIDACAO"',
+          'Precisam de validação manual pelo supervisor no dashboard',
+          'SLA: validar em até 24h após sincronização',
+        ]
+      }
+    ]
+  },
+
+  {
+    id:'ec-camera', group:'ec',
+    num:'EC · 02', name:'Câmera Bloqueada',
+    badge:'EDGE CASE', badgeClass:'badge-ec',
+    src:'verifcar-ec02-camera.html',
+    x:1380, y:480,
+    desc:'Permissão de câmera negada pelo sistema operacional.',
+    sections:[
+      {
+        title:'Detecção e fallback', color:'amber',
+        items:[
+          'App solicita permissão via getUserMedia na primeira execução',
+          'Se negada: exibe instruções passo a passo para liberar nas configurações do SO',
+          'Fallback disponível: entrada manual de placa + upload de foto da galeria',
+          'Verificações sem foto de câmera ao vivo recebem flag "FOTO_GALERIA"',
+        ]
+      },
+      {
+        title:'Impacto operacional', color:'red',
+        items:[
+          'Verificações com FOTO_GALERIA têm score de confiança reduzido (-15%)',
+          'Supervisor é notificado para validação adicional',
+          'Relatório de casos sem câmera disponível no dashboard para gestão',
+        ]
+      },
+      {
+        title:'Dados / Auditoria', color:'amber',
+        items:[
+          'Campo "metodo_captura" em cada foto: "camera_ao_vivo" | "galeria" | "manual"',
+          'Motivo do fallback logado para análise de UX e suporte',
+        ]
+      }
+    ]
+  },
+
+  // ═══════════════════════ DASHBOARD WEB ═════════════════════════
+
+  {
+    id:'dash-visao', group:'dash',
+    num:'DASH · 01', name:'Visão Geral',
+    badge:'DASH · PRINCIPAL', badgeClass:'badge-dash',
+    src:'dash-01-visao-geral-content.html',
+    x:80, y:1020,
+    desc:'Painel executivo com KPIs em tempo real, mapa de calor e resumo de atividade.',
+    sections:[
+      {
+        title:'O que o gestor vê', color:'green',
+        items:[
+          'KPIs em tempo real: verificações hoje, taxa de aprovação, tempo médio, alertas ativos',
+          'Gráfico de tendência semanal com comparativo ao período anterior',
+          'Mapa de calor geográfico: concentração de verificações por região',
+          'Top 5 alertas mais frequentes do dia',
+          'Feed de atividade recente em tempo real',
+        ]
+      },
+      {
+        title:'Backend / API', color:'green',
+        items:[
+          'GET /dashboard/kpis — dados agregados com cache de 30s',
+          'WebSocket /ws/feed — stream de eventos em tempo real',
+          'GET /dashboard/mapa — dados GeoJSON com pontos por hora',
+        ],
+        code:`GET /api/v1/dashboard/kpis
+→ {
+    verificacoes_hoje: 247,
+    taxa_aprovacao: 0.83,
+    tempo_medio_min: 8.4,
+    alertas_ativos: 12,
+    variacao_semana: +0.06
+  }
+
+WS /ws/dashboard/feed
+← { tipo: "nova_verificacao", dados: {...} }
+← { tipo: "alerta_critico", dados: {...} }`
+      },
+      {
+        title:'Banco / Processamento', color:'amber',
+        items:[
+          'Views materializadas com refresh a cada 60s para KPIs',
+          'TimescaleDB para séries temporais de métricas',
+          'Pipeline de eventos: verificacao_concluida → Kafka → consumer → atualiza métricas',
+        ]
+      }
+    ]
+  },
+
+  {
+    id:'dash-monit', group:'dash',
+    num:'DASH · 02', name:'Monitoramento',
+    badge:'DASH · OPERACIONAL', badgeClass:'badge-dash',
+    src:'dash-02-monitoramento.html',
+    x:360, y:1020,
+    desc:'Acompanhamento em tempo real de inspetores em campo: localização, status e comunicação.',
+    sections:[
+      {
+        title:'O que o gestor vê', color:'green',
+        items:[
+          'Mapa ao vivo com posição de cada inspetor (atualiza a cada 30s)',
+          'Status de cada inspetor: Online, Em verificação, Offline, Pausado',
+          'Timeline do dia por inspetor com blocos de atividade',
+          'Chat em tempo real com inspetores via mensagens diretas',
+        ]
+      },
+      {
+        title:'Backend / Geolocalização', color:'green',
+        items:[
+          'App envia GPS a cada 30s em background (accuracy: 50m)',
+          'POST /inspetores/:id/localizacao — armazena em tabela particionada por data',
+          'Streaming de posições via WebSocket para o dashboard',
+        ],
+        code:`// App envia a cada 30s:
+POST /api/v1/inspetores/123/localizacao
+{ lat: -23.5505, lng: -46.6333,
+  accuracy: 15, ts: "..." }
+
+// Dashboard recebe via WS:
+WS ← { inspetor_id: 123, lat, lng,
+        status: "em_verificacao" }`
+      },
+      {
+        title:'Chat e Comunicação', color:'amber',
+        items:[
+          'WebSocket bidirecional para mensagens em tempo real',
+          'Mensagens salvas em banco para histórico e auditoria',
+          'Suporte a envio de alertas de emergência do inspetor para gestores',
+        ]
+      }
+    ]
+  },
+
+  {
+    id:'dash-tatica', group:'dash',
+    num:'DASH · 03', name:'Análise Tática',
+    badge:'DASH · ANÁLISE', badgeClass:'badge-dash',
+    src:'dash-03-tatica.html',
+    x:640, y:1020,
+    desc:'Análises avançadas, padrões de fraude e correlações geográfico-temporais.',
+    sections:[
+      {
+        title:'O que o gestor vê', color:'green',
+        items:[
+          'Heatmap de irregularidades por horário × local × tipo',
+          'Ranking de alertas: quais tipos aparecem mais, tendência',
+          'Correlação entre inspetores, turno e taxa de detecção',
+          'Exportação de relatório PDF/Excel',
+        ]
+      },
+      {
+        title:'Backend / Análise', color:'green',
+        items:[
+          'Queries analíticas pesadas rodando em PostgreSQL com extensão pg_stat',
+          'Cache de resultados em Redis com TTL de 5 minutos',
+          'Jobs noturnos: recalcular rankings semanais, gerar relatórios automáticos',
+        ]
+      },
+      {
+        title:'IA / Detecção de Padrões', color:'amber',
+        items:[
+          'Clustering DBSCAN para identificar "hot spots" de irregularidades',
+          'Detecção de anomalia temporal: alertas para picos fora do padrão normal',
+          'NLP leve sobre observações dos inspetores para extrair temas recorrentes',
+        ]
+      }
+    ]
+  },
+
+  {
+    id:'dash-intel', group:'dash',
+    num:'DASH · 04', name:'Inteligência',
+    badge:'DASH · IA', badgeClass:'badge-dash',
+    src:'dash-04-inteligencia.html',
+    x:920, y:1020,
+    desc:'Grafo de vínculos entre veículos, proprietários e irregularidades. Motor de IA investigativa.',
+    sections:[
+      {
+        title:'O que o gestor vê', color:'green',
+        items:[
+          'Grafo interativo de vínculos: veículo → proprietário → outros veículos → alertas',
+          'Algoritmo de comunidades detecta clusters suspeitos automaticamente',
+          'Score de risco de rede: propaga risco entre nós conectados',
+          'Filtros por tipo de nó, período, nível de risco',
+        ]
+      },
+      {
+        title:'Motor de Grafo', color:'amber',
+        items:[
+          'Banco de grafos: Neo4j para relacionamentos complexos',
+          'Sync periódico do PostgreSQL → Neo4j via ETL (Apache NiFi)',
+          'Algoritmos: PageRank para influência, Louvain para comunidades',
+          'Cypher queries para exploração ad-hoc pelo analista',
+        ],
+        code:`// Neo4j: encontrar veículos conectados a alerta
+ID: CH (v:Veiculo)-[:TEM_ALERTA]->(a:Alerta)
+      -[:ASSOCIADO_A]->(p:Proprietario)
+      -[:POSSUI]->(v2:Veiculo)
+WHERE a.tipo = "ROUBO"
+RETURN v, v2, p LIMIT 50`
+      },
+      {
+        title:'IA / Scoring de Rede', color:'amber',
+        items:[
+          'GNN (Graph Neural Network) para scoring de risco de rede',
+          'Features: grau do nó, centralidade, histórico de alertas dos vizinhos',
+          'Atualizado em batch nightly; scores críticos atualizam em near real-time',
+        ]
+      }
+    ]
+  },
+
+  {
+    id:'dash-detalhe', group:'dash',
+    num:'DASH · 05', name:'Detalhe da Verificação',
+    badge:'DASH · OPERACIONAL', badgeClass:'badge-dash',
+    src:'dash-05-detalhe.html',
+    x:80, y:1380,
+    desc:'Visão completa de uma verificação específica: fotos, relatórios, timeline e ações.',
+    sections:[
+      {
+        title:'O que o gestor vê', color:'green',
+        items:[
+          'Fotos da inspeção com anotações de IA sobrepostas (bounding boxes)',
+          'Timeline da verificação: cada passo com timestamp e duração',
+          'relatório gerado com opção de download PDF',
+          'Botões de ação: validar, reprovar, solicitar re-inspeção',
+          'Histórico de ações realizadas no relatório (auditoria completa)',
+        ]
+      },
+      {
+        title:'Backend / API', color:'green',
+        items:[
+          'GET /verificacoes/:id — detalhe completo com todos os relacionamentos',
+          'GET /verificacoes/:id/fotos — URLs assinadas do S3 (TTL 1h)',
+          'POST /verificacoes/:id/acao — registra ação do gestor',
+        ]
+      },
+      {
+        title:'Auditoria / Compliance', color:'amber',
+        items:[
+          'Cada ação do gestor gravada em audit_trail com IP, user-agent, timestamp',
+          'Hash de integridade do relatório verificado antes de exibir',
+          'Exportação de audit trail disponível para perícia',
+        ]
+      }
+    ]
+  },
+
+  {
+    id:'dash-perf', group:'dash',
+    num:'DASH · 06', name:'Performance',
+    badge:'DASH · MÉTRICAS', badgeClass:'badge-dash',
+    src:'dash-06-performance.html',
+    x:360, y:1380,
+    desc:'Métricas individuais e coletivas de desempenho dos inspetores e equipes.',
+    sections:[
+      {
+        title:'O que o gestor vê', color:'green',
+        items:[
+          'Ranking de inspetores: verificações, tempo médio, taxa de detecção',
+          'Gráfico de evolução individual ao longo do tempo',
+          'Comparativo por equipe / turno / região',
+          'Metas configuráveis com progresso em tempo real',
+        ]
+      },
+      {
+        title:'Banco / Cálculo', color:'amber',
+        items:[
+          'Métricas calculadas em jobs diários e armazenadas em tabela de snapshot',
+          'Percentil calculado comparando com todos inspetores do mesmo perfil',
+          'Alertas automáticos ao gestor se inspetores cai abaixo do percentil 20 por 3 dias',
+        ]
+      }
+    ]
+  },
+
+  {
+    id:'dash-busca', group:'dash',
+    num:'DASH · 07', name:'Busca',
+    badge:'DASH · FERRAMENTA', badgeClass:'badge-dash',
+    src:'dash-07-busca.html',
+    x:640, y:1380,
+    desc:'Busca full-text e filtrada em todo o histórico: placas, relatórios, inspetores, alertas.',
+    sections:[
+      {
+        title:'O que o gestor vê', color:'green',
+        items:[
+          'Barra de busca com autocomplete em tempo real',
+          'Filtros avançados: data, status, inspetores, tipo de alerta, score de risco',
+          'Resultados em cards com highlight dos termos encontrados',
+          'Exportação dos resultados em CSV/Excel',
+        ]
+      },
+      {
+        title:'Backend / Search', color:'green',
+        items:[
+          'Elasticsearch para full-text search com análise de texto em pt-BR',
+          'Índices: verificacoes, relatórios, veiculos, alertas, inspetores',
+          'Sincronização PostgreSQL → Elasticsearch via CDC (Debezium)',
+          'Busca fonética para placas (ex: "ABC1D23" encontra "ABC-1-D-23")',
+        ],
+        code:`GET /api/v1/busca
+  ?q=ABC1D23&filtros=status:ALERTA&limit=20
+→ {
+    total: 5,
+    hits: [{ _score, _source, highlight }],
+    facets: { status: {...}, inspetores: {...} }
+  }`
+      }
+    ]
+  },
+
+  {
+    id:'dash-config', group:'dash',
+    num:'DASH · 08', name:'Configurações',
+    badge:'DASH · SISTEMA', badgeClass:'badge-dash',
+    src:'dash-08-configuracoes.html',
+    x:920, y:1380,
+    desc:'Gerenciamento de usuários, permissões, integrações externas e parâmetros do sistema.',
+    sections:[
+      {
+        title:'O que o admin vê', color:'green',
+        items:[
+          'Gestão de usuários: criar, editar, desativar inspetores e gestores',
+          'Controle de permissões por perfil (RBAC)',
+          'Status das integrações externas (Base Oficial, RENAVAM, SINESP)',
+          'Configuração de metas, SLAs e alertas automáticos',
+          'Logs do sistema e relatórios de uso',
+        ]
+      },
+      {
+        title:'Backend / Segurança', color:'green',
+        items:[
+          'RBAC: roles (admin, gestor, supervisor, inspetores) com permissões granulares',
+          'Alterações de configuração logadas no audit_trail com before/after',
+          'Senhas com política: mínimo 12 chars, complexidade, sem reuso (últimas 10)',
+          '2FA obrigatório para perfil admin (TOTP + código backup)',
+        ]
+      },
+      {
+        title:'Integrações / Config', color:'amber',
+        items:[
+          'Credenciais de integrações armazenadas em Vault (HashiCorp)',
+          'Health check periódico das APIs externas (a cada 5min)',
+          'Webhook configurável para enviar eventos ao sistema do cliente',
+          'Rate limit por integração configurável pelo admin',
+        ]
+      }
+    ]
+  },
+
+];
+
+// ── ARROWS ────────────────────────────────────────────────────────────────────
+// [fromId, toId, type: 'main'|'alt'|'ec', label?]
+const ARROWS = [
+  // App main flow
+  ['app-login',  'app-home',    'main'],
+  ['app-home',   'app-camera',  'main'],
+  ['app-camera', 'app-captura', 'main'],
+  ['app-captura','app-revisao', 'main'],
+  // Ficha ramificação
+  ['app-camera', 'app-ficha',   'alt',  'ficha'],
+  ['app-captura','app-ficha',   'alt',  'ficha'],
+  ['app-revisao','app-ficha',   'alt',  'ficha'],
+  ['app-ficha',  'app-revisao', 'ret',  'voltar'],
+  // Edge cases (da câmera e captura → EC à direita)
+  ['app-camera', 'ec-wifi',     'ec',   'sem rede'],
+  ['app-revisao','ec-camera',   'ec',   'sem perm'],
+  // Dashboard linha 1 — principal flow
+  ['dash-visao', 'dash-monit',  'main'],
+  ['dash-monit', 'dash-tatica', 'main'],
+  ['dash-tatica','dash-intel',  'main'],
+  // Dashboard linha 2 — alt flow
+  ['dash-detalhe','dash-perf',  'main'],
+  ['dash-perf',  'dash-busca',  'main'],
+  ['dash-busca', 'dash-config', 'main'],
+  // Entre linhas do dashboard
+  ['dash-visao',  'dash-detalhe','alt'],
+  ['dash-intel',  'dash-detalhe','alt', 'detalhe'],
+  ['dash-intel',  'dash-config', 'alt'],
+  // Cross: app → dashboard
+  ['app-revisao','dash-visao',  'cross', 'relatório → dashboard'],
+];
+
+// ── LAYOUT ────────────────────────────────────────────────────────────────────
+const NODE_W_APP = 170;
+const NODE_W_DASH = 240;
+const NODE_H_APP = 310;  // approx (topbar 22 + preview 200 + label ~88)
+const NODE_H_DASH = 245; // topbar 22 + preview 150 + label ~73
+
+// helper: node dimensions
+function nodeDims(n){
+  if(n.group==='dash') return {w:NODE_W_DASH, h:NODE_H_DASH};
+  return {w:NODE_W_APP, h:NODE_H_APP};
+}
+
+// keep for backwards compat
+const NODE_W = NODE_W_APP;
+const NODE_H = NODE_H_APP;
+
+let worldTx=80, worldTy=60, worldScale=0.72;
+let isDragging=false, dragSt={x:0,y:0};
+let activeNode=null;
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  buildNodes();
+  buildSectionLabels();
+  buildArrows();
+  applyTransform();
+  bindInteractions();
+});
+
+function applyTransform(){
+  document.getElementById('world').style.transform =
+    `translate(${worldTx}px,${worldTy}px) scale(${worldScale})`;
+}
+
+function buildNodes(){
+  const world = document.getElementById('world');
+  NODES.forEach((n,i) => {
+    const el = document.createElement('div');
+    const isDash = n.group === 'dash';
+    el.className = 'node' + (isDash ? ' node-dash' : '');
+    el.id = 'node-'+n.id;
+    el.style.left = n.x+'px';
+    el.style.top  = n.y+'px';
+    el.style.animationDelay = (i*0.04)+'s';
+
+    const previewClass = isDash ? 'node-preview preview-dash' : 'node-preview';
+
+    el.innerHTML = `
+      <div class="node-inner">
+        <div class="node-topbar">
+          <div class="nd-dot" style="background:#ff5f57"></div>
+          <div class="nd-dot" style="background:#ffbd2e"></div>
+          <div class="nd-dot" style="background:#28c840"></div>
+          <div class="nd-title">${n.num}</div>
+        </div>
+        <div class="${previewClass}">
+          <iframe src="${n.src}" loading="lazy" scrolling="no" title="${n.name}"></iframe>
+          <div class="node-hint"><span>VER DETALHES</span></div>
+        </div>
+        <div class="node-label">
+          <div class="node-num">${n.num}</div>
+          <div class="node-name">${n.name}</div>
+          <div class="node-badge ${n.badgeClass}">${n.badge}</div>
+        </div>
+      </div>
+      <div class="node-slot-label">
+        <span class="node-slot-num">${n.num}</span>
+        <span class="node-slot-name">${n.name}</span>
+      </div>`;
+
+    el.addEventListener('click', () => openPanel(n));
+    world.appendChild(el);
+  });
+}
+
+function buildSectionLabels(){
+  const world = document.getElementById('world');
+
+  // App section background — cobre 6 nós mobile (x:80–1250) + EC (x:1380–1600)
+  const appBg = document.createElement('div');
+  appBg.className = 'section-bg';
+  appBg.style.cssText = `
+    left:50px;top:60px;
+    width:1590px;height:820px;
+    background:rgba(35,203,151,0.04);
+    border:1px solid rgba(35,203,151,0.07);
+    border-radius:24px;
+  `;
+  world.insertBefore(appBg, world.firstChild);
+
+  const appLabel = document.createElement('div');
+  appLabel.className = 'section-label';
+  appLabel.style.cssText = 'left:70px;top:68px;color:rgba(35,203,151,0.25);font-family:\'JetBrains Mono\',monospace;font-size:9px;letter-spacing:2px';
+  appLabel.textContent = '⬤  App Mobile — Fluxo do Inspetor';
+  world.insertBefore(appLabel, world.firstChild);
+
+  // EC label (dentro da section app, canto direito)
+  const ecLabel = document.createElement('div');
+  ecLabel.className = 'section-label';
+  ecLabel.style.cssText = 'left:1395px;top:68px;color:rgba(240,169,43,0.35);font-family:\'JetBrains Mono\',monospace;font-size:8px;letter-spacing:2px';
+  ecLabel.textContent = '▲  Edge Cases';
+  world.insertBefore(ecLabel, world.firstChild);
+
+  // EC separator line vertical
+  const ecSep = document.createElement('div');
+  ecSep.style.cssText = 'position:absolute;left:1365px;top:80px;width:1px;height:760px;background:rgba(240,169,43,0.12);border-left:1px dashed rgba(240,169,43,0.2)';
+  world.insertBefore(ecSep, world.firstChild);
+
+  // Dashboard section background — 2 linhas, 4 colunas (x:80–1210, y:990–1720)
+  const dashBg = document.createElement('div');
+  dashBg.className = 'section-bg';
+  dashBg.style.cssText = `
+    left:50px;top:980px;
+    width:1160px;height:730px;
+    background:rgba(35,203,151,0.03);
+    border:1px solid rgba(35,203,151,0.07);
+    border-radius:24px;
+  `;
+  world.insertBefore(dashBg, world.firstChild);
+
+  const dashLabel = document.createElement('div');
+  dashLabel.className = 'section-label';
+  dashLabel.style.cssText = 'left:70px;top:988px;color:rgba(35,203,151,0.25);font-family:\'JetBrains Mono\',monospace;font-size:9px;letter-spacing:2px';
+  dashLabel.textContent = '⬤  Dashboard Web — Gestão e Inteligência';
+  world.insertBefore(dashLabel, world.firstChild);
+
+  // Row divider inside dash section
+  const dashRowDiv = document.createElement('div');
+  dashRowDiv.style.cssText = 'position:absolute;left:60px;top:1350px;width:1140px;height:1px;background:rgba(35,203,151,0.08);border-top:1px dashed rgba(35,203,151,0.12)';
+  world.insertBefore(dashRowDiv, world.firstChild);
+
+  // Row 1 sub-label
+  const dashR1 = document.createElement('div');
+  dashR1.className = 'section-label';
+  dashR1.style.cssText = 'left:70px;top:1005px;color:rgba(35,203,151,0.15);font-family:\'JetBrains Mono\',monospace;font-size:7px;letter-spacing:1.5px';
+  dashR1.textContent = 'LINHA 1 — PRINCIPAL + ANÁLISE';
+  world.insertBefore(dashR1, world.firstChild);
+
+  // Row 2 sub-label
+  const dashR2 = document.createElement('div');
+  dashR2.className = 'section-label';
+  dashR2.style.cssText = 'left:70px;top:1358px;color:rgba(35,203,151,0.15);font-family:\'JetBrains Mono\',monospace;font-size:7px;letter-spacing:1.5px';
+  dashR2.textContent = 'LINHA 2 — OPERACIONAL + SISTEMA';
+  world.insertBefore(dashR2, world.firstChild);
+}
+
+function getNodeCenter(id){
+  const n = NODES.find(x=>x.id===id);
+  if(!n) return null;
+  const {w,h} = nodeDims(n);
+  return { cx: n.x + w/2, cy: n.y + h/2,
+           t:  {x: n.x + w/2, y: n.y},
+           b:  {x: n.x + w/2, y: n.y + h},
+           l:  {x: n.x,       y: n.y + h/2},
+           r:  {x: n.x + w,   y: n.y + h/2} };
+}
+
+function buildArrows(){
+  const svg = document.getElementById('arrows-svg');
+  svg.setAttribute('width','2400');
+  svg.setAttribute('height','2200');
+
+  // defs
+  const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+  const markers = [
+    {id:'m-main', col:'rgba(35,203,151,0.8)'},
+    {id:'m-alt',  col:'rgba(35,203,151,0.5)'},
+    {id:'m-ret',  col:'rgba(35,203,151,0.7)'},
+    {id:'m-ec',   col:'rgba(240,169,43,0.7)'},
+    {id:'m-cross',col:'rgba(200,200,220,0.4)'},
+  ];
+  markers.forEach(m => {
+    const mk = document.createElementNS('http://www.w3.org/2000/svg','marker');
+    mk.setAttribute('id',m.id);mk.setAttribute('markerWidth','8');mk.setAttribute('markerHeight','8');
+    mk.setAttribute('refX','7');mk.setAttribute('refY','4');mk.setAttribute('orient','auto');
+    const poly = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+    poly.setAttribute('points','0 0,8 4,0 8');poly.setAttribute('fill',m.col);
+    mk.appendChild(poly);defs.appendChild(mk);
+  });
+  svg.appendChild(defs);
+
+  ARROWS.forEach(([fId,tId,type,label]) => {
+    const f = getNodeCenter(fId), t = getNodeCenter(tId);
+    if(!f||!t) return;
+
+    const colMap = {
+      main:'rgba(35,203,151,0.65)',
+      alt: 'rgba(35,203,151,0.35)',
+      ret: 'rgba(35,203,151,0.55)',
+      ec:  'rgba(240,169,43,0.55)',
+      cross:'rgba(200,200,220,0.2)',
+    };
+    const dashMap = {
+      main:'none',alt:'5,3',ret:'3,4',ec:'4,3',cross:'6,4'
+    };
+
+    const col = colMap[type]||colMap.main;
+    const dash = dashMap[type]||'none';
+
+    // choose anchor points based on relative position
+    let p1, p2;
+    const sameRow = Math.abs(f.cy - t.cy) < 160;
+
+    if(type==='cross'){
+      // app-revisao (y~100) → dash-visao (y~1020): sempre bottom→top
+      p1 = f.b; p2 = t.t;
+    } else if(sameRow){
+      if(f.cx < t.cx){ p1=f.r; p2=t.l; }
+      else { p1=f.l; p2=t.r; }
+    } else {
+      // entre linhas do dashboard ou diagonal
+      if(f.cy < t.cy){ p1=f.b; p2=t.t; }
+      else { p1=f.t; p2=t.b; }
+    }
+
+    const dx = p2.x-p1.x, dy = p2.y-p1.y;
+    let d;
+    if(Math.abs(dx) > Math.abs(dy)){
+      const cx1=p1.x+Math.abs(dx)*0.4, cx2=p2.x-Math.abs(dx)*0.4;
+      d=`M${p1.x},${p1.y} C${cx1},${p1.y} ${cx2},${p2.y} ${p2.x},${p2.y}`;
+    } else {
+      const cy1=p1.y+Math.abs(dy)*0.4, cy2=p2.y-Math.abs(dy)*0.4;
+      d=`M${p1.x},${p1.y} C${p1.x},${cy1} ${p2.x},${cy2} ${p2.x},${p2.y}`;
+    }
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',d);
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke',col);
+    path.setAttribute('stroke-width', type==='cross'?'1':'1.5');
+    path.setAttribute('stroke-opacity','1');
+    if(dash!=='none') path.setAttribute('stroke-dasharray',dash);
+    path.setAttribute('marker-end','url(#m-'+type+')');
+    svg.appendChild(path);
+
+    if(label){
+      const midX = (p1.x+p2.x)/2, midY = (p1.y+p2.y)/2;
+      const tw = label.length*5+14;
+      const bg = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      bg.setAttribute('x',midX-tw/2); bg.setAttribute('y',midY-9);
+      bg.setAttribute('width',tw); bg.setAttribute('height',13);
+      bg.setAttribute('rx','4'); bg.setAttribute('fill',col.replace('0.','0.0'));
+      bg.setAttribute('fill','rgba(8,11,24,0.9)');
+      svg.appendChild(bg);
+
+      const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+      txt.setAttribute('x',midX); txt.setAttribute('y',midY+1);
+      txt.setAttribute('text-anchor','middle');
+      txt.setAttribute('font-family',"'JetBrains Mono',monospace");
+      txt.setAttribute('font-size','8');
+      txt.setAttribute('fill',col);
+      txt.textContent = label;
+      svg.appendChild(txt);
+    }
+  });
+}
+
+function openPanel(n){
+  // deactivate previous
+  document.querySelectorAll('.node').forEach(el=>el.classList.remove('active'));
+  document.getElementById('node-'+n.id).classList.add('active');
+  activeNode = n;
+
+  // populate header
+  document.getElementById('pNum').textContent = n.num;
+  document.getElementById('pTitle').textContent = n.name;
+  document.getElementById('pDesc').textContent = n.desc;
+
+  // build body
+  const body = document.getElementById('pBody');
+  const isDash = n.group === 'dash';
+  const btnLabel = isDash ? 'Abrir no navegador →' : 'Ver tela em tamanho real →';
+
+  let html = `<button class="panel-preview-btn" onclick="openFS('${n.src}','${n.group}')">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+    ${btnLabel}
+  </button>`;
+
+  n.sections.forEach(s => {
+    const colorClass = s.color || 'blue';
+    html += `<div class="psec">
+      <div class="psec-title ${colorClass}">${s.title}</div>`;
+    s.items.forEach(item => {
+      html += `<div class="pitem">
+        <div class="pitem-dot ${colorClass}"></div>
+        <div>${item}</div>
+      </div>`;
+    });
+    if(s.code){
+      html += `<div class="pcode">${escapeHtml(s.code)}</div>`;
+    }
+    if(s.tags){
+      html += '<div style="margin-top:6px">';
+      s.tags.forEach(t => {
+        html += `<span class="ptag ${t.c}">${t.l}</span>`;
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+  });
+
+  body.innerHTML = html;
+
+  document.getElementById('panel').classList.add('open');
+}
+
+function closePanel(){
+  document.getElementById('panel').classList.remove('open');
+  document.querySelectorAll('.node').forEach(el=>el.classList.remove('active'));
+  activeNode = null;
+}
+
+function openFS(src, group){
+  const isPhone = group !== 'dash';
+  const phone    = document.getElementById('fsPhone');
+  const dashWrap = document.getElementById('fsDashWrap');
+  const iframe1  = document.getElementById('fsIframe');
+  const iframe2  = document.getElementById('fsDashIframe');
+
+  if(isPhone){
+    phone.style.display = 'block';
+    dashWrap.style.display = 'none';
+    iframe1.src = src; iframe2.src = '';
+  } else {
+    phone.style.display = 'none';
+    dashWrap.style.display = 'flex';
+    iframe2.src = src; iframe1.src = '';
+  }
+  document.getElementById('fsOverlay').classList.add('open');
+}
+
+window.closeFS = function(){
+  document.getElementById('fsOverlay').classList.remove('open');
+  setTimeout(()=>{
+    document.getElementById('fsIframe').src='';
+    document.getElementById('fsDashIframe').src='';
+  },300);
+};
+
+function escapeHtml(str){
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function bindInteractions(){
+  document.getElementById('panelClose').addEventListener('click', closePanel);
+  document.getElementById('fsOverlay').addEventListener('click', e=>{
+    if(e.target.id==='fsOverlay') closeFS();
+  });
+  document.addEventListener('keydown', e=>{
+    if(e.key==='Escape'){
+      if(document.getElementById('fsOverlay').classList.contains('open')) closeFS();
+      else closePanel();
+    }
+  });
+
+  const canvas = document.getElementById('canvas');
+  canvas.addEventListener('mousedown', e=>{
+    if(e.target.closest('.node')) return;
+    isDragging=true;
+    dragSt={x:e.clientX-worldTx, y:e.clientY-worldTy};
+  });
+  window.addEventListener('mousemove', e=>{
+    if(!isDragging) return;
+    worldTx=e.clientX-dragSt.x;
+    worldTy=e.clientY-dragSt.y;
+    applyTransform();
+  });
+  window.addEventListener('mouseup', ()=>isDragging=false);
+  canvas.addEventListener('wheel', e=>{
+    e.preventDefault();
+    const f = e.deltaY < 0 ? 1.1 : 0.91;
+    worldScale = Math.min(2, Math.max(0.2, worldScale*f));
+    applyTransform();
+  },{passive:false});
+
+  // touch pan
+  let t0=null;
+  canvas.addEventListener('touchstart', e=>{
+    if(e.touches.length===1){ t0={x:e.touches[0].clientX-worldTx, y:e.touches[0].clientY-worldTy}; }
+  },{passive:true});
+  canvas.addEventListener('touchmove', e=>{
+    if(e.touches.length===1 && t0){
+      worldTx=e.touches[0].clientX-t0.x;
+      worldTy=e.touches[0].clientY-t0.y;
+      applyTransform();
+    }
+  },{passive:true});
+  canvas.addEventListener('touchend', ()=>t0=null,{passive:true});
+
+  document.getElementById('btnZoomIn').addEventListener('click',()=>{
+    worldScale=Math.min(2,worldScale*1.15);applyTransform();
+  });
+  document.getElementById('btnZoomOut').addEventListener('click',()=>{
+    worldScale=Math.max(0.2,worldScale*0.87);applyTransform();
+  });
+  document.getElementById('btnReset').addEventListener('click',()=>{
+    worldTx=80;worldTy=60;worldScale=0.72;applyTransform();
+  });
+}
+</script>
+</body>

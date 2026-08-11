@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VerifCar · Inteligência</title>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"></noscript>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+:root{--pri-deep:#0C6B4E;--pri-deep2:#149B72;
+  --pri:#23CB97;--pri-50:#0F221D;--pri-100:#16352C;--pri-400:#23CB97;--pri-600:#4FDCB0;--pri-800:#93EED3;
+  --em:#23CB97;--em-50:#0F221D;--em-400:#35D9A4;
+  --am:#F0A92B;--am-50:#2A1F0E;--am-400:#F0A92B;--am-800:#FFD48A;
+  --co:#FF3B63;--co-50:#2B1119;--co-400:#FF3B63;--co-800:#FF95AC;
+  --bg:#12141C;--surface:#1A1D28;--sur-low:#222431;--sur-mid:#282B39;--sur-high:#33374A;
+  --text-h:#F3F5F9;--text-b:#CBD0DC;--text-m:#8D94A6;--text-s:#666D80;--border:rgba(255,255,255,0.10);
+  --font-d:'Space Grotesk',sans-serif;--font-b:'Inter',sans-serif;--font-m:'JetBrains Mono',monospace;
+  --sh-card:0 1px 3px rgba(0,0,0,.45),0 6px 20px rgba(0,0,0,.30);
+}
+html,body{height:100%;overflow:hidden;font-family:var(--font-b);background:var(--bg);color:var(--text-h)}
+
+/* Layout full-height, sem scroll */
+.intel-shell{display:grid;grid-template-columns:1fr 300px;height:100%;overflow:hidden}
+
+/* ── Filter bar ──────────────────────────────────────────── */
+.filter-bar{
+  position:absolute;top:12px;left:50%;transform:translateX(-50%);
+  display:flex;gap:4px;z-index:10;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(10px);
+  border:1px solid var(--border);border-radius:9999px;padding:4px 6px;
+  box-shadow:var(--sh-card);
+}
+.filter-chip{font-size:11px;font-weight:600;padding:4px 10px;border-radius:9999px;cursor:pointer;border:none;background:none;color:var(--text-m);transition:all .15s}
+.filter-chip:hover{color:var(--text-h);background:var(--sur-low)}
+.filter-chip.active{background:var(--pri-deep2);color:#fff}
+
+/* ── Graph area ──────────────────────────────────────────── */
+.graph-area{
+  position:relative;overflow:hidden;
+  background:transparent;
+  border-right:1px solid var(--border);
+}
+
+#graph-svg{width:100%;height:100%;position:relative;z-index:2}
+
+.graph-controls{position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:5px;z-index:10}
+.ctrl-btn{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.9);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:var(--text-m);box-shadow:0 1px 4px rgba(0,0,0,0.176)}
+.ctrl-btn:hover{background:#fff;color:var(--text-h)}
+
+.graph-legend{position:absolute;bottom:12px;left:12px;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:10px;padding:10px 14px;z-index:10}
+.leg-title{font-family:var(--font-m);font-size:8px;font-weight:700;color:var(--text-s);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.leg-row{display:flex;align-items:center;gap:8px;padding:2px 0;font-size:10px;color:var(--text-m)}
+.leg-node{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+.node-tooltip{position:absolute;background:var(--text-h);color:#fff;padding:5px 9px;border-radius:7px;font-size:10px;pointer-events:none;z-index:20;opacity:0;transition:opacity .15s;white-space:nowrap}
+.node-tooltip.show{opacity:1}
+
+/* Stats strip no grafo */
+.graph-stats{
+  position:absolute;top:12px;right:12px;
+  display:flex;gap:6px;z-index:10;
+}
+.stat-chip{
+  background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
+  border:1px solid var(--border);border-radius:9999px;
+  padding:3px 10px;font-family:var(--font-m);font-size:9px;color:var(--text-s);
+}
+
+/* ── Detail panel ────────────────────────────────────────── */
+.detail-panel{display:flex;flex-direction:column;overflow:hidden;background:var(--surface)}
+.detail-header{padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+.detail-body{flex:1;overflow-y:auto;padding:14px 16px}
+.detail-body::-webkit-scrollbar{width:4px}
+.detail-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+.badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--font-b);font-size:10px;font-weight:700;padding:2px 8px;border-radius:9999px}
+.badge-ok{background:var(--em-50);color:var(--em);border:1px solid rgba(35,203,151,.15)}
+.badge-warn{background:var(--am-50);color:var(--am-800);border:1px solid rgba(240,169,43,.2)}
+.badge-err{background:var(--co-50);color:var(--co-800);border:1px solid rgba(255,59,99,.15)}
+.badge-info{background:var(--pri-50);color:var(--pri-600);border:1px solid var(--pri-100)}
+
+.conn-item{display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--sur-low);cursor:pointer;align-items:flex-start}
+.conn-item:hover{opacity:.8}
+.conn-item:last-child{border-bottom:none}
+.conn-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.conn-label{font-size:11px;font-weight:700;color:var(--text-h)}
+.conn-meta{font-size:10px;color:var(--text-s);margin-top:1px}
+
+.cluster-card{border-radius:10px;padding:10px 12px;cursor:pointer;margin-bottom:8px;border:1px solid transparent}
+.cluster-card:last-child{margin-bottom:0}
+.cluster-card.err{background:var(--co-50);border-color:rgba(255,59,99,.15)}
+.cluster-card.warn{background:var(--am-50);border-color:rgba(240,169,43,.2)}
+
+.btn-action{width:100%;padding:8px;border-radius:9999px;border:none;font-size:12px;font-weight:600;cursor:pointer;background:var(--pri-deep2);color:#fff;margin-top:12px}
+</style>
+</head>
+<body>
+
+<div class="intel-shell">
+
+  <!-- ── Graph area ────────────────────────────── -->
+  <div class="graph-area" id="graphArea">
+    <!-- Mapa base -->
+     <div id="mapCanvas">
+<!-- <iframe id="map-iframe"></iframe> -->
+ <img id="map-img" src="mapa.webp"
+  style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:10px;transform-origin:0 0;will-change:transform;">
+     </div>
+    
+    <!-- SVG do grafo (z-index:2, flutua sobre o mapa) -->
+    <svg id="graph-svg"></svg>
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <button class="filter-chip active" onclick="filterGraph('all',this)">Todos</button>
+      <button class="filter-chip" onclick="filterGraph('veiculo',this)">Veículos</button>
+      <button class="filter-chip" onclick="filterGraph('vin',this)">VINs</button>
+      <button class="filter-chip" onclick="filterGraph('inspetor',this)">Inspetores</button>
+      <button class="filter-chip" onclick="filterGraph('ocorrencia',this)">Ocorrências</button>
+    </div>
+
+    <!-- Controls -->
+    <div class="graph-controls">
+      <button class="ctrl-btn" onclick="zoom(1.2)">+</button>
+      <button class="ctrl-btn" onclick="zoom(.83)">−</button>
+      <button class="ctrl-btn" onclick="resetView()" style="font-size:10px">⌂</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="graph-stats" id="graph-stats"></div>
+
+    <!-- Legend -->
+    <div class="graph-legend">
+      <div class="leg-title">Legenda</div>
+      <div class="leg-row"><div class="leg-node" style="background:var(--co-400)"></div>Divergência</div>
+      <div class="leg-row"><div class="leg-node" style="background:var(--am-400)"></div>Suspeito</div>
+      <div class="leg-row"><div class="leg-node" style="background:var(--em-400)"></div>Compatível</div>
+      <div class="leg-row"><div class="leg-node" style="background:var(--pri-400)"></div>Veículo</div>
+      <div class="leg-row"><div class="leg-node" style="background:#8B7CF6"></div>Inspetores</div>
+      <div class="leg-row"><div class="leg-node" style="background:var(--text-s)"></div>Ocorrência</div>
+      <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border)">
+        <div class="leg-row" style="gap:4px">
+          <svg width="20" height="8" style="flex-shrink:0"><line x1="0" y1="4" x2="20" y2="4" stroke="var(--co-400)" stroke-width="2" stroke-dasharray="4,2"/></svg>
+          Ligação divergente
+        </div>
+        <div class="leg-row" style="gap:4px">
+          <svg width="20" height="8" style="flex-shrink:0"><line x1="0" y1="4" x2="20" y2="4" stroke="var(--border)" stroke-width="1.5"/></svg>
+          Ligação normal
+        </div>
+      </div>
+    </div>
+
+    <div class="node-tooltip" id="tooltip"></div>
+  </div>
+
+  <!-- ── Detail panel ──────────────────────────── -->
+  <div class="detail-panel">
+    <div class="detail-header">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-family:var(--font-d);font-size:13px;font-weight:800;color:var(--text-h)" id="dp-title">Selecione um nó</div>
+          <div style="font-size:10px;color:var(--text-s);margin-top:2px" id="dp-sub">Clique em qualquer elemento do grafo</div>
+        </div>
+        <span class="badge badge-err" id="dp-badge" style="display:none"></span>
+      </div>
+    </div>
+    <div class="detail-body" id="dp-body">
+      <div style="color:var(--text-s);font-size:11px;line-height:1.6;margin-top:4px">
+        Grafo de conexões entre veículos, VINs, inspetores e ocorrências.<br><br>
+        <strong style="color:var(--text-h)">Vermelho</strong> · divergência confirmada<br>
+        <strong style="color:var(--text-h)">Âmbar</strong> · suspeita<br>
+        <strong style="color:var(--text-h)">Verde</strong> · compatível
+      </div>
+
+      <div style="margin-top:16px">
+        <div style="font-family:var(--font-d);font-size:11px;font-weight:800;color:var(--text-h);margin-bottom:8px">Clusters detectados</div>
+        <div id="clusters-list"></div>
+      </div>
+
+      <div style="margin-top:16px">
+        <div style="font-family:var(--font-d);font-size:11px;font-weight:800;color:var(--text-h);margin-bottom:8px">Conexões recentes</div>
+        <div id="conn-list"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="data.js"></script>
+<script>
+function goTo(r) {
+  try {
+    if (window.parent && window.parent.goTo) window.parent.goTo(r);
+    else window.postMessage({ goTo: r }, '*');
+  } catch(e) { window.postMessage({ goTo: r }, '*'); }
+}
+
+// ── Construção dos nós e arestas a partir do DB ──────────
+// Posições fixas por ID (layout pré-calculado)
+const POS = {
+  // veículos divergentes/suspeitos
+  'VEI-10': {x:.45,y:.35}, 'VEI-02': {x:.32,y:.55}, 'VEI-09': {x:.60,y:.65},
+  'VEI-04': {x:.38,y:.72}, 'VEI-05': {x:.72,y:.38}, 'VEI-01': {x:.20,y:.35},
+  'VEI-11': {x:.68,y:.20},
+  // inspetores
+  'INSP-01': {x:.28,y:.22}, 'INSP-02': {x:.50,y:.18}, 'INSP-03': {x:.78,y:.70},
+  'INSP-04': {x:.62,y:.48}, 'INSP-05': {x:.18,y:.58},
+  // ocorrências
+  'OC-01': {x:.40,y:.20}, 'OC-02': {x:.22,y:.65}, 'OC-03': {x:.72,y:.55},
+};
+
+function buildNodes() {
+  const nodes = [];
+
+  // Veículos com posição definida
+  DB.veiculos.forEach(v => {
+    if (!POS[v.id]) return;
+    // Pega o pior status das verificações desse veículo
+    const verifs = DB.verificacoes.filter(vr => vr.veiculo_id === v.id);
+    const status = verifs.some(vr => vr.status === 'err') ? 'err'
+                 : verifs.some(vr => vr.status === 'warn') ? 'warn'
+                 : 'ok';
+    nodes.push({
+      id: v.id, type: 'veiculo', status,
+      label: `${v.marca} ${v.modelo.split(' ')[0]}`,
+      sub: v.placa,
+      ...POS[v.id],
+    });
+  });
+
+  // Inspetores
+  DB.inspetores.forEach(a => {
+    if (!POS[a.id]) return;
+    nodes.push({ id: a.id, type: 'inspetor', status: 'norm', label: a.nome, sub: a.cod_func, ...POS[a.id] });
+  });
+
+  // Ocorrências
+  DB.ocorrencias.forEach(o => {
+    if (!POS[o.id]) return;
+    nodes.push({ id: o.id, type: 'ocorrencia', status: 'err', label: o.numero, sub: o.tipo + ' · ' + o.unidade, ...POS[o.id] });
+  });
+
+  return nodes;
+}
+
+function buildEdges(nodes) {
+  const edges = [];
+  const nodeIds = new Set(nodes.map(n => n.id));
+
+  // Veículo → Inspetores (via verificação)
+  DB.verificacoes.forEach(v => {
+    if (nodeIds.has(v.veiculo_id) && nodeIds.has(v.inspetor_id)) {
+      edges.push({ s: v.veiculo_id, t: v.inspetor_id, type: v.status === 'err' ? 'err' : 'norm' });
+    }
+  });
+
+  // Veículo → Ocorrência
+  DB.ocorrencias.forEach(o => {
+    o.verif_ids.forEach(vid => {
+      const vr = DB.verificacao(vid);
+      if (vr && nodeIds.has(vr.veiculo_id) && nodeIds.has(o.id)) {
+        edges.push({ s: vr.veiculo_id, t: o.id, type: 'err' });
+      }
+    });
+  });
+
+  // Deduplica
+  const seen = new Set();
+  return edges.filter(e => {
+    const k = [e.s, e.t].sort().join('|');
+    if (seen.has(k)) return false;
+    seen.add(k); return true;
+  });
+}
+
+// ── Cores e tamanhos ─────────────────────────────────────
+const NODE_COLOR = n => {
+  if (n.type === 'inspetor')    return '#8B7CF6';
+  if (n.type === 'ocorrencia') return '#666D80';
+  return { err:'#FF3B63', warn:'#F0A92B', ok:'#35D9A4', norm:'#23CB97' }[n.status] || '#23CB97';
+};
+const NODE_R = n => ({ veiculo:13, inspetor:12, ocorrencia:9, vin:10, placa:8 })[n.type] || 10;
+
+// ── Graph state ──────────────────────────────────────────
+let scale=1, tx=0, ty=0, dragging=false, dragStart={x:0,y:0};
+let activeFilter = 'all';
+let NODES=[], EDGES=[];
+
+function getPos(n, W, H) { return { x: n.x*W, y: n.y*H }; }
+
+function buildGraph() {
+  const svg   = document.getElementById('graph-svg');
+  const area  = document.getElementById('graphArea');
+  const W     = area.offsetWidth;
+  const H     = area.offsetHeight;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = '';
+
+  NODES = buildNodes();
+  EDGES = buildEdges(NODES);
+
+  // Filtro de tipo
+  const visNodes = activeFilter === 'all' ? NODES : NODES.filter(n => n.type === activeFilter);
+  const visIds   = new Set(visNodes.map(n => n.id));
+  const visEdges = EDGES.filter(e => visIds.has(e.s) && visIds.has(e.t));
+
+  // Defs
+  const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+  defs.innerHTML = `<filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+  svg.appendChild(defs);
+
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('id','g-root');
+  g.setAttribute('transform',`translate(${tx},${ty}) scale(${scale})`);
+
+  // Edges
+  visEdges.forEach(e => {
+    const s = NODES.find(n => n.id===e.s), t = NODES.find(n => n.id===e.t);
+    if (!s||!t) return;
+    const ps = getPos(s,W,H), pt = getPos(t,W,H);
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',ps.x); line.setAttribute('y1',ps.y);
+    line.setAttribute('x2',pt.x); line.setAttribute('y2',pt.y);
+    line.setAttribute('stroke', e.type==='err' ? 'rgba(255,59,99,.4)' : 'rgba(216,218,232,.7)');
+    line.setAttribute('stroke-width', e.type==='err' ? '2' : '1.5');
+    if (e.type==='err') line.setAttribute('stroke-dasharray','5,3');
+    g.appendChild(line);
+  });
+
+  // Nodes
+  visNodes.forEach(n => {
+    const p   = getPos(n,W,H);
+    const r   = NODE_R(n);
+    const col = NODE_COLOR(n);
+    const grp = document.createElementNS('http://www.w3.org/2000/svg','g');
+    grp.setAttribute('cursor','pointer');
+    grp.setAttribute('id','node-'+n.id);
+
+    if (n.status === 'err') {
+      const halo = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      halo.setAttribute('cx',p.x); halo.setAttribute('cy',p.y); halo.setAttribute('r',r+5);
+      halo.setAttribute('fill','none'); halo.setAttribute('stroke',col);
+      halo.setAttribute('stroke-width','1'); halo.setAttribute('opacity','.25');
+      halo.innerHTML=`<animate attributeName="r" values="${r+3};${r+9};${r+3}" dur="2.5s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values=".3;0;.3" dur="2.5s" repeatCount="indefinite"/>`;
+      grp.appendChild(halo);
+    }
+
+    const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('cx',p.x); circle.setAttribute('cy',p.y); circle.setAttribute('r',r);
+    circle.setAttribute('fill',col); circle.setAttribute('stroke','white'); circle.setAttribute('stroke-width','2');
+    if (n.status==='err') circle.setAttribute('filter','url(#glow)');
+    grp.appendChild(circle);
+
+    const label = document.createElementNS('http://www.w3.org/2000/svg','text');
+    label.setAttribute('x',p.x); label.setAttribute('y',p.y+r+10);
+    label.setAttribute('text-anchor','middle'); label.setAttribute('font-family','Inter');
+    label.setAttribute('font-size','9'); label.setAttribute('font-weight','700');
+    label.setAttribute('fill','var(--text-h)'); label.textContent = n.label;
+    grp.appendChild(label);
+
+    grp.addEventListener('click', () => selectNode(n.id));
+    grp.addEventListener('mouseenter', ev => showTooltip(n, ev));
+    grp.addEventListener('mouseleave', hideTooltip);
+    g.appendChild(grp);
+  });
+
+  svg.appendChild(g);
+
+  // Stats
+  document.getElementById('graph-stats').innerHTML = `
+    <span class="stat-chip">${visNodes.length} nós</span>
+    <span class="stat-chip">${visEdges.length} conexões</span>
+  `;
+
+  // Pan + drag
+  svg.addEventListener('mousedown', e => {
+    if (e.target===svg||e.target.tagName==='line') { dragging=true; dragStart={x:e.clientX-tx,y:e.clientY-ty}; }
+  });
+  window.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    tx=e.clientX-dragStart.x; ty=e.clientY-dragStart.y;
+    applyTransform();
+  });
+  window.addEventListener('mouseup', () => dragging=false);
+  svg.addEventListener('wheel', e => { e.preventDefault(); zoom(e.deltaY<0?1.1:.91); }, {passive:false});
+}
+
+function zoom(f) {
+  scale = Math.min(3, Math.max(0.3, scale*f));
+  applyTransform();
+}
+function resetView() { scale=1; tx=0; ty=0; applyTransform();}
+
+function showTooltip(n, ev) {
+  const t = document.getElementById('tooltip');
+  const rect = document.getElementById('graphArea').getBoundingClientRect();
+  t.textContent = n.label + (n.sub ? ' · '+n.sub : '');
+  t.style.left = (ev.clientX-rect.left+12)+'px';
+  t.style.top  = (ev.clientY-rect.top-28)+'px';
+  t.classList.add('show');
+}
+function hideTooltip() { document.getElementById('tooltip').classList.remove('show'); }
+
+function selectNode(id) {
+  const n = NODES.find(n => n.id===id);
+  if (!n) return;
+
+  const badge = document.getElementById('dp-badge');
+  badge.style.display = '';
+  badge.textContent = n.status==='err'?'Divergente':n.status==='warn'?'Suspeito':n.status==='ok'?'Compatível':'Inspetores';
+  badge.className = 'badge '+(n.status==='err'?'badge-err':n.status==='warn'?'badge-warn':n.status==='ok'?'badge-ok':'badge-info');
+  document.getElementById('dp-title').textContent = n.label;
+  document.getElementById('dp-sub').textContent = n.sub;
+
+  const conns = EDGES
+    .filter(e => e.s===id||e.t===id)
+    .map(e => NODES.find(nd => nd.id===(e.s===id?e.t:e.s)))
+    .filter(Boolean);
+
+  const typeLabel = {veiculo:'Veículo',inspetor:'Inspetor',ocorrencia:'Ocorrência',vin:'VIN',placa:'Placa'};
+  document.getElementById('dp-body').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:0;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--sur-low)">
+        <span style="font-size:11px;color:var(--text-m)">Tipo</span>
+        <span style="font-size:11px;font-weight:700">${typeLabel[n.type]||n.type}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--sur-low)">
+        <span style="font-size:11px;color:var(--text-m)">Conexões</span>
+        <span style="font-size:11px;font-weight:700">${conns.length}</span>
+      </div>
+      ${n.type==='veiculo'?`
+      <div style="display:flex;justify-content:space-between;padding:7px 0">
+        <span style="font-size:11px;color:var(--text-m)">Placa</span>
+        <span style="font-family:var(--font-m);font-size:11px">${n.sub}</span>
+      </div>`:''}
+    </div>
+    <div style="font-family:var(--font-d);font-size:11px;font-weight:800;color:var(--text-h);margin-bottom:8px">Nós conectados</div>
+    <div>
+      ${conns.map(c => `
+        <div class="conn-item" onclick="selectNode('${c.id}')">
+          <div class="conn-dot" style="background:${NODE_COLOR(c)}"></div>
+          <div><div class="conn-label">${c.label}</div><div class="conn-meta">${c.sub}</div></div>
+        </div>`).join('')}
+    </div>
+    ${n.type==='veiculo'?`<button class="btn-action" onclick="goTo('detalhe')">Ver ficha completa →</button>`:''}
+  `;
+
+  // Highlight
+  document.querySelectorAll('[id^="node-"] circle').forEach(c => c.setAttribute('stroke-width','2'));
+  document.querySelector('#node-'+id+' circle')?.setAttribute('stroke-width','3.5');
+}
+
+function filterGraph(type, btn) {
+  activeFilter = type;
+  document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buildGraph();
+}
+
+// ── Clusters derivados de DB.ocorrencias ─────────────────
+function renderClusters() {
+  document.getElementById('clusters-list').innerHTML = DB.ocorrencias.map(o => {
+    const veics = o.verif_ids
+      .map(vid => DB.verificacao(vid))
+      .filter(Boolean)
+      .map(v => DB.veiculo(v.veiculo_id))
+      .filter(Boolean);
+    const cls = o.tipo === 'Adulteração' ? 'err' : 'warn';
+    const badgeCls = cls === 'err' ? 'badge-err' : 'badge-warn';
+    const txtColor = cls === 'err' ? 'var(--co-800)' : 'var(--am-800)';
+    const marca = veics[0] ? veics[0].marca : '—';
+    return `
+      <div class="cluster-card ${cls}" onclick="selectNode('${o.id}')">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:12px;font-weight:700;color:${txtColor}">${o.numero}</span>
+          <span class="badge ${badgeCls}" style="font-size:9px">${o.verif_ids.length} verif.</span>
+        </div>
+        <div style="font-size:10px;color:var(--text-m);margin-top:3px">${marca} · ${o.tipo} · ${o.unidade}</div>
+      </div>`;
+  }).join('');
+}
+
+// ── Conexões recentes (verificações err/warn) ─────────────
+function renderConnList() {
+  const recent = DB.verificacoes_recentes(5, 'err').concat(DB.verificacoes_recentes(3,'warn'));
+  document.getElementById('conn-list').innerHTML = recent.slice(0,6).map(v => {
+    const vei = DB.veiculo(v.veiculo_id);
+    const und = DB.unidade(v.unidade_id);
+    return `
+      <div class="conn-item" onclick="selectNode('${v.veiculo_id}')">
+        <div class="conn-dot" style="background:${v.status==='err'?'var(--co-400)':'var(--am-400)'}"></div>
+        <div>
+          <div class="conn-label">${vei ? vei.marca+' '+vei.modelo.split(' ')[0] : '—'} · ${vei?.placa||'—'}</div>
+          <div class="conn-meta">Score ${v.score} · ${und?.nome||'—'}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── Mapa base sob o grafo ─────────────────────────────────
+function initMapa() {
+//   // const { lat, lng, zoom } = DB.mapa;
+//   // document.getElementById('map-iframe').src =
+//   //   `https://www.google.com/maps?q=${lat},${lng}&z=${zoom}&output=embed`;
+  setTimeout(buildGraph, 100);
+}
+
+window.addEventListener('resize', buildGraph);
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    initMapa();
+    buildGraph();
+    renderClusters();
+    renderConnList();
+  }, 80);
+});
+
+function applyTransform() {
+  document.getElementById('g-root')?.setAttribute('transform', `translate(${tx},${ty}) scale(${scale})`);
+  const img = document.getElementById('map-img');
+  if (img) img.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`;
+}
+</script>
+</body>
+</html>

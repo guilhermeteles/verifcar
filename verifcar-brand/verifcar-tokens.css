@@ -1,0 +1,101 @@
+/* ═══════════════════════════════════════════════════════════
+   VerifCar · Design Tokens (tema dark)
+   Inspeção veicular inteligente — frotas, concessionárias e compradores
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Marca / primária ────────────────────────────────────
+     Escala invertida para dark: 50 = mais escuro, 800 = mais claro */
+  --pri:        #23CB97;
+  --pri-50:     #0F221D;   /* fundo de chip */
+  --pri-100:    #16352C;   /* borda de chip */
+  --pri-200:    #1E6B52;
+  --pri-400:    #23CB97;   /* cor principal da marca */
+  --pri-600:    #4FDCB0;   /* hover / destaque */
+  --pri-800:    #93EED3;   /* texto forte sobre fundo escuro */
+  --pri-deep:   #0C6B4E;   /* superfície preenchida com texto branco */
+  --pri-deep2:  #149B72;
+
+  /* ── Sucesso / aprovado ─────────────────────────────────── */
+  --em:         #23CB97;
+  --em-50:      #0F221D;
+  --em-400:     #35D9A4;
+  --em-800:     #93EED3;
+
+  /* ── Atenção ────────────────────────────────────────────── */
+  --am:         #F0A92B;
+  --am-50:      #2A1F0E;
+  --am-400:     #F0A92B;
+  --am-800:     #FFD48A;
+
+  /* ── Crítico (vermelho da marca, clareado para dark) ────── */
+  --co:         #FF3B63;   /* marca impressa: #D81D45 */
+  --co-50:      #2B1119;
+  --co-400:     #FF3B63;
+  --co-800:     #FF95AC;
+
+  /* ── Apoio ──────────────────────────────────────────────── */
+  --pu:         #8B7CF6;
+  --pu-50:      #1B1832;
+
+  /* ── Superfícies ────────────────────────────────────────── */
+  --bg:         #12141C;   /* canvas */
+  --surface:    #1A1D28;   /* card */
+  --sur:        #1A1D28;
+  --sur-low:    #222431;   /* cor oficial da marca — sidebar, chrome */
+  --sur-mid:    #282B39;
+  --sur-high:   #33374A;
+  --sur2:       #20232F;
+  --sur3:       #2A2E3C;
+
+  /* ── Bordas ─────────────────────────────────────────────── */
+  --border:        rgba(255,255,255,0.10);
+  --border2:       rgba(255,255,255,0.15);
+  --border-bright: rgba(35,203,151,0.40);
+  --outline-v:     rgba(255,255,255,0.16);
+
+  /* ── Texto ──────────────────────────────────────────────── */
+  --on-s:       #F3F5F9;
+  --text-h:     #F3F5F9;   /* títulos          15.4:1 */
+  --text-b:     #CBD0DC;   /* corpo            11.9:1 */
+  --text-m:     #8D94A6;   /* secundário        5.5:1 */
+  --text-s:     #666D80;   /* rótulos/legendas  3.1:1 */
+
+  /* ── Sombras ────────────────────────────────────────────── */
+  --sh-card:    0 1px 3px rgba(0,0,0,.45), 0 6px 20px rgba(0,0,0,.30);
+  --sh-md:      0 8px 22px rgba(0,0,0,.42), 0 2px 6px rgba(0,0,0,.30);
+  --sh-lg:      0 24px 48px rgba(0,0,0,.52), 0 6px 14px rgba(0,0,0,.34);
+  --sh-panel:   0 2px 10px rgba(0,0,0,.35);
+  --sh-sidebar: 2px 0 28px rgba(0,0,0,.42);
+
+  /* ── Tipografia ─────────────────────────────────────────── */
+  --font-d:     'Space Grotesk', sans-serif;  /* display / títulos */
+  --font-b:     'Inter', sans-serif;          /* corpo / interface */
+  --font-m:     'JetBrains Mono', monospace;  /* placa, VIN, chassi, IDs */
+
+  /* ── Layout ─────────────────────────────────────────────── */
+  --sidebar-w:  220px;
+  --topbar-h:   52px;
+}
+
+/* Fontes (Google Fonts) */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ═══════════════════════════════════════════════════════════
+   REGRAS DE USO
+
+   • Botão primário preenchido
+       background: linear-gradient(135deg, var(--pri-deep), var(--pri-deep2));
+       color: #fff;
+     Nunca use --pri-400/600/800 como fundo de botão com texto branco:
+     são claros demais e o texto some.
+
+   • Verde = marca e "aprovado". Vermelho = divergência/fraude.
+     Âmbar = atenção. Não invente uma quarta cor de status.
+
+   • Dados de identificação (placa, VIN, chassi, RENAVAM, IDs) sempre
+     em --font-m para leitura caractere a caractere.
+
+   • Superfícies empilham do escuro para o claro:
+     --bg → --surface → --sur-mid → --sur-high
+   ═══════════════════════════════════════════════════════════ */

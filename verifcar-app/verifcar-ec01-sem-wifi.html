@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VerifCar · EC-01 Sem Conexão</title>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"></noscript>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+html,body{overflow:hidden;height:100%}
+:root{--pri-deep:#0C6B4E;--pri-deep2:#149B72;
+  --pri:#23CB97;--pri-50:#0F221D;--pri-100:#16352C;
+  --pri-400:#23CB97;--pri-600:#4FDCB0;--pri-800:#93EED3;
+  --em:#23CB97;--em-50:#0F221D;--em-400:#35D9A4;
+  --am:#F0A92B;--am-50:#2A1F0E;--am-400:#F0A92B;--am-800:#FFD48A;
+  --co:#FF3B63;--co-50:#2B1119;--co-400:#FF3B63;--co-800:#FF95AC;
+  --bg:#12141C;--surface:#1A1D28;
+  --sur-low:#222431;--sur-mid:#282B39;--sur-high:#33374A;
+  --on-s:#F3F5F9;--text-h:#F3F5F9;--text-b:#CBD0DC;--text-m:#8D94A6;--text-s:#666D80;
+  --border:rgba(255,255,255,0.10);
+  --font-d:'Space Grotesk',sans-serif;
+  --font-b:'Inter',sans-serif;
+  --font-m:'JetBrains Mono',monospace;
+  --sh-card:0 1px 3px rgba(0,0,0,.45),0 6px 20px rgba(0,0,0,.30);
+}
+body{height:100dvh;font-family:var(--font-b);background:var(--bg)}
+
+.phone{width:100%;height:100dvh;background:var(--bg);display:flex;flex-direction:column;overflow:hidden;position:relative}
+
+/* top bar — vermelho para indicar erro */
+.top-bar{height:5px;background:linear-gradient(90deg,var(--co-800),var(--co-400),var(--am-400),var(--co-400),var(--co-800));flex-shrink:0}
+
+.status-bar{padding:7px 18px 0;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:600;color:var(--text-h);flex-shrink:0}
+
+.app-header{padding:9px 14px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;background:rgba(26,29,40,0.88);backdrop-filter:blur(18px);border-bottom:0.5px solid rgba(255,59,99,0.12)}
+
+.content{padding:0 20px;flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}
+.content::-webkit-scrollbar{display:none}
+
+/* ── ícone central ── */
+.icon-wrap{
+  width:40px;height:40px;border-radius:50%;
+  background:var(--co-50);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:20px;
+  box-shadow:0 0 0 16px rgba(0,0,0,0.132);
+  position:relative;
+  flex-shrink:0;
+}
+/* pulso animado */
+@keyframes ripple{
+  0%{transform:scale(1);opacity:0.5}
+  100%{transform:scale(1.6);opacity:0}
+}
+.icon-wrap::before{
+  content:'';position:absolute;inset:0;border-radius:50%;
+  border:2px solid var(--co-400);
+  animation:ripple 2s ease-out infinite;
+}
+
+.title{font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--text-h);text-align:center;margin-bottom:8px;letter-spacing:-0.4px}
+.subtitle{font-size:13px;color:var(--text-m);text-align:center;line-height:1.6;max-width:260px;margin-bottom:24px}
+
+/* status badge */
+.status-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--co-50);border:1px solid rgba(255,59,99,0.25);
+  border-radius:9999px;padding:4px 12px;
+  font-family:var(--font-m);font-size:9px;font-weight:700;color:var(--co-400);
+  letter-spacing:0.5px;margin-bottom:24px;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--co-400);animation:blink 1.4s ease-in-out infinite}
+
+/* card offline */
+.card{background:var(--surface);border-radius:14px;padding:14px;width:100%;box-shadow:var(--sh-card);margin-bottom:10px}
+.card-warn{background:var(--am-50);border-radius:12px;padding:12px 14px;width:100%;border-left:3px solid var(--am-400);margin-bottom:10px}
+.card-warn-title{font-size:11px;font-weight:700;color:var(--am-800);margin-bottom:3px}
+.card-warn-text{font-size:10px;color:var(--text-b);line-height:1.5}
+
+.data-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid var(--sur-low)}
+.data-row:last-child{border-bottom:none}
+.data-label{font-size:10px;color:var(--text-m)}
+.data-value{font-size:10px;font-weight:600;color:var(--text-h);font-family:var(--font-m)}
+
+.btn-primary{
+  background:linear-gradient(135deg,var(--pri-deep),var(--pri-deep2));
+  color:#fff;border-radius:9999px;padding:12px 16px;
+  font-family:var(--font-b);font-size:13px;font-weight:600;
+  box-shadow:0 4px 12px rgba(0,0,0,0.55);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;border:none;margin-bottom:8px;
+}
+.btn-secondary{
+  background:var(--sur-mid);border-radius:9999px;padding:11px 16px;
+  font-size:12px;font-weight:600;color:var(--text-b);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;border:none;margin-bottom:0;
+}
+
+.mono-tag{font-family:var(--font-m);font-size:9px;color:var(--text-s);text-align:center;margin-top:14px}
+.mono-tag span{color:var(--co-400)}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="top-bar"></div>
+  <div class="status-bar">
+    <span>9:41</span>
+    <!-- ícone sem sinal wifi -->
+    <div style="display:flex;align-items:center;gap:6px">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--co-400)" stroke-width="2" stroke-linecap="round"><path d="M1 1l22 22"/><path d="M16.72 11.06A10.94 10.94 0 0119 12.55"/><path d="M5 12.55a10.94 10.94 0 015.17-2.39"/><path d="M10.71 5.05A16 16 0 0122.56 9"/><path d="M1.42 9a15.91 15.91 0 014.7-2.88"/><path d="M8.53 16.11a6 6 0 016.95 0"/><path d="M12 20h.01"/></svg>
+      <span style="font-size:10px;font-weight:600;color:var(--co-400)">Sem sinal</span>
+    </div>
+  </div>
+
+  <div class="app-header">
+    <img src="assets/logos/logo-color.svg" alt="" height="15px">
+    <div style="display:flex;align-items:center;gap:6px;background:var(--co-50);border:1px solid rgba(255,59,99,0.2);border-radius:9999px;padding:3px 10px">
+      <div class="status-dot"></div>
+      <span style="font-family:var(--font-m);font-size:9px;color:var(--co-400);font-weight:700">OFFLINE</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- Ícone -->
+    <div class="icon-wrap">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--co-400)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 1l22 22"/>
+        <path d="M16.72 11.06A10.94 10.94 0 0119 12.55"/>
+        <path d="M5 12.55a10.94 10.94 0 015.17-2.39"/>
+        <path d="M10.71 5.05A16 16 0 0122.56 9"/>
+        <path d="M1.42 9a15.91 15.91 0 014.7-2.88"/>
+        <path d="M8.53 16.11a6 6 0 016.95 0"/>
+        <path d="M12 20h.01"/>
+      </svg>
+    </div>
+
+    <div class="title">Sem conexão</div>
+    <div class="subtitle">Não foi possível conectar às bases Base Nacional/RENAVAM. Verifique sua rede e tente novamente.</div>
+
+    <div class="status-badge">
+      <div class="status-dot"></div>
+      STATUS: OFFLINE
+    </div>
+
+    <!-- Modo offline card -->
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="width:36px;height:36px;border-radius:10px;background:var(--am-50);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--am-400)" stroke-width="1.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--text-h)">Modo offline disponível</div>
+          <div style="font-size:10px;color:var(--text-m);margin-top:1px">Registros locais sincronizados quando reconectar</div>
+        </div>
+      </div>
+      <div class="data-row"><span class="data-label">Última sincronização</span><span class="data-value">14:32</span></div>
+      <div class="data-row"><span class="data-label">Verificações pendentes</span><span class="data-value" style="color:var(--am-400)">3</span></div>
+      <div class="data-row"><span class="data-label">Base local</span><span class="data-value" style="color:var(--em)">Disponível</span></div>
+    </div>
+
+    <!-- aviso RENAVAM -->
+    <div class="card-warn">
+      <div class="card-warn-title">⚠ Consultas RENAVAM indisponíveis</div>
+      <div class="card-warn-text">No modo offline, verificações contra a base federal ficam suspensas. relatórios emitidos offline precisam de validação posterior.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px;width:100%">
+    <button class="btn-primary">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+      Tentar novamente
+    </button>
+    <button class="btn-secondary">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-b)" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Continuar offline
+    </button>
+  </div>
+
+    <div class="mono-tag">LAST_SYNC: 14:32 · <span>STATUS: OFFLINE</span></div>
+
+  </div>
+</div>
+</body>
+</html>

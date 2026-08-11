@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VerifCar · EC-02 Câmera Negada</title>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"></noscript>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+html,body{overflow:hidden;height:100%}
+:root{--pri-deep:#0C6B4E;--pri-deep2:#149B72;
+  --pri:#23CB97;--pri-50:#0F221D;--pri-100:#16352C;
+  --pri-400:#23CB97;--pri-600:#4FDCB0;--pri-800:#93EED3;
+  --em:#23CB97;--em-50:#0F221D;--em-400:#35D9A4;
+  --am:#F0A92B;--am-50:#2A1F0E;--am-400:#F0A92B;--am-800:#FFD48A;
+  --co:#FF3B63;--co-50:#2B1119;--co-400:#FF3B63;--co-800:#FF95AC;
+  --bg:#12141C;--surface:#1A1D28;
+  --sur-low:#222431;--sur-mid:#282B39;--sur-high:#33374A;
+  --on-s:#F3F5F9;--text-h:#F3F5F9;--text-b:#CBD0DC;--text-m:#8D94A6;--text-s:#666D80;
+  --border:rgba(255,255,255,0.10);
+  --font-d:'Space Grotesk',sans-serif;
+  --font-b:'Inter',sans-serif;
+  --font-m:'JetBrains Mono',monospace;
+  --sh-card:0 1px 3px rgba(0,0,0,.45),0 6px 20px rgba(0,0,0,.30);
+}
+body{height:100dvh;font-family:var(--font-b);background:#12141C}
+
+.phone{width:100%;height:100dvh;background:#12141C;display:flex;flex-direction:column;overflow:hidden;position:relative}
+
+.top-bar{height:5px;background:linear-gradient(90deg,var(--pri-800),var(--pri-400),var(--em-400),var(--pri-400),var(--pri-800));flex-shrink:0}
+
+/* dark camera bg com overlay de bloqueio */
+.cam-bg{
+  position:absolute;inset:0;
+  background:linear-gradient(160deg,#12141C 0%,#1A1D28 60%,#0c0e1c 100%);
+}
+/* grade de terços com opacidade reduzida */
+.cam-grid{position:absolute;inset:0;pointer-events:none;opacity:0.4}
+
+/* guia bloqueado */
+.cam-guide{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);
+  width:240px;height:170px;z-index:3;
+}
+.cam-guide::before,.cam-guide::after{content:'';position:absolute;width:14px;height:14px;border-color:rgba(255,59,99,0.7);border-style:solid}
+.cam-guide::before{top:-1.5px;left:-1.5px;border-width:2px 0 0 2px;border-radius:3px 0 0 0}
+.cam-guide::after{bottom:-1.5px;right:-1.5px;border-width:0 2px 2px 0;border-radius:0 0 3px 0}
+.cam-corner-tr{position:absolute;top:-1.5px;right:-1.5px;width:14px;height:14px;border-top:2px solid rgba(255,59,99,0.7);border-right:2px solid rgba(255,59,99,0.7);border-radius:0 3px 0 0}
+.cam-corner-bl{position:absolute;bottom:-1.5px;left:-1.5px;width:14px;height:14px;border-bottom:2px solid rgba(255,59,99,0.7);border-left:2px solid rgba(255,59,99,0.7);border-radius:0 0 0 3px}
+
+/* ícone câmera bloqueada no centro */
+.cam-blocked{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);
+  z-index:4;display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+
+/* sheet bottom */
+.bottom-sheet{
+  position:absolute;bottom:0;left:0;right:0;z-index:10;
+  background:var(--bg);border-radius:24px 24px 0 0;
+  padding:0 20px 32px;
+  box-shadow:0 -12px 40px rgba(0,0,0,0.5);
+}
+.sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--sur-high);margin:12px auto 16px}
+
+/* header topo câmera */
+.cam-header{position:absolute;top:3px;left:0;right:0;z-index:6;padding:7px 12px 0}
+
+.step-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--pri-50);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--font-d);font-size:10px;font-weight:800;color:var(--pri-800)}
+.step-text{font-size:12px;color:var(--text-b);line-height:1.5;padding-top:2px}
+.step-text strong{color:var(--text-h)}
+
+.btn-primary{
+  background:linear-gradient(135deg,var(--pri-deep),var(--pri-deep2));
+  color:#fff;border-radius:9999px;padding:12px 16px;
+  font-family:var(--font-b);font-size:13px;font-weight:600;
+  box-shadow:0 4px 12px rgba(0,0,0,0.55);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;border:none;margin-bottom:8px;
+}
+.btn-secondary{
+  background:var(--sur-mid);border-radius:9999px;padding:11px 16px;
+  font-size:12px;font-weight:600;color:var(--text-b);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;border:none;
+}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="top-bar"></div>
+
+  <!-- header câmera -->
+  <div class="cam-header">
+    <div style="display:flex;justify-content:space-between;align-items:center;color:rgba(255,255,255,0.8);font-size:10px;font-weight:600;font-family:var(--font-b)">
+      <span>9:41</span><span style="font-size:9px">● ● ●</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:5px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        <img src="assets/logos/logo-white.svg" alt="" height="14px">
+      </div>
+      <!-- badge de erro -->
+      <div style="background:rgba(255,59,99,0.2);border:1px solid rgba(255,59,99,0.5);border-radius:9999px;padding:3px 10px;display:flex;align-items:center;gap:5px">
+        <div style="width:5px;height:5px;border-radius:50%;background:var(--co-400)"></div>
+        <span style="font-family:var(--font-m);font-size:8px;color:rgba(255,59,99,0.9);font-weight:700">CÂMERA BLOQUEADA</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- bg câmera escura -->
+  <div class="cam-bg"></div>
+  <div class="cam-grid">
+    <div style="position:absolute;left:33%;top:0;bottom:0;width:0.5px;background:rgba(255,255,255,0.08)"></div>
+    <div style="position:absolute;left:66%;top:0;bottom:0;width:0.5px;background:rgba(255,255,255,0.08)"></div>
+    <div style="position:absolute;top:33%;left:0;right:0;height:0.5px;background:rgba(255,255,255,0.08)"></div>
+    <div style="position:absolute;top:66%;left:0;right:0;height:0.5px;background:rgba(255,255,255,0.08)"></div>
+  </div>
+
+  <!-- guia vermelho bloqueado -->
+  <div class="cam-guide">
+    <div class="cam-corner-tr"></div>
+    <div class="cam-corner-bl"></div>
+  </div>
+
+  <!-- ícone central bloqueado -->
+  <div class="cam-blocked">
+    <div style="width:64px;height:64px;border-radius:50%;background:rgba(255,59,99,0.15);border:1.5px solid rgba(255,59,99,0.4);display:flex;align-items:center;justify-content:center">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,59,99,0.9)" stroke-width="1.5" stroke-linecap="round">
+        <path d="M1 1l22 22"/>
+        <path d="M21 21H3a2 2 0 01-2-2V8a2 2 0 012-2h3m3-3h6l2 3h4a2 2 0 012 2v9.34"/>
+        <path d="M14.12 14.12A3 3 0 109.88 9.88"/>
+      </svg>
+    </div>
+    <div style="background:rgba(0,0,0,0.55);border-radius:9999px;padding:4px 12px;backdrop-filter:blur(8px)">
+      <span style="font-family:var(--font-m);font-size:8px;color:rgba(255,59,99,0.9);letter-spacing:0.5px;font-weight:700">PERMISSÃO NEGADA</span>
+    </div>
+  </div>
+
+  <!-- Bottom sheet -->
+  <div class="bottom-sheet">
+    <div class="sheet-handle"></div>
+
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <div style="width:40px;height:40px;border-radius:12px;background:var(--am-50);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--am-400)" stroke-width="1.5" stroke-linecap="round">
+          <path d="M1 1l22 22"/>
+          <path d="M21 21H3a2 2 0 01-2-2V8a2 2 0 012-2h3m3-3h6l2 3h4a2 2 0 012 2v9.34"/>
+          <path d="M14.12 14.12A3 3 0 109.88 9.88"/>
+        </svg>
+      </div>
+      <div>
+        <div style="font-family:var(--font-d);font-size:15px;font-weight:800;color:var(--text-h)">Câmera bloqueada</div>
+        <div style="font-size:11px;color:var(--text-m);margin-top:1px">O VerifCar precisa de acesso à câmera para capturar as marcações do veículo.</div>
+      </div>
+    </div>
+
+    <!-- steps -->
+    <div style="background:var(--sur-low);border-radius:14px;padding:14px;margin-bottom:14px">
+      <div style="font-size:9px;font-weight:700;color:var(--text-m);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px">Como liberar o acesso</div>
+
+      <div class="step-row">
+        <div class="step-num">1</div>
+        <div class="step-text">Abra as <strong>Configurações</strong> do dispositivo</div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">2</div>
+        <div class="step-text">Acesse <strong>Privacidade → Câmera</strong></div>
+      </div>
+      <div class="step-row" style="margin-bottom:0">
+        <div class="step-num">3</div>
+        <div class="step-text">Ative o acesso para o <strong>VerifCar</strong> e retorne ao app</div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:2px;width:100%">
+    <button class="btn-primary">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+      Abrir Configurações
+    </button>
+    <button class="btn-secondary">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-b)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h4"/></svg>
+      Inserir dados manualmente
+    </button>
+  </div>
+
+    <div style="font-family:var(--font-m);font-size:9px;color:var(--text-s);text-align:center;margin-top:12px">PERMISSION: <span style="color:var(--am-400)">CAMERA_DENIED</span></div>
+  </div>
+
+</div>
+</body>
+</html>

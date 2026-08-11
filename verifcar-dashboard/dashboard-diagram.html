@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VerifCar · Dashboard · Diagrama de Fluxo</title>
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"></noscript>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+:root{--pri-deep:#0C6B4E;--pri-deep2:#149B72;
+  --pri:#23CB97;--pri-50:#0F221D;--pri-100:#16352C;--pri-400:#23CB97;--pri-600:#4FDCB0;--pri-800:#93EED3;
+  --em:#23CB97;--em-50:#0F221D;--em-400:#35D9A4;
+  --am:#F0A92B;--am-50:#2A1F0E;--am-400:#F0A92B;--am-800:#FFD48A;
+  --co:#FF3B63;--co-50:#2B1119;--co-400:#FF3B63;--co-800:#FF95AC;
+  --bg:#12141C;--surface:#1A1D28;--sur-low:#222431;--border:rgba(255,255,255,0.10);
+  --text-h:#F3F5F9;--text-m:#8D94A6;--text-s:#666D80;
+  --font-d:'Space Grotesk',sans-serif;--font-b:'Inter',sans-serif;--font-m:'JetBrains Mono',monospace;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:var(--font-b);color:var(--text-h)}
+
+/* Rainbow bar */
+.rainbow-bar{position:fixed;top:0;left:0;right:0;height:3px;z-index:100;background:linear-gradient(90deg,var(--pri-800),var(--pri-400),var(--em-400),var(--pri-400),var(--pri-800));box-shadow:0 0 16px rgba(0,0,0,1.0)}
+
+/* Topbar */
+.topbar{position:fixed;top:3px;left:0;right:0;height:52px;background:rgba(14,16,36,.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;padding:0 24px;z-index:50}
+.logo-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--pri-400),var(--pri-600));display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.topbar-title{font-family:var(--font-d);font-size:14px;font-weight:800;color:#fff;letter-spacing:2px}
+.topbar-sub{font-family:var(--font-m);font-size:9px;color:var(--text-s);letter-spacing:1px;margin-left:2px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.topbar-btn{font-family:var(--font-b);font-size:11px;font-weight:600;padding:6px 14px;border-radius:9999px;cursor:pointer;transition:all .15s;border:1px solid var(--border);color:var(--text-m);background:var(--surface)}
+.topbar-btn:hover{color:#fff;background:var(--sur-low)}
+.topbar-btn.primary{background:linear-gradient(135deg,var(--pri-deep),var(--pri-deep2));color:#fff;border-color:transparent;box-shadow:0 4px 12px rgba(0,0,0,0.88)}
+.launch-badge{font-family:var(--font-m);font-size:8px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:1px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:4px;padding:1px 7px}
+
+/* Canvas */
+.canvas{position:fixed;top:55px;inset:0;top:55px;cursor:grab;overflow:hidden}
+.canvas:active{cursor:grabbing}
+#world{position:absolute;transform-origin:0 0;will-change:transform}
+
+/* Screen card */
+.screen-card{position:absolute;border-radius:16px;overflow:hidden;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;transition:box-shadow .2s,border-color .2s,transform .2s;user-select:none}
+.screen-card:hover{border-color:rgba(35,203,151,.6);box-shadow:0 8px 32px rgba(0,0,0,1.0),0 0 0 1px rgba(0,0,0,0.66);transform:translateY(-2px) scale(1.01)}
+.screen-card.active-card{border-color:var(--pri-400);box-shadow:0 12px 40px rgba(0,0,0,1.0),0 0 0 2px rgba(0,0,0,0.88)}
+
+.card-topbar{height:22px;display:flex;align-items:center;gap:5px;padding:0 8px;background:rgba(35,203,151,.6);border-bottom:1px solid var(--border);flex-shrink:0}
+.card-dot{width:5px;height:5px;border-radius:50%}
+.card-title{font-family:var(--font-m);font-size:7px;font-weight:700;color:rgba(255,255,255,.4);margin-left:auto;letter-spacing:.8px}
+
+.card-body{width:100%;position:relative;overflow:hidden}
+.card-body canvas{width:100%;height:100%;display:block}
+
+.card-label{position:absolute;bottom:0;left:0;right:0;padding:8px 10px;background:linear-gradient(0deg,rgba(14,16,36,.95),transparent);z-index:2}
+.card-label-name{font-family:var(--font-d);font-size:10px;font-weight:800;color:#fff}
+.card-label-sub{font-family:var(--font-m);font-size:7px;color:rgba(255,255,255,.45);margin-top:1px;letter-spacing:.5px}
+
+.card-badge{position:absolute;top:28px;right:7px;font-family:var(--font-m);font-size:7px;font-weight:700;padding:2px 6px;border-radius:9999px;z-index:3}
+.card-badge.principal{background:rgba(35,203,151,.3);color:rgba(255,255,255,.7);border:1px solid rgba(35,203,151,.4)}
+.card-badge.operacional{background:rgba(35,203,151,.2);color:rgba(35,203,151,.8);border:1px solid rgba(35,203,151,.25)}
+.card-badge.sistema{background:rgba(240,169,43,.2);color:rgba(240,169,43,.8);border:1px solid rgba(240,169,43,.25)}
+
+/* SVG arrows */
+#arrows-svg{position:absolute;top:0;left:0;pointer-events:none;overflow:visible}
+.arrow-path{fill:none;stroke-width:1.5;stroke-linecap:round}
+.arrow-path.flow{stroke:rgba(35,203,151,.5);stroke-dasharray:none}
+.arrow-path.alt{stroke:rgba(35,203,151,.3);stroke-dasharray:5,3}
+.arrow-path.detail{stroke:rgba(35,203,151,.35);stroke-dasharray:4,4}
+.arrow-head{fill:rgba(35,203,151,.55)}
+.arrow-head.detail{fill:rgba(35,203,151,.4)}
+
+/* Controls */
+.controls{position:fixed;bottom:20px;right:20px;display:flex;gap:6px;z-index:50}
+.ctrl{width:34px;height:34px;border-radius:10px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:var(--text-m);transition:all .15s}
+.ctrl:hover{background:var(--sur-low);color:#fff}
+
+/* Legend */
+.legend{position:fixed;bottom:20px;left:20px;background:rgba(26,30,58,.9);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:12px;padding:12px 16px;z-index:50}
+.leg-title{font-family:var(--font-m);font-size:8px;font-weight:700;color:var(--text-s);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px}
+.leg-row{display:flex;align-items:center;gap:8px;padding:2px 0;font-size:9px;color:var(--text-m)}
+.leg-line{width:24px;height:2px;border-radius:1px;flex-shrink:0}
+
+/* Info panel */
+.info-panel{position:fixed;right:16px;top:70px;width:260px;background:rgba(26,30,58,.96);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:14px;padding:16px;z-index:50;transition:opacity .2s,transform .2s;transform:translateX(280px);opacity:0;pointer-events:none}
+.info-panel.show{transform:translateX(0);opacity:1;pointer-events:all}
+.info-close{position:absolute;top:10px;right:10px;width:24px;height:24px;border-radius:6px;background:rgba(255,255,255,.06);border:none;cursor:pointer;color:var(--text-s);display:flex;align-items:center;justify-content:center;font-size:14px}
+.info-close:hover{color:#fff;background:rgba(255,255,255,.12)}
+.info-num{font-family:var(--font-m);font-size:9px;font-weight:700;color:var(--pri-400);letter-spacing:1px;margin-bottom:4px}
+.info-title{font-family:var(--font-d);font-size:14px;font-weight:800;color:#fff;margin-bottom:4px}
+.info-sub{font-size:10px;color:var(--text-m);line-height:1.5;margin-bottom:12px}
+.info-feature{display:flex;align-items:flex-start;gap:7px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:10px;color:var(--text-m)}
+.info-feature:last-child{border-bottom:none}
+.info-feature svg{flex-shrink:0;margin-top:1px;opacity:.6}
+
+/* Grid dot background */
+body::before{content:'';position:fixed;inset:0;top:55px;background-image:radial-gradient(rgba(35,203,151,.18) 1px,transparent 1px);background-size:28px 28px;pointer-events:none;z-index:0}
+
+/* Section labels */
+.section-label{position:absolute;font-family:var(--font-m);font-size:8px;font-weight:700;color:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:2px;pointer-events:none}
+</style>
+</head>
+<body>
+<div class="rainbow-bar"></div>
+
+<div class="topbar">
+  <span class="topbar-title">VerifCar</span>
+  <span class="launch-badge">WEB</span>
+  <span class="topbar-sub">DASHBOARD · DIAGRAMA DE FLUXO</span>
+  <div class="topbar-right">
+    <span style="font-family:var(--font-m);font-size:9px;color:var(--text-s)">8 telas · 3 grupos</span>
+    <button class="topbar-btn" onclick="resetView()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+      Resetar
+    </button>
+    <button class="topbar-btn primary" onclick="openDashboard()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      Abrir dashboard
+    </button>
+  </div>
+</div>
+
+<div class="canvas" id="canvas">
+  <div id="world">
+    <svg id="arrows-svg"></svg>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="leg-title">Legenda de fluxo</div>
+  <div class="leg-row"><div class="leg-line" style="background:rgba(35,203,151,.7)"></div>Navegação principal</div>
+  <div class="leg-row"><div class="leg-line" style="background:rgba(35,203,151,.4);background-image:repeating-linear-gradient(90deg,rgba(35,203,151,.4) 0,rgba(35,203,151,.4) 4px,transparent 4px,transparent 8px)"></div>Navegação alternativa</div>
+  <div class="leg-row"><div class="leg-line" style="background:rgba(35,203,151,.5);background-image:repeating-linear-gradient(90deg,rgba(35,203,151,.5) 0,rgba(35,203,151,.5) 3px,transparent 3px,transparent 7px)"></div>Acesso a detalhe</div>
+</div>
+
+<div class="controls">
+  <button class="ctrl" onclick="adjustZoom(1.2)" title="Zoom in">+</button>
+  <button class="ctrl" onclick="adjustZoom(.83)" title="Zoom out">−</button>
+</div>
+
+<div class="info-panel" id="infoPanel">
+  <button class="info-close" onclick="closeInfo()">✕</button>
+  <div class="info-num" id="ip-num"></div>
+  <div class="info-title" id="ip-title"></div>
+  <div class="info-sub" id="ip-sub"></div>
+  <div id="ip-features"></div>
+  <button style="width:100%;margin-top:12px;padding:8px;border-radius:9999px;background:linear-gradient(135deg,var(--pri-deep),var(--pri-deep2));color:#fff;font-weight:700;font-size:11px;border:none;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.88)" id="ip-btn" onclick="">Abrir tela →</button>
+</div>
+
+<script>
+// ── Screens definition ─────────────────────────────────────
+const SCREENS = [
+  {
+    id:'s01',file:'dash-01-visao-geral.html',num:'01',
+    label:'Visão Geral',sub:'Dashboard principal · KPIs globais',
+    group:'principal',
+    x:300,y:120,w:220,h:148,
+    color:'#23CB97',
+    features:['5 KPIs · verificações, divergências, score, tempo, qualidade','Mapa de calor geográfico · ES','Alertas recentes · últimas 24h','Tendência 7 dias (gráfico de barras)','Tabela das últimas 10 verificações'],
+    desc:'Tela inicial do dashboard. Oferece visão macro de todas as operações com KPIs em tempo real, mapa de concentração de ocorrências e alertas recentes.',
+    draw: drawVisaoGeral
+  },
+  {
+    id:'s02',file:'dash-02-monitoramento.html',num:'02',
+    label:'Monitoramento',sub:'Live feed · alertas críticos',
+    group:'principal',
+    x:560,y:120,w:220,h:148,
+    color:'#FF3B63',
+    features:['Feed em tempo real de verificações','Alertas críticos com prioridade','Resumo do turno atual','Clock em tempo real','Destaque de divergências recentes'],
+    desc:'Monitoramento ao vivo das operações de campo. Exibe o feed de verificações conforme chegam, com destaque para alertas críticos que requerem ação imediata.',
+    draw: drawMonitoramento
+  },
+  {
+    id:'s03',file:'dash-03-tatica.html',num:'03',
+    label:'Análise Tática',sub:'Mapa de calor · municípios',
+    group:'principal',
+    x:820,y:120,w:220,h:148,
+    color:'#F0A92B',
+    features:['Mapa de calor por região do ES','Alertas táticos por concentração','Top marcas com divergências','Tabela por município · ordenável','Tendência por cidade'],
+    desc:'Análise espacial e tática das ocorrências por região. Permite identificar padrões geográficos e municípios com maior concentração de divergências.',
+    draw: drawTatica
+  },
+  {
+    id:'s04',file:'dash-04-inteligencia.html',num:'04',
+    label:'Inteligência',sub:'Grafo de conexões · clusters',
+    group:'principal',
+    x:1080,y:120,w:220,h:148,
+    color:'#8B7CF6',
+    features:['Grafo interativo de conexões','Clusters de veículos / VINs / inspetores','Detecção de padrões de adulteração','Filtros por tipo de nó','Seleção e detalhamento de conexões'],
+    desc:'Motor de inteligência investigativa. Visualiza conexões entre VINs, placas, inspetores e ocorrências para identificar redes de adulteração.',
+    draw: drawInteligencia
+  },
+  {
+    id:'s05',file:'dash-05-detalhe.html',num:'05',
+    label:'Detalhe',sub:'Ficha completa da verificação',
+    group:'operacional',
+    x:560,y:360,w:220,h:148,
+    color:'#35D9A4',
+    features:['Hero com score ring e placa destacada','4 evidências fotográficas com overlay','Análise por componente (chassi/VIN/vidros)','Dados RENAVAM e metadados da verificação','Ações: assinar, exportar PDF, escalar'],
+    desc:'Ficha completa de uma verificação individual. Espelha o app mobile com todas as evidências, análises e dados do RENAVAM em layout desktop.',
+    draw: drawDetalhe
+  },
+  {
+    id:'s06',file:'dash-06-performance.html',num:'06',
+    label:'Performance',sub:'Métricas · rankings · heatmap',
+    group:'operacional',
+    x:820,y:360,w:220,h:148,
+    color:'#23CB97',
+    features:['5 KPIs de performance operacional','Gráfico de linha SVG · 30 dias','Donut de distribuição de resultados','Ranking de inspetores com barras','Heatmap de atividade hora/dia'],
+    desc:'Painel de performance operacional. Acompanha volume, taxa de aprovação, ranking de inspetores e padrões de atividade ao longo do tempo.',
+    draw: drawPerformance
+  },
+  {
+    id:'s07',file:'dash-07-busca.html',num:'07',
+    label:'Busca Avançada',sub:'Busca · filtros · paginação',
+    group:'operacional',
+    x:300,y:360,w:220,h:148,
+    color:'#23CB97',
+    features:['Barra de busca full-text em tempo real','Filtros por resultado, período e unidade','Tabela com ordenação por coluna','Paginação dinâmica (8 por página)','Exportar CSV dos resultados filtrados'],
+    desc:'Motor de busca avançada do sistema. Permite localizar qualquer verificação por VIN, placa, modelo ou inspetores, com filtros combinados e exportação.',
+    draw: drawBusca
+  },
+  {
+    id:'s08',file:'dash-08-configuracoes.html',num:'08',
+    label:'Configurações',sub:'RBAC · IA · auditoria · sistema',
+    group:'sistema',
+    x:690,y:580,w:220,h:148,
+    color:'#F0A92B',
+    features:['Controle de acesso RBAC (5 perfis)','Limiares de scoring e alertas','Controles do modelo de IA','Log de auditoria com filtros','Integrações externas e zona de perigo'],
+    desc:'Central de governança e configuração do sistema. Gerencia perfis de acesso, regras de scoring, modelo de IA, auditoria de conformidade LGPD e integrações.',
+    draw: drawConfiguracoes
+  },
+];
+
+// ── Mini-screen drawing functions (canvas mock) ────────────
+
+function drawBase(ctx,w,h,color){
+  // sidebar
+  ctx.fillStyle='#1A1D28';
+  ctx.fillRect(0,0,w,h);
+  ctx.fillStyle=color+'30';
+  ctx.fillRect(0,0,38,h);
+  // nav items
+  for(let i=0;i<6;i++){
+    ctx.fillStyle=i===0?color+'60':'rgba(255,255,255,.08)';
+    ctx.beginPath();ctx.roundRect(4,40+i*16,30,10,3);ctx.fill();
+  }
+  // topbar
+  ctx.fillStyle='rgba(26,29,40,.06)';
+  ctx.fillRect(38,0,w-38,20);
+  ctx.fillStyle='rgba(255,255,255,.12)';
+  ctx.fillRect(38,0,w-38,1);
+}
+
+function drawVisaoGeral(ctx,w,h){
+  drawBase(ctx,w,h,'#23CB97');
+  // 5 KPI cards
+  const cw=(w-50)/5,pad=2;
+  ['#23CB97','#FF3B63','#F0A92B','#35D9A4','#8B7CF6'].forEach((c,i)=>{
+    ctx.fillStyle='rgba(255,255,255,.05)';ctx.beginPath();ctx.roundRect(40+i*(cw+pad),24,cw,22,3);ctx.fill();
+    ctx.fillStyle=c;ctx.fillRect(40+i*(cw+pad),24,cw,2);
+    ctx.fillStyle='rgba(255,255,255,.6)';ctx.font='bold 7px sans-serif';ctx.fillText(['1247','4.2%','32','3:42','94%'][i],42+i*(cw+pad),36);
+  });
+  // map placeholder
+  ctx.fillStyle='rgba(35,203,151,.12)';ctx.beginPath();ctx.roundRect(40,50,110,52,4);ctx.fill();
+  ctx.fillStyle='rgba(255,59,99,.4)';ctx.beginPath();ctx.arc(95,70,10,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='rgba(240,169,43,.35)';ctx.beginPath();ctx.arc(75,80,7,0,Math.PI*2);ctx.fill();
+  // alerts
+  ctx.fillStyle='rgba(255,255,255,.04)';ctx.beginPath();ctx.roundRect(155,50,w-48-115,52,4);ctx.fill();
+  for(let i=0;i<5;i++){ctx.fillStyle=i%2===0?'rgba(255,59,99,.6)':'rgba(240,169,43,.6)';ctx.beginPath();ctx.arc(163,58+i*9,3,0,Math.PI*2);ctx.fill();ctx.fillStyle='rgba(255,255,255,.3)';ctx.fillRect(170,55+i*9,60,3);}
+  // table
+  ctx.fillStyle='rgba(255,255,255,.04)';ctx.beginPath();ctx.roundRect(40,106,w-50,28,4);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.08)';ctx.fillRect(40,106,w-50,7);
+  for(let i=0;i<4;i++){ctx.fillStyle='rgba(255,255,255,.15)';ctx.fillRect(40,114+i*5,w-50,1);}
+}
+
+function drawMonitoramento(ctx,w,h){
+  drawBase(ctx,w,h,'#FF3B63');
+  // live badge
+  ctx.fillStyle='rgba(35,203,151,.2)';ctx.beginPath();ctx.roundRect(w-55,6,48,10,5);ctx.fill();
+  ctx.fillStyle='rgba(35,203,151,.8)';ctx.font='bold 6px sans-serif';ctx.fillText('● AO VIVO',w-52,13);
+  // feed column
+  ctx.fillStyle='rgba(255,255,255,.04)';ctx.beginPath();ctx.roundRect(40,24,100,110,4);ctx.fill();
+  for(let i=0;i<7;i++){
+    const c=i===2?'rgba(255,59,99,.3)':i===4?'rgba(240,169,43,.2)':'rgba(255,255,255,.04)';
+    ctx.fillStyle=c;ctx.fillRect(41,25+i*15,98,13);
+    const dot=i===2?'#FF3B63':i===4?'#F0A92B':'#35D9A4';
+    ctx.fillStyle=dot;ctx.beginPath();ctx.arc(50,32+i*15,4,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.3)';ctx.fillRect(57,28+i*15,50,3);ctx.fillRect(57,33+i*15,30,2);
+  }
+  // alerts column
+  ctx.fillStyle='rgba(255,59,99,.08)';ctx.beginPath();ctx.roundRect(145,24,w-50-105,70,4);ctx.fill();
+  ctx.fillStyle='rgba(255,59,99,.3)';ctx.fillRect(145,24,w-50-105,2);
+  for(let i=0;i<3;i++){ctx.fillStyle='rgba(255,255,255,.06)';ctx.fillRect(146,27+i*21,w-52-105,19);}
+  // turno
+  ctx.fillStyle='rgba(255,255,255,.04)';ctx.beginPath();ctx.roundRect(145,98,w-50-105,36,4);ctx.fill();
+  for(let i=0;i<4;i++){ctx.fillStyle='rgba(255,255,255,.2)';ctx.fillRect(150,103+i*7,60,2);ctx.fillStyle='rgba(255,255,255,.5)';ctx.fillRect(200,103+i*7,15,2);}
+}
+
+function drawTatica(ctx,w,h){
+  drawBase(ctx,w,h,'#F0A92B');
+  // kpis 4
+  const cw=(w-50)/4;
+  ['#23CB97','#FF3B63','#F0A92B','#35D9A4'].forEach((c,i)=>{
+    ctx.fillStyle='rgba(255,255,255,.05)';ctx.beginPath();ctx.roundRect(40+i*(cw+2),24,cw,18,3);ctx.fill();
+    ctx.fillStyle=c;ctx.fillRect(40+i*(cw+2),24,cw,2);
+  });
+  // map + alerts grid
+  ctx.fillStyle='rgba(35,203,151,.1)';ctx.beginPath();ctx.roundRect(40,46,120,60,4);ctx.fill();
+  // blobs
+  [{x:85,y:72,r:14,c:'rgba(255,59,99,.35)'},{x:70,y:80,r:10,c:'rgba(240,169,43,.3)'},{x:100,y:60,r:8,c:'rgba(240,169,43,.25)'}].forEach(b=>{ctx.fillStyle=b.c;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();});
+  // alert panel
+  ctx.fillStyle='rgba(255,255,255,.04)';ctx.beginPath();ctx.roundRect(165,46,w-52-125,60,4);ctx.fill();
+  for(let i=0;i<3;i++){ctx.fillStyle=i===0?'rgba(255,59,99,.4)':'rgba(240,169,43,.3)';ctx.beginPath();ctx.arc(172,56+i*17,3,0,Math.PI*2);ctx.fill();ctx.fillStyle='rgba(255,255,255,.25)';ctx.fillRect(178,53+i*17,55,3);ctx.fillRect(178,58+i*17,35,2);}
+  // table
+  ctx.fillStyle='rgba(255,255,255,.04)';ctx.beginPath();ctx.roundRect(40,110,w-50,25,4);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.07)';ctx.fillRect(40,110,w-50,7);
+  for(let i=0;i<3;i++){ctx.fillStyle='rgba(255,255,255,.12)';ctx.fillRect(40,118+i*5.5,w-50,1);}
+}
+
+function drawInteligencia(ctx,w,h){
+  drawBase(ctx,w,h,'#8B7CF6');
+  // graph bg
+  ctx.fillStyle='rgba(35,203,151,.07)';ctx.beginPath();ctx.roundRect(40,24,130,110,4);ctx.fill();
+  // dot grid
+  for(let x=45;x<170;x+=10)for(let y=30;y<130;y+=10){ctx.fillStyle='rgba(35,203,151,.15)';ctx.beginPath();ctx.arc(x,y,0.8,0,Math.PI*2);ctx.fill();}
+  // nodes
+  const nodes=[{x:80,y:65,r:8,c:'#FF3B63'},{x:110,y:55,r:7,c:'#F0A92B'},{x:130,y:80,r:7,c:'#F0A92B'},{x:95,y:95,r:6,c:'#35D9A4'},{x:60,y:88,r:6,c:'#35D9A4'},{x:145,y:55,r:5,c:'#23CB97'},{x:75,y:45,r:5,c:'#8B7CF6'},{x:120,y:105,r:5,c:'#8B7CF6'}];
+  const edges=[[0,1],[0,2],[1,2],[1,5],[2,3],[3,4],[0,6],[2,7]];
+  ctx.lineWidth=1;
+  edges.forEach(([a,b])=>{ctx.strokeStyle=a===0||b===0?'rgba(255,59,99,.4)':'rgba(35,203,151,.25)';ctx.setLineDash(a===0||b===0?[3,2]:[]);ctx.beginPath();ctx.moveTo(nodes[a].x,nodes[a].y);ctx.lineTo(nodes[b].x,nodes[b].y);ctx.stroke();ctx.setLineDash([]);});
+  nodes.forEach(n=>{ctx.fillStyle=n.c;ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,Math.PI*2);ctx.fill();ctx.strokeStyle='rgba(255,255,255,.3)';ctx.lineWidth=1;ctx.stroke();});
+  // detail panel
+  ctx.fillStyle='rgba(255,255,255,.04)';ctx.beginPath();ctx.roundRect(175,24,w-52-135,110,4);ctx.fill();
+  for(let i=0;i<5;i++){ctx.fillStyle='rgba(255,255,255,.08)';ctx.fillRect(180,30+i*18,50,12);}
+}
+
+function drawDetalhe(ctx,w,h){
+  drawBase(ctx,w,h,'#35D9A4');
+  // hero
+  const grd=ctx.createLinearGradient(38,24,w-2,60);grd.addColorStop(0,'#12A47A');grd.addColorStop(1,'#1BA87C');
+  ctx.fillStyle=grd;ctx.beginPath();ctx.roundRect(40,24,w-50,30,4);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.7)';ctx.font='bold 8px sans-serif';ctx.fillText('Honda Civic 2020',45,38);
+  ctx.fillStyle='rgba(255,255,255,.25)';ctx.font='6px sans-serif';ctx.fillText('GHT-3A12 · Score 87',45,48);
+  // score ring
+  ctx.strokeStyle='rgba(255,59,99,.5)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(w-22,38,10,-.5*Math.PI,.8*Math.PI);ctx.stroke();
+  ctx.fillStyle='#FF3B63';ctx.font='bold 6px sans-serif';ctx.fillText('87',w-25,41);
+  // 2 col
+  ctx.fillStyle='rgba(255,255,255,.04)';ctx.beginPath();ctx.roundRect(40,58,90,50,4);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.04)';ctx.beginPath();ctx.roundRect(135,58,w-52-95,50,4);ctx.fill();
+  // evidence 2x2
+  [[42,60],[90,60],[42,82],[90,82]].forEach(([x,y],i)=>{
+    ctx.fillStyle=i===1?'rgba(255,59,99,.25)':'rgba(255,255,255,.08)';ctx.fillRect(x,y,45,20);
+    if(i===1){ctx.strokeStyle='rgba(255,59,99,.5)';ctx.lineWidth=1;ctx.strokeRect(x,y,45,20);}
+  });
+  // timeline
+  for(let i=0;i<4;i++){const c=i===0?'#FF3B63':i===1?'#F0A92B':'#35D9A4';ctx.fillStyle=c;ctx.beginPath();ctx.arc(145,65+i*12,3,0,Math.PI*2);ctx.fill();ctx.fillStyle='rgba(255,255,255,.2)';ctx.fillRect(151,63+i*12,40,2);}
+  // actions
+  ctx.fillStyle='rgba(35,203,151,.4)';ctx.beginPath();ctx.roundRect(40,112,w-50,14,9999);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.7)';ctx.font='bold 7px sans-serif';ctx.textAlign='center';ctx.fillText('Assinar relatório',40+(w-50)/2,121);ctx.textAlign='left';
+}
+
+function drawPerformance(ctx,w,h){
+  drawBase(ctx,w,h,'#23CB97');
+  // 5 kpis strip
+  const cw=(w-50)/5;
+  ['#23CB97','#35D9A4','#FF3B63','#F0A92B','#8B7CF6'].forEach((c,i)=>{
+    ctx.fillStyle='rgba(255,255,255,.05)';ctx.beginPath();ctx.roundRect(40+i*(cw+1.5),24,cw,18,3);ctx.fill();
+    ctx.fillStyle=c;ctx.fillRect(40+i*(cw+1.5),24,cw,2);
+    ctx.fillStyle='rgba(255,255,255,.4)';ctx.font='bold 7px sans-serif';ctx.fillText(['1247','95.8%','52','3:42','47'][i],43+i*(cw+1.5),36);
+  });
+  // line chart
+  ctx.fillStyle='rgba(255,255,255,.04)';ctx.beginPath();ctx.roundRect(40,46,120,42,4);ctx.fill();
+  const pts=[[42,80],[52,76],[62,70],[72,73],[82,65],[92,68],[102,60],[112,63],[122,55],[132,58],[142,52],[152,55]];
+  ctx.strokeStyle='rgba(35,203,151,.7)';ctx.lineWidth=1.5;ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();
+  // donut
+  ctx.fillStyle='rgba(255,255,255,.04)';ctx.beginPath();ctx.roundRect(165,46,w-52-125,42,4);ctx.fill();
+  ctx.strokeStyle='rgba(35,203,151,.2)';ctx.lineWidth=6;ctx.beginPath();ctx.arc(w-37,67,12,0,Math.PI*2);ctx.stroke();
+  ctx.strokeStyle='#35D9A4';ctx.lineWidth=6;ctx.beginPath();ctx.arc(w-37,67,12,-.5*Math.PI,.5*Math.PI*2*.9);ctx.stroke();
+  // ranking
+  ctx.fillStyle='rgba(255,255,255,.04)';ctx.beginPath();ctx.roundRect(40,92,w-50,42,4);ctx.fill();
+  for(let i=0;i<4;i++){ctx.fillStyle='rgba(35,203,151,.25)';const bw=[90,75,60,45][i];ctx.beginPath();ctx.roundRect(55,97+i*9,bw,4,2);ctx.fill();ctx.fillStyle='rgba(255,255,255,.25)';ctx.fillRect(45,97+i*9,8,4);}
+}
+
+function drawBusca(ctx,w,h){
+  drawBase(ctx,w,h,'#23CB97');
+  // search bar
+  ctx.fillStyle='rgba(255,255,255,.06)';ctx.beginPath();ctx.roundRect(40,24,w-50,18,9999);ctx.fill();
+  ctx.strokeStyle='rgba(35,203,151,.4)';ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(40,24,w-50,18,9999);ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.25)';ctx.font='6px sans-serif';ctx.fillText('🔍  Buscar por VIN, placa, modelo...',45,35);
+  // filters
+  ['Todos','Compatível','Atenção','Divergente'].forEach((t,i)=>{
+    ctx.fillStyle=i===0?'rgba(35,203,151,.8)':'rgba(255,255,255,.06)';ctx.beginPath();ctx.roundRect(40+i*44,46,40,10,9999);ctx.fill();
+    ctx.fillStyle=i===0?'rgba(255,255,255,.7)':'rgba(255,255,255,.3)';ctx.font='5px sans-serif';ctx.fillText(t,43+i*44,53);
+  });
+  // table
+  ctx.fillStyle='rgba(255,255,255,.04)';ctx.beginPath();ctx.roundRect(40,60,w-50,72,4);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.07)';ctx.fillRect(40,60,w-50,9);
+  ['VIN','Veículo','Data','Inspetores','Score','Resultado'].forEach((t,i)=>{ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='bold 5px sans-serif';ctx.fillText(t,43+i*25,67);});
+  for(let i=0;i<8;i++){ctx.fillStyle='rgba(255,255,255,.05)';ctx.fillRect(40,69+i*7.5,w-50,1);ctx.fillStyle='rgba(255,255,255,.2)';ctx.fillRect(43,71+i*7.5,40,3);if(i===3){ctx.fillStyle='rgba(255,59,99,.5)';ctx.beginPath();ctx.roundRect(155,70+i*7.5,25,5,3);ctx.fill();}}
+  // pagination
+  for(let i=0;i<5;i++){ctx.fillStyle=i===0?'rgba(35,203,151,.8)':'rgba(255,255,255,.06)';ctx.beginPath();ctx.roundRect(85+i*17,136,13,9,3);ctx.fill();}
+}
+
+function drawConfiguracoes(ctx,w,h){
+  drawBase(ctx,w,h,'#F0A92B');
+  // tabs
+  ['Acesso','Alertas','IA','Auditoria','Sistema'].forEach((t,i)=>{
+    ctx.fillStyle=i===0?'rgba(35,203,151,.25)':'rgba(255,255,255,.04)';ctx.beginPath();ctx.roundRect(40+i*34,24,32,11,3);ctx.fill();
+    if(i===0){ctx.fillStyle='rgba(35,203,151,.6)';ctx.fillRect(40,35,32,1);}
+    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='5px sans-serif';ctx.fillText(t,42+i*34,31);
+  });
+  // RBAC list
+  ctx.fillStyle='rgba(255,255,255,.04)';ctx.beginPath();ctx.roundRect(40,40,100,92,4);ctx.fill();
+  ['AF','IP','PT','GI','SA'].forEach((ab,i)=>{
+    const c=['#35D9A4','#F0A92B','#23CB97','#FF3B63','#23CB97'][i];
+    ctx.fillStyle=c+'40';ctx.beginPath();ctx.roundRect(46,45+i*17,12,12,3);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.5)';ctx.font='bold 5px sans-serif';ctx.textAlign='center';ctx.fillText(ab,52,53+i*17);ctx.textAlign='left';
+    ctx.fillStyle='rgba(255,255,255,.3)';ctx.fillRect(62,47+i*17,40,3);ctx.fillRect(62,52+i*17,25,2);
+    ctx.fillStyle=c+'50';ctx.beginPath();ctx.roundRect(108,47+i*17,25,8,9999);ctx.fill();
+  });
+  // toggles / controls
+  ctx.fillStyle='rgba(255,255,255,.04)';ctx.beginPath();ctx.roundRect(145,40,w-52-105,44,4);ctx.fill();
+  for(let i=0;i<4;i++){
+    ctx.fillStyle='rgba(255,255,255,.15)';ctx.fillRect(148,46+i*10,50,3);
+    ctx.fillStyle=i<2?'rgba(35,203,151,.5)':'rgba(240,169,43,.5)';ctx.beginPath();ctx.roundRect(w-52-12,44+i*10,12,6,9999);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.6)';ctx.beginPath();ctx.arc(i<2?w-47:w-52,47+i*10,2.5,0,Math.PI*2);ctx.fill();
+  }
+  ctx.fillStyle='rgba(255,255,255,.04)';ctx.beginPath();ctx.roundRect(145,88,w-52-105,44,4);ctx.fill();
+  for(let i=0;i<3;i++){ctx.fillStyle='rgba(255,255,255,.12)';ctx.fillRect(148,94+i*13,40,3);}
+}
+
+// ── Layout ──────────────────────────────────────────────────
+let worldScale=1, worldTx=0, worldTy=60, isDragging=false, dragSt={x:0,y:0};
+
+function init(){
+  const world=document.getElementById('world');
+  world.style.transform=`translate(${worldTx}px,${worldTy}px) scale(${worldScale})`;
+
+  // Section labels
+  [
+    {label:'PRINCIPAL',x:285,y:90},{label:'OPERACIONAL',x:285,y:330},{label:'SISTEMA',x:680,y:550}
+  ].forEach(s=>{
+    const el=document.createElement('div');
+    el.className='section-label';el.textContent=s.label;
+    el.style.left=s.x+'px';el.style.top=s.y+'px';
+    world.appendChild(el);
+  });
+
+  // Cards
+  SCREENS.forEach(s=>{
+    const card=document.createElement('div');
+    card.className='screen-card';card.id='card-'+s.id;
+    card.style.left=s.x+'px';card.style.top=s.y+'px';
+    card.style.width=s.w+'px';card.style.height=s.h+'px';
+
+    // topbar
+    const tb=document.createElement('div');
+    tb.className='card-topbar';
+    tb.innerHTML=`<div class="card-dot" style="background:#FF3B63"></div><div class="card-dot" style="background:#F0A92B"></div><div class="card-dot" style="background:#35D9A4"></div><div class="card-title">${s.file}</div>`;
+    card.appendChild(tb);
+
+    // canvas
+    const cv=document.createElement('canvas');
+    cv.width=s.w*2;cv.height=(s.h-22)*2;
+    cv.style.width=s.w+'px';cv.style.height=(s.h-22)+'px';
+    const ctx=cv.getContext('2d');ctx.scale(2,2);
+    s.draw(ctx,s.w,s.h-22);
+    card.appendChild(cv);
+
+    // badge
+    const b=document.createElement('div');
+    b.className='card-badge '+s.group;
+    b.textContent={principal:'PRINCIPAL',operacional:'OPERACIONAL',sistema:'SISTEMA'}[s.group];
+    card.appendChild(b);
+
+    // label overlay
+    const lbl=document.createElement('div');
+    lbl.className='card-label';
+    lbl.innerHTML=`<div class="card-label-name">${s.num} · ${s.label}</div><div class="card-label-sub">${s.sub}</div>`;
+    card.appendChild(lbl);
+
+    card.addEventListener('click',()=>openInfo(s));
+    world.appendChild(card);
+  });
+
+  // Arrows
+  drawArrows();
+
+  // Pan
+  const canvas=document.getElementById('canvas');
+  canvas.addEventListener('mousedown',e=>{isDragging=true;dragSt={x:e.clientX-worldTx,y:e.clientY-worldTy}});
+  window.addEventListener('mousemove',e=>{if(isDragging){worldTx=e.clientX-dragSt.x;worldTy=e.clientY-dragSt.y;applyTransform();}});
+  window.addEventListener('mouseup',()=>isDragging=false);
+  canvas.addEventListener('wheel',e=>{e.preventDefault();adjustZoom(e.deltaY<0?1.1:.91);},{passive:false});
+}
+
+function applyTransform(){
+  document.getElementById('world').style.transform=`translate(${worldTx}px,${worldTy}px) scale(${worldScale})`;
+}
+
+function adjustZoom(f){
+  worldScale=Math.min(2.5,Math.max(.25,worldScale*f));
+  applyTransform();
+}
+
+function resetView(){worldScale=.9;worldTx=60;worldTy=20;applyTransform();}
+
+function openDashboard(){window.open('dash-index.html','_blank')||window.location.assign('dash-index.html');}
+
+function drawArrows(){
+  // Compute card center-bottom and center-top for edges
+  const svg=document.getElementById('arrows-svg');
+  svg.setAttribute('width','2000');svg.setAttribute('height','1000');
+
+  const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
+  ['flow','alt','detail'].forEach(t=>{
+    const m=document.createElementNS('http://www.w3.org/2000/svg','marker');
+    m.setAttribute('id','arr-'+t);m.setAttribute('markerWidth','8');m.setAttribute('markerHeight','8');
+    m.setAttribute('refX','6');m.setAttribute('refY','3');m.setAttribute('orient','auto');
+    const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+    p.setAttribute('d','M0,0 L0,6 L8,3 z');
+    p.setAttribute('fill',t==='detail'?'rgba(35,203,151,.45)':t==='alt'?'rgba(35,203,151,.35)':'rgba(35,203,151,.55)');
+    m.appendChild(p);defs.appendChild(m);
+  });
+  svg.appendChild(defs);
+
+  function center(s){return{x:s.x+s.w/2,y:s.y+s.h/2};}
+  function bottom(s){return{x:s.x+s.w/2,y:s.y+s.h};}
+  function top(s){return{x:s.x+s.w/2,y:s.y};}
+  function right(s){return{x:s.x+s.w,y:s.y+s.h/2};}
+  function left(s){return{x:s.x,y:s.y+s.h/2};}
+
+  const G={};SCREENS.forEach(s=>G[s.id]=s);
+
+  const ARROWS=[
+    // Principal flow
+    {from:'s01',to:'s02',type:'flow',fromPt:'right',toPt:'left'},
+    {from:'s02',to:'s03',type:'flow',fromPt:'right',toPt:'left'},
+    {from:'s03',to:'s04',type:'flow',fromPt:'right',toPt:'left'},
+    // Principal to Operacional
+    {from:'s01',to:'s07',type:'alt',fromPt:'bottom',toPt:'top'},
+    {from:'s02',to:'s05',type:'detail',fromPt:'bottom',toPt:'top'},
+    {from:'s03',to:'s05',type:'detail',fromPt:'bottom',toPt:'top'},
+    {from:'s04',to:'s05',type:'detail',fromPt:'bottom',toPt:'top'},
+    // Operacional inter
+    {from:'s07',to:'s05',type:'flow',fromPt:'right',toPt:'left'},
+    {from:'s05',to:'s06',type:'flow',fromPt:'right',toPt:'left'},
+    {from:'s05',to:'s04',type:'alt',fromPt:'top',toPt:'bottom'},
+    // To Configurações
+    {from:'s06',to:'s08',type:'alt',fromPt:'bottom',toPt:'top'},
+    {from:'s07',to:'s08',type:'alt',fromPt:'bottom',toPt:'top'},
+  ];
+
+  const ptFns={top,bottom,left,right,center};
+
+  ARROWS.forEach(a=>{
+    const s=G[a.from],t=G[a.to];if(!s||!t)return;
+    const p1=ptFns[a.fromPt](s);const p2=ptFns[a.toPt](t);
+    const dx=p2.x-p1.x,dy=p2.y-p1.y;
+    let d;
+    if(a.fromPt==='right'&&a.toPt==='left'){
+      const cx1=p1.x+Math.abs(dx)*.4,cx2=p2.x-Math.abs(dx)*.4;
+      d=`M${p1.x},${p1.y} C${cx1},${p1.y} ${cx2},${p2.y} ${p2.x},${p2.y}`;
+    } else {
+      const cy1=p1.y+Math.abs(dy)*.5,cy2=p2.y-Math.abs(dy)*.5;
+      d=`M${p1.x},${p1.y} C${p1.x},${cy1} ${p2.x},${cy2} ${p2.x},${p2.y}`;
+    }
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',d);
+    path.setAttribute('class','arrow-path '+a.type);
+    path.setAttribute('marker-end','url(#arr-'+a.type+')');
+    svg.insertBefore(path,svg.querySelector('defs').nextSibling);
+  });
+}
+
+function openInfo(s){
+  document.querySelectorAll('.screen-card').forEach(c=>c.classList.remove('active-card'));
+  document.getElementById('card-'+s.id)?.classList.add('active-card');
+  document.getElementById('ip-num').textContent='TELA '+s.num+' · '+s.group.toUpperCase();
+  document.getElementById('ip-title').textContent=s.label;
+  document.getElementById('ip-sub').textContent=s.desc;
+  document.getElementById('ip-features').innerHTML=s.features.map(f=>`
+    <div class="info-feature">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--pri-400)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      ${f}
+    </div>`).join('');
+  document.getElementById('ip-btn').onclick=()=>window.open(s.file,'_blank');
+  document.getElementById('ip-btn').textContent='Abrir '+s.label+' →';
+  document.getElementById('infoPanel').classList.add('show');
+}
+
+function closeInfo(){
+  document.getElementById('infoPanel').classList.remove('show');
+  document.querySelectorAll('.screen-card').forEach(c=>c.classList.remove('active-card'));
+}
+
+window.addEventListener('load',()=>{init();resetView();});
+</script>
+</body>
+</html>

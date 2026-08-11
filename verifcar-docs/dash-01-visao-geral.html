@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VerifCar · Dashboard · [NOME DA TELA]</title>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"></noscript>
+
+<style>
+/* ── Reset ─────────────────────────────────────────── */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+
+/* ── Tokens (idênticos ao app) ─────────────────────── */
+:root{--pri-deep:#0C6B4E;--pri-deep2:#149B72;
+  --pri:#23CB97; --pri-50:#0F221D; --pri-100:#16352C;
+  --pri-400:#23CB97; --pri-600:#4FDCB0; --pri-800:#93EED3;
+  --em:#23CB97; --em-50:#0F221D; --em-400:#35D9A4;
+  --am:#F0A92B; --am-50:#2A1F0E; --am-400:#F0A92B; --am-800:#FFD48A;
+  --co:#FF3B63; --co-50:#2B1119; --co-400:#FF3B63; --co-800:#FF95AC;
+
+  --bg:#12141C; --surface:#1A1D28;
+  --sur-low:#222431; --sur-mid:#282B39; --sur-high:#33374A;
+  --text-h:#F3F5F9; --text-b:#CBD0DC; --text-m:#8D94A6; --text-s:#666D80;
+  --border:rgba(255,255,255,0.10);
+
+  --font-d:'Space Grotesk',sans-serif;
+  --font-b:'Inter',sans-serif;
+  --font-m:'JetBrains Mono',monospace;
+
+  --sh-card:0 1px 3px rgba(0,0,0,.45),0 6px 20px rgba(0,0,0,.30);
+  --sh-panel:0 2px 10px rgba(0,0,0,.35);
+  --sh-sidebar:2px 0 28px rgba(0,0,0,.42);
+
+  /* Layout */
+  --sidebar-w:220px;
+  --topbar-h:52px;
+}
+
+html,body{height:100%;overflow:hidden;font-family:var(--font-b);background:var(--bg);color:var(--text-h)}
+
+/* ════════════════════════════════════════════════════
+   SHELL — grade principal da página
+   ════════════════════════════════════════════════════ */
+.dash-shell{
+  display:grid;
+  grid-template-columns:var(--sidebar-w) 1fr;
+  grid-template-rows:var(--topbar-h) 1fr;
+  grid-template-areas:
+    "sidebar topbar"
+    "sidebar content";
+  height:100vh;
+  overflow:hidden;
+}
+
+/* ════════════════════════════════════════════════════
+   BARRA ARCO-ÍRIS (identidade do app no topo)
+   ════════════════════════════════════════════════════ */
+.rainbow-bar{
+  position:fixed;top:0;left:0;right:0;height:3px;z-index:100;
+  background:linear-gradient(90deg,var(--pri-800),var(--pri-400),var(--em-400),var(--pri-400),var(--pri-800));
+  box-shadow:0 1px 8px rgba(0,0,0,0.55);
+}
+
+/* ════════════════════════════════════════════════════
+   SIDEBAR
+   ════════════════════════════════════════════════════ */
+.sidebar{
+  grid-area:sidebar;
+  background:var(--sur-low);
+  display:flex;flex-direction:column;
+  height:100vh;
+  box-shadow:var(--sh-sidebar);
+  padding-top:3px; /* espaço pro rainbow-bar */
+  position:relative;
+  z-index:50;
+  overflow:hidden;
+}
+
+/* Logo */
+.sb-logo{
+  display:flex;align-items:center;gap:10px;
+  padding:16px 18px 14px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  flex-shrink:0;
+}
+.sb-logo-mark{
+  width:32px;height:32px;border-radius:10px;
+  background:linear-gradient(135deg,var(--pri-400),var(--pri-600));
+  border:1px solid rgba(255,255,255,.15);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 8px rgba(0,0,0,.3);
+  flex-shrink:0;
+}
+.sb-logo-text{
+  font-family:var(--font-d);font-size:15px;font-weight:800;
+  color:#fff;letter-spacing:2px;
+}
+.sb-logo-badge{
+  font-family:var(--font-m);font-size:7px;font-weight:700;
+  color:rgba(255,255,255,.45);letter-spacing:1px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  border-radius:4px;padding:1px 5px;margin-left:auto;
+}
+
+/* Nav */
+.sb-nav{
+  flex:1;padding:10px 10px;display:flex;flex-direction:column;gap:2px;
+  overflow-y:auto;
+}
+.sb-nav::-webkit-scrollbar{display:none}
+
+.sb-section-label{
+  font-family:var(--font-m);font-size:8px;font-weight:700;
+  color:rgba(255,255,255,.25);letter-spacing:1.5px;text-transform:uppercase;
+  padding:8px 8px 4px;
+}
+
+.sb-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 10px;border-radius:10px;
+  font-family:var(--font-b);font-size:12px;font-weight:500;
+  color:rgba(255,255,255,.5);
+  cursor:pointer;transition:all .15s ease;
+  text-decoration:none;border:none;background:none;width:100%;text-align:left;
+}
+.sb-item:hover{
+  background:rgba(255,255,255,.06);
+  color:rgba(255,255,255,.8);
+}
+.sb-item.active{
+  background:rgba(35,203,151,.25);
+  color:#fff;font-weight:600;
+  border:1px solid rgba(35,203,151,.35);
+}
+.sb-item svg{flex-shrink:0;opacity:.7}
+.sb-item.active svg{opacity:1}
+.sb-item-label{flex:1}
+.sb-badge{
+  font-family:var(--font-m);font-size:8px;font-weight:700;
+  background:var(--co-400);color:#fff;
+  border-radius:9999px;padding:1px 6px;min-width:16px;text-align:center;
+}
+.sb-badge.amber{background:var(--am-400)}
+.sb-badge.green{background:var(--em-400)}
+.sb-badge.blue{background:var(--pri-400)}
+
+/* Footer do sidebar */
+.sb-footer{
+  border-top:1px solid rgba(255,255,255,.08);
+  padding:12px 10px;flex-shrink:0;
+}
+.sb-user{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 10px;border-radius:10px;cursor:pointer;
+  transition:background .15s;
+}
+.sb-user:hover{background:rgba(255,255,255,.06)}
+.sb-avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,var(--pri-400),var(--pri-600));
+  border:1.5px solid rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  font-family:var(--font-d);font-size:11px;font-weight:800;color:#fff;
+}
+.sb-user-info{flex:1;min-width:0}
+.sb-user-name{font-size:11px;font-weight:600;color:rgba(255,255,255,.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-user-role{font-family:var(--font-m);font-size:8px;color:rgba(255,255,255,.35);margin-top:1px}
+.sb-online{width:7px;height:7px;border-radius:50%;background:var(--em-400);box-shadow:0 0 6px var(--em);flex-shrink:0}
+
+/* ════════════════════════════════════════════════════
+   TOPBAR
+   ════════════════════════════════════════════════════ */
+.topbar{
+  grid-area:topbar;
+  height:var(--topbar-h);
+  background:rgba(26,29,40,.92);
+  backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+  padding:0 24px;
+  position:sticky;top:0;z-index:40;
+  padding-top:3px; /* rainbow bar */
+}
+.topbar-title{
+  font-family:var(--font-d);font-size:15px;font-weight:800;
+  color:var(--text-h);flex:1;
+}
+.topbar-divider{width:1px;height:20px;background:var(--border)}
+
+/* Filtros de período */
+.period-pills{display:flex;gap:4px}
+.period-pill{
+  font-family:var(--font-b);font-size:11px;font-weight:600;
+  padding:4px 12px;border-radius:9999px;
+  background:transparent;border:1px solid var(--border);
+  color:var(--text-m);cursor:pointer;transition:all .15s;
+}
+.period-pill:hover{background:var(--sur-low);color:var(--text-h)}
+.period-pill.active{
+  background:var(--pri-deep2);color:#fff;border-color:var(--pri-deep2);
+}
+
+/* Botões do topbar */
+.topbar-btn{
+  width:34px;height:34px;border-radius:10px;
+  background:var(--sur-low);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .15s;color:var(--text-m);
+  position:relative;
+}
+.topbar-btn:hover{background:var(--sur-mid);color:var(--text-h)}
+.topbar-notif-dot{
+  position:absolute;top:-2px;right:-2px;
+  width:8px;height:8px;border-radius:50%;
+  background:var(--co-400);border:1.5px solid var(--bg);
+}
+.topbar-avatar{
+  width:34px;height:34px;border-radius:10px;
+  background:linear-gradient(135deg,var(--pri-50),var(--pri-100));
+  border:1.5px solid var(--pri-100);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-d);font-size:11px;font-weight:800;
+  color:var(--pri-800);cursor:pointer;
+}
+
+/* Filtro de escopo */
+.scope-select{
+  display:flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:600;color:var(--text-b);
+  background:var(--sur-low);border:1px solid var(--border);
+  border-radius:9999px;padding:4px 12px;cursor:pointer;
+}
+.scope-select svg{opacity:.5}
+
+/* Stats inline no topbar (monitoramento) */
+.topbar-stats{display:flex;align-items:center;gap:0}
+.ts-cell{
+  display:flex;flex-direction:column;align-items:center;gap:1px;
+  padding:0 14px;border-right:1px solid var(--border);
+}
+.ts-cell:last-child{border-right:none}
+.ts-val{font-family:var(--font-d);font-size:15px;font-weight:800;color:var(--text-h);line-height:1}
+.ts-lbl{font-family:var(--font-m);font-size:8px;color:var(--text-s);letter-spacing:.5px;white-space:nowrap}
+
+/* Status badge no topbar */
+.topbar-status{
+  display:flex;align-items:center;gap:5px;
+  font-family:var(--font-m);font-size:9px;font-weight:700;
+  padding:3px 10px;border-radius:9999px;
+}
+.topbar-status.live{
+  background:var(--em-50);border:1px solid rgba(35,203,151,.2);color:var(--em);
+}
+.topbar-status.live::before{
+  content:'';width:6px;height:6px;border-radius:50%;background:var(--em-400);
+  animation:blink 1.4s ease-in-out infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ════════════════════════════════════════════════════
+   CONTENT AREA — iframe full
+   ════════════════════════════════════════════════════ */
+.content{
+  grid-area:content;
+  overflow:hidden;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+}
+#main-frame{
+  width:100%;flex:1;border:none;display:block;
+}
+
+/* ════════════════════════════════════════════════════
+   COMPONENTES REUTILIZÁVEIS
+   ════════════════════════════════════════════════════ */
+
+/* Seção com título */
+.section-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:12px;
+}
+.section-title{
+  font-family:var(--font-d);font-size:13px;font-weight:800;
+  color:var(--text-h);
+}
+.section-action{
+  font-size:11px;font-weight:600;color:var(--pri-400);cursor:pointer;
+}
+
+/* KPI cards */
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
+.kpi-card{
+  background:var(--surface);border-radius:14px;
+  padding:14px 16px;
+  box-shadow:var(--sh-card);
+  border:1px solid var(--border);
+  border-top:3px solid var(--border);
+  position:relative;overflow:hidden;
+}
+.kpi-card.blue{border-top-color:var(--pri-400)}
+.kpi-card.green{border-top-color:var(--em-400)}
+.kpi-card.amber{border-top-color:var(--am-400)}
+.kpi-card.red{border-top-color:var(--co-400)}
+.kpi-card.purple{border-top-color:#8B7CF6}
+
+.kpi-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-s);margin-bottom:6px}
+.kpi-value{font-family:var(--font-d);font-size:26px;font-weight:800;color:var(--text-h);line-height:1}
+.kpi-change{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:10px;font-weight:700;margin-top:6px;
+  padding:2px 7px;border-radius:9999px;
+}
+.kpi-change.up{background:var(--em-50);color:var(--em)}
+.kpi-change.up-bad{background:var(--co-50);color:var(--co-400)}
+.kpi-change.down{background:var(--co-50);color:var(--co-400)}
+.kpi-change.down-good{background:var(--em-50);color:var(--em)}
+
+/* Painéis */
+.panel{
+  background:var(--surface);border-radius:14px;
+  border:1px solid var(--border);
+  box-shadow:var(--sh-card);
+  overflow:hidden;
+  display: flex;flex-direction:column;
+}
+.panel-header{
+  padding:14px 16px 0;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.panel-title{font-family:var(--font-d);font-size:12px;font-weight:800;color:var(--text-h)}
+.panel-subtitle{font-size:10px;color:var(--text-s);margin-top:2px}
+.panel-body{padding:12px 16px 16px}
+
+/* Tabela */
+.data-table{width:100%;border-collapse:collapse}
+.data-table thead th{
+  font-family:var(--font-b);font-size:10px;font-weight:700;
+  color:var(--text-s);text-align:left;text-transform:uppercase;letter-spacing:.7px;
+  padding:10px 12px;
+  background:var(--sur-low);
+  border-bottom:1px solid var(--border);
+}
+.data-table tbody td{
+  font-size:12px;color:var(--text-b);
+  padding:10px 12px;
+  border-bottom:1px solid var(--sur-low);
+}
+.data-table tbody tr:last-child td{border-bottom:none}
+.data-table tbody tr:hover td{background:var(--sur-low)}
+
+/* Badges */
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  font-family:var(--font-b);font-size:10px;font-weight:700;
+  padding:2px 8px;border-radius:9999px;
+}
+.badge-ok{background:var(--em-50);color:var(--em);border:1px solid rgba(35,203,151,.15)}
+.badge-warn{background:var(--am-50);color:var(--am-800);border:1px solid rgba(240,169,43,.2)}
+.badge-err{background:var(--co-50);color:var(--co-800);border:1px solid rgba(255,59,99,.15)}
+.badge-info{background:var(--pri-50);color:var(--pri-600);border:1px solid var(--pri-100)}
+
+/* Mono tag */
+.mono{font-family:var(--font-m);font-size:11px;color:var(--text-m)}
+.mono-sm{font-family:var(--font-m);font-size:9px;color:var(--text-s)}
+
+/* Botões */
+.btn-primary{
+  background:linear-gradient(135deg,var(--pri-deep),var(--pri-deep2));
+  color:#fff;border-radius:9999px;padding:8px 18px;
+  font-family:var(--font-b);font-size:12px;font-weight:600;
+  box-shadow:0 4px 12px rgba(0,0,0,0.55);
+  cursor:pointer;display:inline-flex;align-items:center;gap:7px;
+  border:none;transition:opacity .15s;
+}
+.btn-primary:hover{opacity:.9}
+.btn-secondary{
+  background:var(--sur-mid);border:1px solid var(--border);
+  border-radius:9999px;padding:7px 16px;
+  font-size:12px;font-weight:600;color:var(--text-b);
+  cursor:pointer;display:inline-flex;align-items:center;gap:7px;
+  transition:background .15s;
+}
+.btn-secondary:hover{background:var(--sur-high)}
+
+/* Alert items */
+.alert-item{
+  display:flex;gap:10px;align-items:flex-start;
+  padding:10px 16px;border-bottom:1px solid var(--sur-low);
+}
+.alert-item:last-child{border-bottom:none}
+.alert-dot{
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;
+}
+.alert-dot.red{background:var(--co-400);box-shadow:0 0 6px rgba(0,0,0,0.88)}
+.alert-dot.amber{background:var(--am-400);box-shadow:0 0 6px rgba(0,0,0,0.88)}
+.alert-dot.green{background:var(--em-400)}
+.alert-text{font-size:12px;color:var(--text-b);line-height:1.4}
+.alert-meta{font-size:10px;color:var(--text-s);margin-top:2px}
+
+/* Progress bar */
+.progress-bar{height:6px;background:var(--sur-high);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;transition:width .4s ease}
+
+/* Score ring placeholder */
+.score-ring{
+  width:52px;height:52px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-d);font-size:14px;font-weight:800;
+  position:relative;flex-shrink:0;
+}
+
+/* Layout helpers */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.grid-60-40{display:grid;grid-template-columns:1.5fr 1fr;gap:16px}
+.grid-70-30{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+.flex-col{display:flex;flex-direction:column;gap:16px}
+
+/* Divider */
+.divider{height:1px;background:var(--sur-high);margin:4px 0}
+
+/* Tooltip básico */
+[data-tip]{position:relative}
+[data-tip]:hover::after{
+  content:attr(data-tip);
+  position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);
+  background:var(--text-h);color:#fff;
+  font-size:10px;font-weight:600;padding:4px 8px;border-radius:6px;
+  white-space:nowrap;pointer-events:none;z-index:999;
+}
+
+/* Mapa placeholder */
+.map-placeholder{
+  background:linear-gradient(160deg,#e8ecf8 0%,#eef0fa 100%);
+  border-radius:10px;
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.map-placeholder::before{
+  content:'';position:absolute;inset:0;
+  background:
+    repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(35,203,151,.04) 28px,rgba(35,203,151,.04) 29px),
+    repeating-linear-gradient(90deg,transparent,transparent 28px,rgba(35,203,151,.04) 28px,rgba(35,203,151,.04) 29px);
+}
+.map-label{font-family:var(--font-m);font-size:10px;color:var(--text-s);z-index:1;letter-spacing:1px}
+.heat-dot{position:absolute;border-radius:50%;filter:blur(12px);opacity:.35;pointer-events:none}
+
+/* Chart placeholder */
+.chart-bars{
+  display:flex;align-items:flex-end;gap:6px;
+  padding:8px 8px 4px;
+  height:100%;
+}
+.chart-bar{
+  flex:1;border-radius:4px 4px 0 0;
+  background:linear-gradient(180deg,var(--pri-400),var(--pri-600));
+  opacity:.5;transition:opacity .15s;min-width:0;
+}
+.chart-bar:hover{opacity:.8}
+.chart-bar.hi{opacity:.85}
+</style>
+</head>
+<body>
+
+<!-- Barra arco-íris (identidade) -->
+<div class="rainbow-bar"></div>
+
+<!-- Shell -->
+<div class="dash-shell">
+
+  <!-- ── SIDEBAR ──────────────────────────────────── -->
+  <aside class="sidebar">
+    <!-- Logo -->
+    <div class="sb-logo">
+      <img src="logo-white.svg" alt="VerifCar" height="26">
+      <!-- <span class="sb-logo-text">VerifCar</span> -->
+      <span class="sb-logo-badge">WEB</span>
+    </div>
+
+    <!-- Navegação -->
+    <nav class="sb-nav">
+      <div class="sb-section-label">Principal</div>
+
+      <button class="sb-item active" onclick="goTo('visao-geral')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span class="sb-item-label">Visão geral</span>
+      </button>
+
+      <button class="sb-item" onclick="goTo('monitoramento')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+        <span class="sb-item-label">Monitoramento</span>
+        <span class="sb-badge">3</span>
+      </button>
+
+      <button class="sb-item" onclick="goTo('tatica')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+        <span class="sb-item-label">Análise tática</span>
+      </button>
+
+      <button class="sb-item" onclick="goTo('inteligencia')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        <span class="sb-item-label">Inteligência</span>
+      </button>
+
+      <div class="sb-section-label" style="margin-top:4px">Operacional</div>
+
+      <button class="sb-item" onclick="goTo('busca')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span class="sb-item-label">Busca avançada</span>
+      </button>
+
+      <button class="sb-item" onclick="goTo('performance')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span class="sb-item-label">Performance</span>
+      </button>
+
+      <div class="sb-section-label" style="margin-top:4px">Sistema</div>
+
+      <button class="sb-item" onclick="goTo('configuracoes')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        <span class="sb-item-label">Configurações</span>
+      </button>
+
+      <!-- Notificações — pinned bottom -->
+      <button class="sb-item" id="sb-notif" onclick="toggleNotif()" style="margin-top:auto;position:relative">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <span class="sb-item-label">Notificações</span>
+        <span class="sb-badge" id="sb-notif-badge">3</span>
+      </button>
+    </nav>
+
+    <!-- Footer / usuário -->
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">GS</div>
+        <div class="sb-user-info">
+          <div class="sb-user-name">Marina Duarte</div>
+          <div class="sb-user-role">ADMIN · ES</div>
+        </div>
+        <div class="sb-online"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── TOPBAR ────────────────────────────────────── -->
+  <header class="topbar" id="topbar">
+    <h1 class="topbar-title" id="topbar-title">Visão geral</h1>
+    <div id="topbar-controls" style="display:flex;align-items:center;gap:10px"></div>
+  </header>
+
+  <!-- ── CONTENT — iframe full ────────────────────── -->
+  <main class="content">
+    <iframe id="main-frame" src="dash-01-visao-geral-content.html" allowfullscreen></iframe>
+  </main>
+</div>
+
+<script src="data.js"></script>
+<script>
+const ROUTES = {
+  'visao-geral':   'dash-01-visao-geral-content.html',
+  'monitoramento': 'dash-02-monitoramento.html',
+  'tatica':        'dash-03-tatica.html',
+  'inteligencia':  'dash-04-inteligencia.html',
+  'detalhe':       'dash-05-detalhe.html',
+  'performance':   'dash-06-performance.html',
+  'busca':         'dash-07-busca.html',
+  'configuracoes': 'dash-08-configuracoes.html',
+};
+
+const TITLES = {
+  'visao-geral':   'Visão geral',
+  'monitoramento': 'Monitoramento',
+  'tatica':        'Análise tática',
+  'inteligencia':  'Inteligência',
+  'detalhe':       'Detalhe da verificação',
+  'performance':   'Performance',
+  'busca':         'Busca avançada',
+  'configuracoes': 'Configurações',
+};
+
+// ── SVGs utilitários ──────────────────────────────────────
+const SVG = {
+  export: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
+  pin:    `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
+  chev:   `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>`,
+  back:   `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>`,
+  save:   `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>`,
+  search: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+};
+
+// ── Helpers HTML ──────────────────────────────────────────
+const divider  = () => `<div class="topbar-divider"></div>`;
+const livePill = () => `<div class="topbar-status live">AO VIVO</div>`;
+const syncSpan = () => `<span class="topbar-sync" id="topbar-sync" style="font-family:var(--font-m);font-size:9px;color:var(--text-s)"></span>`;
+
+const periodPills = (active='7d') => `
+  <div class="period-pills">
+    ${[['Hoje','hoje'],['7 dias','7d'],['30 dias','30d'],['Custom','custom']].map(([l,v])=>
+      `<button class="period-pill${v===active?' active':''}" onclick="setPeriod('${v}',this)">${l}</button>`
+    ).join('')}
+  </div>`;
+
+const scopeSelect = () => `
+  <div class="scope-select">
+    ${SVG.pin} ES · Todas unidades ${SVG.chev}
+  </div>`;
+
+const btnExport = (tip='Exportar') => `
+  <button class="topbar-btn" data-tip="${tip}" onclick="exportAction()">
+    ${SVG.export}
+  </button>`;
+
+// ── Configuração de controles por rota ───────────────────
+function topbarControls(rota) {
+  switch (rota) {
+
+    case 'visao-geral':
+      return periodPills() + divider() + scopeSelect() + livePill() + syncSpan() + btnExport();
+
+    case 'monitoramento': {
+      const tots = DB.totais();
+      return `
+        
+        <div class="topbar-stats">
+          <div class="ts-cell">
+            <span class="ts-val">${tots.verificacoes}</span>
+            <span class="ts-lbl">Verificações</span>
+          </div>
+          <div class="ts-cell">
+            <span class="ts-val" style="color:var(--em)">${tots.ok}</span>
+            <span class="ts-lbl">Compatíveis</span>
+          </div>
+          <div class="ts-cell">
+            <span class="ts-val" style="color:var(--am)">${tots.warn}</span>
+            <span class="ts-lbl">Atenção</span>
+          </div>
+          <div class="ts-cell">
+            <span class="ts-val" style="color:var(--co-400)">${tots.err}</span>
+            <span class="ts-lbl">Divergências</span>
+          </div>
+          <div class="ts-cell">
+            <span class="ts-val">${DB.inspetores.length}</span>
+            <span class="ts-lbl">Inspetores ativos</span>
+          </div>
+        </div>
+        ${divider()}
+        ${syncSpan()}
+        ${divider()}
+        ${livePill()}
+        `;
+    }
+
+    case 'tatica':
+      return periodPills() + divider() + scopeSelect() + btnExport('Exportar CSV');
+
+    case 'inteligencia':
+      // filtros de tipo espelham os filter-chips da tela via postMessage
+      return `
+        <div class="period-pills" id="intel-filters">
+          ${['Todos','Veículos','VINs','Inspetores','Ocorrências'].map((l,i)=>
+            `<button class="period-pill${i===0?' active':''}"
+              onclick="intelFilter('${l.toLowerCase()}',this)">${l}</button>`
+          ).join('')}
+        </div>` + divider() + btnExport('Exportar grafo');
+
+    case 'detalhe':
+      return `
+        <button class="topbar-btn" data-tip="Voltar" onclick="goTo('busca')" style="width:auto;padding:0 14px;gap:6px;font-size:11px;font-weight:600;color:var(--text-b)">
+          ${SVG.back} Voltar
+        </button>` + divider() + btnExport('Exportar PDF');
+
+    case 'performance':
+      return periodPills() + divider() + scopeSelect() + btnExport();
+
+    case 'busca':
+      return `
+        <div style="display:flex;align-items:center;gap:6px;background:var(--sur-low);border:1px solid var(--border);border-radius:9999px;padding:4px 14px;min-width:220px">
+          ${SVG.search}
+          <input id="topbar-search" type="text" placeholder="Buscar VIN, placa, modelo…"
+            style="border:none;background:none;outline:none;font-size:11px;font-weight:500;color:var(--text-h);width:100%"
+            oninput="relaySearch(this.value)"
+            onkeydown="if(event.key==='Enter')relaySearch(this.value)">
+        </div>` + divider() + scopeSelect() + btnExport('Exportar CSV');
+
+    case 'configuracoes':
+      return `
+        <button class="topbar-btn" style="width:auto;padding:0 16px;gap:6px;font-size:11px;font-weight:600;background:linear-gradient(135deg,var(--pri-deep),var(--pri-deep2));color:#fff;border:none;box-shadow:0 4px 12px rgba(0,0,0,0.55)"
+          onclick="relayAction('saveAll')">
+          ${SVG.save} Salvar
+        </button>`;
+
+    default: return '';
+  }
+}
+
+// ── Navegação ─────────────────────────────────────────────
+let rotaAtual = 'visao-geral';
+
+function goTo(rota) {
+  const src = ROUTES[rota];
+  if (!src) return;
+  rotaAtual = rota;
+  document.getElementById('main-frame').src = src;
+
+  // Sidebar ativo
+  const ORDER = ['visao-geral','monitoramento','tatica','inteligencia','busca','performance','configuracoes'];
+  document.querySelectorAll('.sb-item').forEach((el, i) => {
+    el.classList.toggle('active', ORDER[i] === rota);
+  });
+
+  // Notificações: fecha drawer se aberto
+  document.getElementById('notif-drawer')?.remove();
+
+  // Topbar
+  document.getElementById('topbar-title').textContent = TITLES[rota] || rota;
+  document.getElementById('topbar-controls').innerHTML = topbarControls(rota);
+}
+
+// ── Ações do topbar ───────────────────────────────────────
+function setPeriod(val, btn) {
+  btn.closest('.period-pills').querySelectorAll('.period-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  relayAction('setPeriod', val);
+}
+
+function intelFilter(tipo, btn) {
+  btn.closest('#intel-filters').querySelectorAll('.period-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  relayAction('filterGraph', tipo);
+}
+
+function exportAction() {
+  relayAction('export');
+}
+
+// Envia comando para o iframe filho
+function relayAction(action, payload) {
+  try {
+    document.getElementById('main-frame').contentWindow.postMessage({ action, payload }, '*');
+  } catch(e) {}
+}
+
+// Envia busca para a tela de busca
+function relaySearch(val) {
+  relayAction('search', val);
+}
+
+// ── postMessage das telas filhas ──────────────────────────
+window.addEventListener('message', e => {
+  if (!e.data) return;
+  if (e.data.goTo) goTo(e.data.goTo);
+});
+
+// ── Notificações ──────────────────────────────────────────
+function toggleNotif() {
+  let drawer = document.getElementById('notif-drawer');
+  if (!drawer) {
+    drawer = document.createElement('div');
+    drawer.id = 'notif-drawer';
+    drawer.style.cssText = `
+      position:fixed;left:var(--sidebar-w);bottom:0;width:280px;
+      background:#fff;border:1px solid var(--border);border-radius:0 14px 0 0;
+      box-shadow:4px -4px 24px rgba(0,0,0,0.264);z-index:200;
+      font-family:var(--font-b);overflow:hidden;
+    `;
+    const alertas = DB.alertas;
+    drawer.innerHTML = `
+      <div style="padding:12px 16px;border-bottom:1px solid var(--sur-low);display:flex;align-items:center;justify-content:space-between">
+        <span style="font-family:var(--font-d);font-size:12px;font-weight:800;color:var(--text-h)">Notificações</span>
+        <button onclick="document.getElementById('notif-drawer').remove()" style="border:none;background:none;cursor:pointer;color:var(--text-s);font-size:16px;line-height:1">×</button>
+      </div>
+      ${alertas.map(a => `
+        <div style="display:flex;gap:10px;padding:10px 16px;border-bottom:1px solid var(--sur-low);cursor:pointer" onclick="goTo('monitoramento');document.getElementById('notif-drawer').remove()">
+          <div style="width:7px;height:7px;border-radius:50%;background:${a.tipo==='err'?'var(--co-400)':'var(--am-400)'};flex-shrink:0;margin-top:4px"></div>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-b)">${a.texto}</div>
+            <div style="font-size:10px;color:var(--text-s);margin-top:1px">${a.meta}</div>
+          </div>
+        </div>`).join('')}
+    `;
+    document.body.appendChild(drawer);
+  } else {
+    drawer.remove();
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────
+document.getElementById('sb-notif-badge').textContent = DB.alertas.length;
+document.getElementById('topbar-controls').innerHTML = topbarControls('visao-geral');
+
+function tick() {
+  const t = new Date().toTimeString().slice(0,8);
+  const el = document.getElementById('topbar-sync');
+  if (el) el.textContent = t;
+}
+tick();
+setInterval(tick, 1000);
+</script>
+</body>
+</html>

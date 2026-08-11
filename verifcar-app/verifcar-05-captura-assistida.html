@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=100%, initial-scale=1">
+<title>VerifCar · 05 Captura Assistida</title>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"></noscript>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+:root{--pri-deep:#0C6B4E;--pri-deep2:#149B72;
+  --pri:#23CB97;--pri-50:#0F221D;--pri-100:#16352C;
+  --pri-400:#23CB97;--pri-600:#4FDCB0;--pri-800:#93EED3;
+  --em:#23CB97;--em-50:#0F221D;--em-400:#35D9A4;
+  --am:#F0A92B;--am-50:#2A1F0E;--am-400:#F0A92B;
+  --co:#FF3B63;--co-50:#2B1119;
+  --bg:#12141C;--surface:#1A1D28;
+  --sur-low:#222431;--sur-mid:#282B39;--sur-high:#33374A;
+  --text-h:#F3F5F9;--text-b:#CBD0DC;--text-m:#8D94A6;--text-s:#666D80;
+  --border:rgba(255,255,255,0.10);--outline-v:rgba(255,255,255,0.16);
+  --font-d:'Space Grotesk',sans-serif;
+  --font-b:'Inter',sans-serif;
+  --font-m:'JetBrains Mono',monospace;
+  --sh-card:0 1px 3px rgba(0,0,0,.45),0 6px 20px rgba(0,0,0,.30);
+  --sh-lg:0 24px 48px rgba(0,0,0,.52),0 6px 14px rgba(0,0,0,.34);
+}
+body{
+  min-height:100vh;font-family:var(--font-b);
+  margin:0;padding:0;overflow-x:hidden;
+}
+h1{font-family:var(--font-d);font-weight:800;font-size:28px;color:var(--pri-800);margin-bottom:5px;letter-spacing:-0.6px;text-align:center}
+.sub{font-size:12px;color:var(--text-m);margin-bottom:4px;font-weight:500;text-align:center}
+.meta{font-family:var(--font-m);font-size:9.5px;color:var(--text-s);margin-bottom:32px;letter-spacing:0.4px;text-align:center}
+.flow-tag{font-family:var(--font-m);font-size:8.5px;color:var(--pri-600);background:var(--pri-50);padding:2px 8px;border-radius:10px;border:1px solid var(--pri-100);margin-bottom:10px}
+
+/* phone */
+.phone{width:100%;height:100dvh;background:#12141C;position:relative;overflow:hidden;display:flex;flex-direction:column;}
+.top-bar{
+  height:5px;
+  background:linear-gradient(90deg,var(--pri-800),var(--pri-400),var(--em-400),var(--pri-400),var(--pri-800));
+  box-shadow:0 1px 8px rgba(0,0,0,0.55);flex-shrink:0
+}
+/* camera */
+.cam-wrap{flex:1;position:relative;overflow:hidden;}
+
+@keyframes cam-shake {
+  0%   { transform: translate(0px, 0px)      scale(1.08); }
+  10%  { transform: translate(-1px, 0.5px)   scale(1.09); }
+  20%  { transform: translate(1px, -1px)     scale(1.08); }
+  30%  { transform: translate(-0.5px, 1px)   scale(1.10); }
+  40%  { transform: translate(1px, 0.5px)    scale(1.09); }
+  50%  { transform: translate(0px, -0.5px)   scale(1.08); }
+  60%  { transform: translate(-1px, 0px)     scale(1.09); }
+  70%  { transform: translate(0.5px, 1px)    scale(1.10); }
+  80%  { transform: translate(-0.5px, -1px)  scale(1.08); }
+  90%  { transform: translate(1px, 0.5px)    scale(1.09); }
+  100% { transform: translate(0px, 0px)      scale(1.08); }
+}
+@keyframes cam-brightness {
+  0%,100% { filter: brightness(0.92) contrast(1.05); }
+  50%     { filter: brightness(0.97) contrast(1.02); }
+}
+.cam-bg-wrap {
+  position: absolute;
+  inset: 0;
+  background: #0a0c18;
+  overflow: hidden;
+  z-index: 0;
+}
+.cam-bg {
+  position: absolute;
+  inset: -10px;
+  width: calc(100% + 20px);
+  height: calc(100% + 20px);
+  object-fit: cover;
+  transform-origin: center center;
+  animation: cam-shake 3.2s ease-in-out infinite, cam-brightness 4s ease-in-out infinite;
+}
+.cam-scanline{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.015) 1px,transparent 1px);background-size:100% 3px;pointer-events:none;z-index:1}
+.cam-grid{position:absolute;inset:0;z-index:2;pointer-events:none}
+
+/* guia — centralizado igual tela 03 */
+.cam-guide{position:absolute;z-index:3;border-radius:10px;top:50%;left:50%;transform:translate(-50%,-52%);width:230px;height:160px}
+.cam-guide::before,.cam-guide::after{content:'';position:absolute;width:14px;height:14px;border-color:#fff;border-style:solid}
+.cam-guide::before{top:-1.5px;left:-1.5px;border-width:2px 0 0 2px;border-radius:3px 0 0 0}
+.cam-guide::after{bottom:-1.5px;right:-1.5px;border-width:0 2px 2px 0;border-radius:0 0 3px 0}
+.cam-corner-tr{position:absolute;top:-1.5px;right:-1.5px;width:14px;height:14px;border-top:2px solid #fff;border-right:2px solid #fff;border-radius:0 3px 0 0}
+.cam-corner-bl{position:absolute;bottom:-1.5px;left:-1.5px;width:14px;height:14px;border-bottom:2px solid #fff;border-left:2px solid #fff;border-radius:0 0 0 3px}
+
+/* foco */
+.focus-cross{position:absolute;top:50%;left:50%;transform:translate(-50%,-52%);z-index:4;width:24px;height:24px}
+
+/* ia pill — igual tela 03 */
+.ia-pill{position:absolute;bottom:140px;left:50%;transform:translateX(-50%);z-index:4;background:rgba(0,0,0,0.5);backdrop-filter:blur(12px);border:0.5px solid rgba(255,255,255,0.12);border-radius:9999px;padding:4px 12px;display:flex;align-items:center;gap:6px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.ia-dot{width:6px;height:6px;border-radius:50%;background:#4FDCB0;box-shadow:0 0 6px #4FDCB0;animation:pulse 1.4s ease-in-out infinite}
+.ia-txt{font-family:var(--font-m);font-size:12px;color:rgba(255,255,255,0.9);letter-spacing:0.8px;text-transform:uppercase;white-space:nowrap}
+
+/* tip — igual tela 03 */
+.cam-tip{position:absolute;bottom:200px;left:50%;transform:translateX(-50%);z-index:5;white-space:nowrap}
+
+/* passos flutuantes — largura fixa */
+.steps-col{position:absolute;top:70px;left:10px;z-index:5;display:flex;flex-direction:column;gap:5px}
+.step-btn{width:126px;display:flex;align-items:center;gap:5px;border-radius:9999px;padding:4px 9px;cursor:pointer;font-family:var(--font-b);border:none;transition:all .15s;box-sizing:border-box}
+
+/* bottom */
+.cam-bottom{position:absolute;bottom:0;left:0;right:0;z-index:5;padding:10px 14px 18px;background:linear-gradient(to top,rgba(10,12,26,0.95) 60%,transparent)}
+.conf-labels{display:flex;justify-content:space-between;margin-bottom:3px}
+.conf-labels span{font-family:var(--font-m);font-size:10.1px;color:rgba(255,255,255,0.55);letter-spacing:0.4px}
+.conf-bar{height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;margin-bottom:10px}
+.conf-fill{height:100%;background:linear-gradient(90deg,var(--pri-400),#4FDCB0);transition:width .4s}
+.cam-controls{display:flex;align-items:center;justify-content:space-between}
+.cam-btn{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.shutter{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--pri-deep),var(--pri-deep2));box-shadow:0 4px 14px rgba(0,0,0,1.0);display:flex;align-items:center;justify-content:center;cursor:pointer;border:3px solid rgba(255,255,255,0.12);transition:transform .1s}
+.shutter:active{transform:scale(0.93)}
+
+/* botão concluir flutuante */
+.btn-concluir{position:absolute;top:70px;right:10px;z-index:5;border-radius:9999px;padding:5px 11px;font-family:var(--font-b);font-size:12px;font-weight:600;cursor:pointer;border:none;display:flex;align-items:center;gap:4px;transition:all .2s}
+.btn-concluir.locked{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.3);border:1px dashed rgba(255,255,255,0.2);cursor:not-allowed}
+.btn-concluir.unlocked{background:linear-gradient(135deg,var(--em),var(--em-400));color:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.88);border:none}
+
+/* modais */
+.modal-overlay{position:absolute;inset:0;background:rgba(8,9,13,0.52);backdrop-filter:blur(14px);z-index:20;display:none;align-items:flex-end}
+.modal-overlay.open{display:flex}
+.modal-sheet{background:var(--surface);border-radius:20px 20px 0 0;width:100%;padding:13px 14px 22px;max-height:86%;overflow-y:auto;box-shadow:0 -6px 28px rgba(0,0,0,0.286)}
+.modal-sheet::-webkit-scrollbar{display:none}
+.modal-handle{width:32px;height:3.5px;background:var(--border);border-radius:2px;margin:0 auto 10px;opacity:0.65}
+.card{background:var(--surface);border-radius:12px;padding:10px 12px;margin-bottom:7px;box-shadow:var(--sh-card)}
+.divider{height:0.5px;background:var(--sur-high);margin:5px 0}
+.data-row{display:flex;justify-content:space-between;align-items:center;padding:3.5px 0}
+.data-label{font-size:12px;color:var(--text-m)}
+.data-value{font-size:12px;font-weight:600;color:var(--text-h)}
+.badge-ok{background:var(--em-50);color:var(--em);border:0.5px solid rgba(35,203,151,0.2);display:inline-flex;align-items:center;font-size:12px;font-weight:700;padding:2.5px 7px;border-radius:9999px;gap:3px}
+.btn-primary{background:linear-gradient(135deg,var(--pri-deep),var(--pri-deep2));color:#fff;border-radius:9999px;padding:9px 14px;font-family:var(--font-b);font-size:10.5px;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,0.55);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;flex:1}
+.btn-secondary{background:var(--sur-mid);border-radius:9999px;padding:9px 14px;font-size:10.5px;font-weight:600;color:var(--text-b);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;flex:1}
+.btn-em{background:linear-gradient(135deg,var(--em),var(--em-400));color:#fff;border-radius:9999px;padding:9px 14px;font-family:var(--font-b);font-size:10.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:6px;box-shadow:0 4px 12px rgba(0,0,0,0.55)}
+
+/* corner transition */
+.cam-guide::before,.cam-guide::after,.cam-corner-tr,.cam-corner-bl{transition:border-color 0.6s ease}
+.cam-guide.quality-ok::before,.cam-guide.quality-ok::after{border-color:#4FDCB0}
+.cam-guide.quality-ok .cam-corner-tr{border-color:#4FDCB0}
+.cam-guide.quality-ok .cam-corner-bl{border-color:#4FDCB0}
+
+/* lanterna overlay */
+.flash-overlay{position:absolute;inset:0;background:rgba(255,230,100,0.07);pointer-events:none;z-index:2;opacity:0;transition:opacity 0.3s}
+.flash-overlay.on{opacity:1}
+
+/* toast */
+.toast{position:absolute;bottom:90px;left:50%;transform:translateX(-50%) translateY(10px);z-index:10;background:rgba(20,22,40,0.92);backdrop-filter:blur(10px);border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:7px 14px;font-family:var(--font-m);font-size:10.1px;color:rgba(255,255,255,0.85);white-space:nowrap;letter-spacing:0.4px;opacity:0;transition:all 0.25s ease;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="top-bar"></div>
+
+  <!-- header câmera -->
+  <div style="position:absolute;top:3px;left:0;right:0;z-index:6">
+    <div style="padding:7px 12px 0;display:flex;justify-content:space-between;align-items:center;color:rgba(255,255,255,0.8);font-size:10px;font-weight:600;font-family:var(--font-b)">
+      <span>9:41</span><span style="font-size:9px">● ● ●</span>
+    </div>
+    <div style="padding:5px 12px 6px;display:flex;justify-content:space-between;align-items:center;backdrop-filter:blur(14px)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div onclick="goTo('camera')" style="cursor:pointer;margin-top:3px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
+       
+    <img src="assets/logos/logo-white.svg" alt="" height="16px" onclick="goTo('home')"  style="cursor: pointer;">
+   
+
+        <!-- <svg width="38" height="15" viewBox="0 0 38 15"><text x="0" y="12" font-family="'Space Grotesk',sans-serif" font-size="13" font-weight="800" fill="white" letter-spacing="0.5">VerifCar</text></svg> -->
+      </div>
+      <div style="background:rgba(255,255,255,0.1);border:0.5px solid rgba(255,255,255,0.15);border-radius:9999px;padding:3px 9px;display:flex;align-items:center;gap:5px">
+        <span class="ia-dot" style="width:5px;height:5px;animation:pulse 1.4s ease-in-out infinite"></span>
+        <span style="font-family:var(--font-m);font-size:10px;color:rgba(255,255,255,0.85)">LIVE</span>
+      </div>
+      
+    </div>
+  </div>
+<div style="width: 100%;height: 60%;background: linear-gradient(to bottom, #000, transparent);position: absolute;top: 0;left: 0;z-index: 1;"></div>
+  <div class="cam-wrap">
+  
+    <div class="cam-bg-wrap">
+      
+      <img class="cam-bg" id="cam-bg-img" src="assets/fotos/chassi-bg.png" alt="" loading="lazy" decoding="async">
+    </div>
+    <div class="cam-scanline"></div>
+    <div class="flash-overlay" id="flash-overlay"></div>
+    <div class="toast" id="toast"></div>
+
+    <!-- grid de terços -->
+    <div class="cam-grid">
+      <div style="position:absolute;left:33%;top:0;bottom:0;width:0.5px;background:rgba(255,255,255,0.12)"></div>
+      <div style="position:absolute;left:66%;top:0;bottom:0;width:0.5px;background:rgba(255,255,255,0.12)"></div>
+      <div style="position:absolute;top:33%;left:0;right:0;height:0.5px;background:rgba(255,255,255,0.12)"></div>
+      <div style="position:absolute;top:66%;left:0;right:0;height:0.5px;background:rgba(255,255,255,0.12)"></div>
+    </div>
+
+    <!-- imagem de referência do passo — centralizada -->
+    <div id="ref-img" style="position:absolute;top:51%;left:50%;transform:translate(-50%,-52%);z-index:2;opacity:0.18;width:220px;pointer-events:none;">
+      <img id="ref-img-src" src="assets/logos/passo1.svg" alt="" width="100%" height="auto">
+    </div>
+
+    <!-- guia de enquadramento -->
+    <div class="cam-guide" id="cam-guide">
+      <div class="cam-corner-tr"></div>
+      <div class="cam-corner-bl"></div>
+    </div>
+
+    <!-- dica de orientação — estilo tela 03 -->
+    <div class="cam-tip">
+      <div style="background:rgba(0,0,0,0.45);border-radius:9999px;padding:0px 10px 4px 10px">
+        <span id="tip-txt" style="font-family:var(--font-m);font-size:16px;color:rgba(255,255,255,0.7);letter-spacing:0.5px;transition:opacity 0.4s">Alinhe Chassi · Coluna B esq.</span>
+      </div>
+    </div>
+
+    <!-- pill IA — estilo tela 03 -->
+    <div class="ia-pill">
+      <span class="ia-dot" id="ia-dot"></span>
+      <span class="ia-txt" id="ia-txt">DETECÇÃO INTELIGENTE · 0%</span>
+    </div>
+
+    <!-- ── PASSOS ── -->
+    <div class="steps-col">
+
+      <!-- 1 Chassi — ATIVO -->
+      <button id="step-chassi" class="step-btn" onclick="setStep('chassi')"
+        style="background:rgba(35,203,151,0.82);border:2px solid rgba(255,255,255,0.9);color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,0.15),0 0 10px rgba(0,0,0,1.0)">
+        <span id="num-chassi" style="width:14px;height:14px;border-radius:50%;background:#23CB97;font-size:7px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">1</span>
+        <span style="font-size:12px;font-weight:600;white-space:nowrap">Chassi</span>
+        <span id="active-dot-chassi" style="width:5px;height:5px;border-radius:50%;background:#fff;opacity:0.9;animation:pulse 1.4s ease-in-out infinite;flex-shrink:0"></span>
+      </button>
+
+      <!-- 2 VIN — pendente -->
+      <button id="step-vin" class="step-btn" onclick="setStep('vin')"
+        style="background:rgba(35,203,151,0.65);border:1.5px solid rgba(35,203,151,0.45);color:#fff">
+        <span id="num-vin" style="width:14px;height:14px;border-radius:50%;background:var(--pri-400);font-size:7px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">2</span>
+        <span style="font-size:12px;font-weight:600;white-space:nowrap">Etiqueta VIN</span>
+        <span id="active-dot-vin" style="display:none;width:5px;height:5px;border-radius:50%;background:#fff;opacity:0.9;animation:pulse 1.4s ease-in-out infinite;flex-shrink:0"></span>
+      </button>
+
+      <!-- 3 Vidros — pendente -->
+      <button id="step-vidros" class="step-btn" onclick="setStep('vidros')"
+        style="background:rgba(35,203,151,0.65);border:1.5px solid rgba(35,203,151,0.45);color:#fff">
+        <span id="num-vidros" style="width:14px;height:14px;border-radius:50%;background:var(--pri-400);font-size:7px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">3</span>
+        <span style="font-size:12px;font-weight:600;white-space:nowrap">Vidros</span>
+        <span id="active-dot-vidros" style="display:none;width:5px;height:5px;border-radius:50%;background:#fff;opacity:0.9;animation:pulse 1.4s ease-in-out infinite;flex-shrink:0"></span>
+      </button>
+
+      <!-- 4 Motor — opcional -->
+      <button id="step-motor" class="step-btn" onclick="setStep('motor')"
+        style="background:rgba(100,100,110,0.55);border:1.5px dashed rgba(180,180,190,0.4);color:rgba(255,255,255,0.7)">
+        <span id="num-motor" style="width:14px;height:14px;border-radius:50%;background:rgba(130,130,140,0.7);font-size:7px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">4</span>
+        <span style="font-size:12px;font-weight:600;white-space:nowrap">Motor</span>
+        <span style="font-size:6px;font-weight:700;color:rgba(200,200,210,0.9);background:rgba(130,130,140,0.4);border-radius:9999px;padding:1px 4px;border:0.5px dashed rgba(180,180,190,0.5)">OPC</span>
+        <span id="active-dot-motor" style="display:none;width:5px;height:5px;border-radius:50%;background:#fff;opacity:0.9;animation:pulse 1.4s ease-in-out infinite;flex-shrink:0"></span>
+      </button>
+    </div>
+
+<div onclick="openAjuda(activeStep)" style="z-index:10;position:absolute;top:104px;right:12px;display:flex;align-items:center;gap:4px;background:rgba(255,255,255,0.1);border:0.5px solid rgba(255,255,255,0.15);border-radius:9999px;padding:3px 9px;cursor:pointer">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span style="font-family:var(--font-m);font-size:10px;color:rgba(255,255,255,0.85);letter-spacing:0.5px">AJUDA</span>
+      </div>
+
+      <!-- botão Sem Foto — visibilidade controlada por STEPS_COM_SEM_FOTO -->
+      <div id="btn-sem-foto" onclick="openImpedimento(activeStep)" style="z-index:10;position:absolute;top:134px;right:12px;display:none;align-items:center;gap:4px;background:rgba(240,169,43,0.18);border:0.5px solid rgba(240,169,43,0.4);border-radius:9999px;padding:3px 9px;cursor:pointer">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,195,60,0.9)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span style="font-family:var(--font-m);font-size:10px;color:rgba(255,195,60,0.9);letter-spacing:0.5px">INACESSÍVEL</span>
+      </div>
+    
+    <!-- botão concluir (direita, desbloqueado só após chassi sem obs) -->
+    <div id="btn-concluir" class="btn-concluir locked" title="Disponível após verificar o chassi" onclick="goTo('revisao')">
+      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      CONCLUIR
+    </div>
+
+    <!-- controles inferiores -->
+    <div class="cam-bottom">
+      <div class="cam-controls">
+        <div class="cam-btn" id="btn-lanterna" onclick="toggleLanterna()" title="Lanterna">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.8"><circle cx="12" cy="12" r="5"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+        </div>
+        
+        <div class="shutter" id="shutter" onclick="openResultado()">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+          <div class="cam-btn" id="btn-zoom" onclick="toggleZoom()" title="Zoom">
+            <span id="zoom-label" style="font-family:var(--font-m);font-size:9px;color:rgba(255,255,255,0.7);font-weight:500">1×</span>
+          </div>
+        </div>
+    </div>
+  </div><!-- /cam-wrap -->
+
+  <!-- ══ DRAWER AJUDA ══ -->
+  <div class="modal-overlay" id="modal-ajuda" onclick="if(event.target===this)closeAjuda()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div id="ajuda-content"></div>
+      <div onclick="closeAjuda()" style="margin-top:10px;background:var(--sur-mid);border-radius:9999px;padding:9px;text-align:center;font-size:10.5px;font-weight:600;color:var(--text-b);cursor:pointer">Fechar</div>
+    </div>
+  </div>
+
+  <!-- ══ DRAWER RESULTADO IA ══ -->
+  <div class="modal-overlay" id="modal-resultado" onclick="if(event.target===this)closeResultado()">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:28px;height:28px;border-radius:8px;background:var(--pri-50);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--pri-800)" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </div>
+          <div>
+            <div style="font-family:var(--font-d);font-size:13px;font-weight:800;color:var(--pri-800)" id="res-titulo">Análise · Chassi</div>
+            <div style="font-size:10px;color:var(--text-m)">Verificação biométrica e estrutural</div>
+          </div>
+        </div>
+        <span class="badge-ok" id="res-badge">✓ 98.4%</span>
+      </div>
+
+      <!-- thumb captura -->
+      <div style="display:flex;gap:4px;margin-bottom:8px">
+        <!-- thumb1: foto-tirada-{passo}.jpg -->
+        <div id="res-thumb1" onclick="openThumb('foto-tirada-chassi.jpg','foto-modelo-chassi.jpg')" style="flex:1;background:#2A2E3C;border-radius:10px;height:72px;position:relative;overflow:hidden;cursor:zoom-in">
+          <img id="res-thumb1-img" src="foto-tirada-chassi.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+          <div style="position:absolute;z-index:2;border:1.5px solid var(--em);width:88px;height:22px;border-radius:3px;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none">
+            <div style="position:absolute;top:-14px;left:0;background:var(--em);border-radius:3px;padding:1px 5px;font-family:var(--font-m);font-size:6.5px;color:#fff;white-space:nowrap" id="res-bbox-label">CHASSI: 98.4%</div>
+          </div>
+          <div style="position:absolute;bottom:6px;right:6px;z-index:3;background:var(--em);border-radius:9999px;padding:2px 7px;display:flex;align-items:center;gap:3px">
+            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span style="font-size:7px;font-weight:700;color:#fff" id="res-status-pill">Compatível</span>
+          </div>
+        </div>
+        <!-- thumb2: foto-modelo-{passo}.jpg -->
+        <div id="res-thumb2" onclick="openThumb('foto-tirada-chassi.jpg','foto-modelo-chassi.jpg')" style="flex:1;background:#2A2E3C;border-radius:10px;height:72px;position:relative;overflow:hidden;cursor:zoom-in">
+          <img id="res-thumb2-img" src="foto-modelo-chassi.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+        </div>
+      </div>
+
+      <!-- dado extraído -->
+      <div style="background:var(--sur-low);border-radius:9px;padding:8px 10px;border-left:2.5px solid var(--pri-400);margin-bottom:7px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:10px;color:var(--text-s);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:2px" id="res-dado-label">Chassi Extraído</div>
+          <div style="font-family:var(--font-m);font-size:12px;font-weight:600;color:var(--pri-800)" id="res-dado-valor">9BW AB05W 7FT 002143</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;color:var(--text-s);text-transform:uppercase;letter-spacing:1px;font-weight:500;margin-bottom:2px">Neural</div>
+          <div style="font-family:var(--font-m);font-size:12px;color:var(--text-m)">0.42ms</div>
+        </div>
+      </div>
+
+      <!-- métricas -->
+      <div class="card" style="margin-bottom:7px">
+        <div class="data-row"><span class="data-label">Integridade</span><span class="data-value" style="color:var(--em)" id="res-integridade">99% Original</span></div>
+        <div class="divider"></div>
+        <div class="data-row"><span class="data-label">Prof. Gravação</span><span class="data-value" style="font-family:var(--font-m);font-size:8.5px" id="res-prof">0.45mm</span></div>
+        <div class="divider"></div>
+        <div class="data-row"><span class="data-label">Espaçamento</span><span class="data-value" style="color:var(--em)" id="res-espac">Consistente</span></div>
+      </div>
+
+      <!-- observações -->
+      <!-- campo obs -->
+      <div style="background:var(--sur-low);border-radius:9px;padding:8px 10px;margin-bottom:10px;min-height:38px">
+  <div style="font-size:12px;font-weight:600;color:var(--text-m);margin-bottom:3px">
+    Observações do Inspetor
+  </div>
+
+  <textarea
+    placeholder="Descreva anomalias aqui..."
+    style="
+      width:100%;
+      border:none;
+      outline:none;
+      resize:none;
+      background:transparent;
+      font-size:10px;
+      color:var(--text-s);
+      font-style:italic;
+      padding:0;
+      margin:0;
+    "
+  ></textarea>
+</div>
+
+      <!-- ações -->
+      <div style="display:flex;gap:5px;margin-bottom:6px">
+        <div class="btn-secondary" onclick="closeResultado()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--text-b)" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          Re-digitalizar
+        </div>
+        <div class="btn-primary" onclick="salvarPasso()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Salvar
+        </div>
+      </div>
+      <div class="btn-em" id="btn-avancar-revisao" style="display:none" onclick="goTo('revisao')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        Avançar para Revisão Final
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ DRAWER IMPEDIMENTO (SEM FOTO) ══ -->
+  <div class="modal-overlay" id="modal-impedimento" onclick="if(event.target===this)closeImpedimento()">
+    <div class="modal-sheet" style="max-height:88%;overflow-y:auto">
+      <div class="modal-handle"></div>
+
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <div style="width:28px;height:28px;border-radius:8px;background:var(--am-50);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--am)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div>
+          <div style="font-family:var(--font-d);font-size:13px;font-weight:800;color:var(--am)">Registrar Impedimento</div>
+          <div id="imp-subtitle" style="font-size:10px;color:var(--text-m)"></div>
+        </div>
+      </div>
+
+      <!-- aviso auditoria -->
+      <div style="background:var(--am-50);border-radius:9px;padding:8px 10px;margin-bottom:12px;display:flex;gap:7px;align-items:flex-start">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--am)" stroke-width="2" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        <span style="font-size:12px;color:#8a6010">Este registro é auditado. Selecione apenas o motivo real observado.</span>
+      </div>
+
+      <!-- lista de motivos (populada via JS) -->
+      <div style="font-size:8.5px;font-weight:700;color:var(--text-m);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Motivo</div>
+      <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px" id="imp-motivos"></div>
+
+      <!-- campo "outro" (visível quando selecionado Outro) -->
+      <div id="imp-outro-wrap" style="display:none;margin-bottom:12px">
+        <div style="font-size:8.5px;font-weight:700;color:var(--text-m);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Descreva o motivo</div>
+        <textarea id="imp-outro-txt" placeholder="Descreva o impedimento..." rows="3" style="width:100%;background:var(--sur-low);border:1.5px solid var(--sur-high);border-radius:10px;padding:9px 11px;font-size:9.5px;color:var(--text-b);font-family:var(--font-b);line-height:1.5;outline:none;resize:none" onfocus="this.style.borderColor='var(--am-400)'" onblur="this.style.borderColor='var(--sur-high)'"></textarea>
+      </div>
+
+      <!-- observações adicionais (opcional, sempre visível) -->
+      <div style="margin-bottom:12px">
+        <div style="font-size:8.5px;font-weight:700;color:var(--text-m);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">
+          Observações <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-s)">(opcional)</span>
+        </div>
+        <textarea id="imp-obs-txt" placeholder="Descreva detalhes adicionais..." rows="3"
+          style="width:100%;background:var(--sur-low);border:1.5px solid var(--sur-high);border-radius:10px;padding:9px 11px;font-size:9.5px;color:var(--text-b);font-family:var(--font-b);line-height:1.5;outline:none;resize:none"
+          onfocus="this.style.borderColor='var(--outline-v)'" onblur="this.style.borderColor='var(--sur-high)'"></textarea>
+      </div>
+
+      <!-- foto opcional -->
+      <div style="margin-bottom:14px">
+        <div style="font-size:8.5px;font-weight:700;color:var(--text-m);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">
+          Foto <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-s)">(opcional)</span>
+        </div>
+        <div id="imp-foto-area" onclick="addFotoImp()"
+          style="border:1.5px dashed var(--outline-v);border-radius:10px;padding:12px;text-align:center;cursor:pointer;transition:background .15s"
+          onmouseover="this.style.background='var(--sur-low)'" onmouseout="this.style.background='transparent'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-s)" stroke-width="1.8" style="margin-bottom:4px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <div style="font-size:9px;color:var(--text-s)">Toque para adicionar foto</div>
+        </div>
+        <div id="imp-foto-thumbs" style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px"></div>
+      </div>
+
+      <!-- ações -->
+      <div style="display:flex;gap:5px">
+        <div onclick="closeImpedimento()" style="flex:1;background:var(--sur-mid);border-radius:9999px;padding:9px;text-align:center;font-size:10px;font-weight:600;color:var(--text-b);cursor:pointer">Cancelar</div>
+        <div onclick="submitImpedimento()" style="flex:1;background:linear-gradient(135deg,var(--am),#e5a820);border-radius:9999px;padding:9px;text-align:center;font-size:10px;font-weight:600;color:#fff;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.66);display:flex;align-items:center;justify-content:center;gap:5px">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Registrar
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /phone -->
+
+<script>
+// ── qualidade ────────────────────────────────────────────────
+const THRESHOLD = 75;
+let quality = 0;
+let isReady = false;
+
+function updateQuality(val) {
+  quality = Math.max(0, Math.min(100, val));
+  document.getElementById('ia-txt').textContent = 'Detecção inteligente · ' + quality + '%';
+
+  const guide   = document.getElementById('cam-guide');
+  const dot     = document.getElementById('ia-dot');
+  const shutter = document.getElementById('shutter');
+  const ok      = quality >= THRESHOLD;
+
+  if (ok && !isReady) {
+    isReady = true;
+    guide.classList.add('quality-ok');
+    dot.style.background     = '#4FDCB0';
+    dot.style.boxShadow      = '0 0 6px #4FDCB0';
+    shutter.style.background = 'linear-gradient(135deg,#15803d,#22c55e)';
+    shutter.style.boxShadow  = '0 4px 14px rgba(34,197,94,0.5)';
+    showReady();
+  } else if (!ok && isReady) {
+    isReady = false;
+    guide.classList.remove('quality-ok');
+    dot.style.background     = '#FFC94D';
+    dot.style.boxShadow      = '0 0 6px #FFC94D';
+    shutter.style.background = 'linear-gradient(135deg,var(--pri-deep),var(--pri-deep2))';
+    shutter.style.boxShadow  = '0 4px 14px rgba(35,203,151,0.5)';
+    restoreTip();
+  } else if (!ok) {
+    dot.style.background = '#FFC94D';
+    dot.style.boxShadow  = '0 0 6px #FFC94D';
+  }
+}
+
+function animateQuality() {
+  let cur = 0;
+  const rise = () => {
+    if (cur < 55) {
+      cur += Math.ceil(Math.random() * 5);
+      cur = Math.min(cur, 55);
+      updateQuality(cur);
+      setTimeout(rise, 100 + Math.random() * 150);
+    } else {
+      setInterval(() => {
+        const delta = (Math.random() - 0.35) * 18;
+        cur = Math.max(30, Math.min(95, cur + delta));
+        updateQuality(Math.round(cur));
+      }, 900 + Math.random() * 600);
+    }
+  };
+  setTimeout(rise, 600);
+}
+animateQuality();
+
+// ── dica pronto ──────────────────────────────────────────────
+function showReady() {
+  const el = document.getElementById('tip-txt');
+  el.style.transition = 'opacity 0.4s';
+  el.style.opacity = '0';
+  setTimeout(() => {
+    el.style.color = '#4FDCB0';
+    el.textContent = '✓ Pronto para capturar';
+    el.style.opacity = '1';
+  }, 400);
+}
+function restoreTip() {
+  const el = document.getElementById('tip-txt');
+  el.style.opacity = '0';
+  setTimeout(() => {
+    el.style.color = 'rgba(255,255,255,0.85)';
+    el.textContent = tips[activeStep];
+    el.style.opacity = '1';
+  }, 400);
+}
+
+// ── lanterna ────────────────────────────────────────────────
+let lantOn = false;
+function toggleLanterna() {
+  lantOn = !lantOn;
+  const overlay = document.getElementById('flash-overlay');
+  const btn     = document.getElementById('btn-lanterna');
+  overlay.classList.toggle('on', lantOn);
+  btn.style.background = lantOn ? 'rgba(255,220,80,0.25)' : 'rgba(255,255,255,0.1)';
+  showToast(lantOn ? '🔦 Lanterna ativada' : '🔦 Lanterna desativada');
+}
+
+// ── zoom ─────────────────────────────────────────────────────
+let zoomOn = false;
+function toggleZoom() {
+  zoomOn = !zoomOn;
+  const btn   = document.getElementById('btn-zoom');
+  const label = document.getElementById('zoom-label');
+  const camBg = document.querySelector('.cam-bg');
+  label.textContent    = zoomOn ? '2×' : '1×';
+  label.style.color    = zoomOn ? '#fff' : 'rgba(255,255,255,0.7)';
+  btn.style.background = zoomOn ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)';
+  camBg.style.transition = 'transform 0.35s ease';
+  camBg.style.transform  = zoomOn ? 'scale(1.5)' : 'scale(1)';
+  showToast(zoomOn ? '🔍 Zoom 2×' : '🔍 Zoom 1×');
+}
+
+// ── toast ───────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── Config: passos que exibem o botão "SEM FOTO" ──────────────
+// Para mostrar em todos, altere para: ['chassi','vin','vidros','motor']
+const STEPS_COM_SEM_FOTO = ['motor'];
+
+// ── Estado ──
+const steps = ['chassi','vin','vidros','motor'];
+let activeStep = 'chassi';
+// chassi = pendente, vin = aprovado, vidros = pendente, motor = opcional
+const stepState = { chassi:'active', vin:'pending', vidros:'pending', motor:'optional' };
+
+const tips = {
+  chassi: 'Alinhe Chassi · Coluna B esq.',
+  vin:    'Alinhe Etiqueta VIN · Pilar A',
+  vidros: 'Alinhe vidro · canto inferior',
+  motor:  'Alinhe gravação no bloco do motor'
+};
+
+const resData = {
+  chassi: { titulo:'Análise · Chassi', badge:'✓ 98.4%', bboxLabel:'CHASSI: 98.4%', dadoLabel:'Chassi Extraído', dadoValor:'9BW AB05W 7FT 002143', integridade:'99% Original', prof:'0.45mm', espac:'Consistente',img1:'assets/fotos/chassi.png', img2:'assets/fotos/chassi.png' },
+  vin:    { titulo:'Análise · Etiqueta VIN', badge:'✓ 96.1%', bboxLabel:'VIN: 96.1%', dadoLabel:'VIN Extraído', dadoValor:'9BW-AB05W-7FT-002143', integridade:'100% Original', prof:'—', espac:'Consistente',img1:'assets/fotos/vin.png', img2:'assets/fotos/vin.png' },
+  vidros: { titulo:'Análise · Vidros', badge:'✓ 91.8%', bboxLabel:'VIDRO: 91.8%', dadoLabel:'Código Extraído', dadoValor:'BR · 9BW · 2143', integridade:'97% Original', prof:'—', espac:'Uniforme',img1:'assets/fotos/vidro.png', img2:'assets/fotos/vidro.png' },
+  motor:  { titulo:'Análise · Motor', badge:'✓ 88.2%', bboxLabel:'MOTOR: 88.2%', dadoLabel:'Gravação Extraída', dadoValor:'AB05W-002143-M', integridade:'95% Original', prof:'0.38mm', espac:'Consistente',img1:'assets/fotos/motor.png', img2:'assets/fotos/motor.png' }
+};
+
+const stepImgs = {
+  chassi: 'assets/fotos/chassi-captura.png',
+  vin:    'assets/fotos/vin-captura.png',
+  vidros: 'assets/fotos/vidro-captura.png',
+  motor:  'assets/fotos/motor-captura.png'
+};
+
+const stepBgImgs = {
+  chassi: 'assets/fotos/chassi-bg.png',
+  vin:    'assets/fotos/vin-bg.jpeg',
+  vidros: 'assets/fotos/vidro-bg.png',
+  motor:  'assets/fotos/motor-bg.png'
+};
+
+function setStep(key) {
+  activeStep = key;
+  // mostra/oculta botão Sem Foto conforme config
+  const btnSF = document.getElementById('btn-sem-foto');
+  btnSF.style.display = STEPS_COM_SEM_FOTO.includes(key) ? 'flex' : 'none';
+  // troca imagem de referência
+  document.getElementById('ref-img-src').src = stepImgs[key];
+  // troca imagem de fundo animada
+  const bgImg = document.getElementById('cam-bg-img');
+  if (bgImg && stepBgImgs[key]) bgImg.src = stepBgImgs[key];
+  // só atualiza a dica se não estiver no estado "pronto"
+  if (!isReady) {
+    document.getElementById('tip-txt').textContent = tips[key];
+  }
+
+  // Atualiza visuais dos botões
+  steps.forEach(s => {
+    const btn = document.getElementById('step-'+s);
+    const dot = document.getElementById('active-dot-'+s);
+    dot.style.display = s === key ? 'inline-block' : 'none';
+
+    if (s === key) {
+      btn.style.border = '2px solid rgba(255,255,255,0.9)';
+      btn.style.boxShadow = '0 0 0 3px rgba(255,255,255,0.15),0 0 10px rgba(35,203,151,0.5)';
+      btn.style.background = 'rgba(35,203,151,0.82)';
+      btn.style.color = '#fff';
+    } else {
+      btn.style.boxShadow = 'none';
+      // restaura o estado original
+      const st = stepState[s];
+      if (st === 'ok') {
+        btn.style.background = 'rgba(35,203,151,0.75)';
+        btn.style.border = '1.5px solid rgba(35,203,151,0.5)';
+        btn.style.color = '#fff';
+      } else if (st === 'optional') {
+        btn.style.background = 'rgba(100,100,110,0.55)';
+        btn.style.border = '1.5px dashed rgba(180,180,190,0.4)';
+        btn.style.color = 'rgba(255,255,255,0.7)';
+      } else {
+        btn.style.background = 'rgba(35,203,151,0.65)';
+        btn.style.border = '1.5px solid rgba(35,203,151,0.45)';
+        btn.style.color = '#fff';
+      }
+    }
+  });
+}
+
+// ── Ajuda ──
+const ajudaData = {
+  chassi: { title:'Gravação no Chassi', icon:'<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>', iconColor:'var(--pri-600)', onde:'Coluna B, lado esquerdo. Abrir porta do motorista.', ferramentas:'Lanterna, espelho articulado, lupa 10x', atencao:'Raspagem, lixamento, profundidade irregular, desalinhamento.', optional:false },
+  vin:    { title:'Etiqueta VIN', icon:'<rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 8h4M7 12h6"/>', iconColor:'var(--pri-600)', onde:'Coluna A (pilar dianteiro esquerdo) ou painel do dashboard.', ferramentas:'Lanterna, lupa 5x', atencao:'Etiqueta sobreposta, bordas levantadas, impressão irregular, rasura.', optional:false },
+  vidros: { title:'Gravação nos Vidros', icon:'<rect x="2" y="3" width="20" height="16" rx="2"/><path d="M2 7h20M2 12h20"/>', iconColor:'var(--pri-600)', onde:'Canto inferior dos vidros (parabrisa, laterais e traseiro).', ferramentas:'Lanterna lateral, lupa 5x', atencao:'Código ausente, difuso, incompleto ou inconsistente entre vidros.', optional:false },
+  motor:  { title:'Gravação no Motor', icon:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/>', iconColor:'var(--text-s)', onde:'Bloco do motor, lado esquerdo ou direito conforme fabricante.', ferramentas:'Lanterna, espelho articulado, lupa 10x', atencao:'Regravar, lixamento, número incompatível com chassi ou placa.', optional:true }
+};
+
+const ajudaImgs = {
+  chassi: 'assets/fotos/chassi-modelo.png',
+  vin:    'assets/fotos/vin-modelo.png',
+  vidros: 'assets/fotos/vidro-modelo.png',
+  motor:  'assets/fotos/motor-modelo.png'
+};
+
+function openAjuda(key) {
+  const d = ajudaData[key];
+  document.getElementById('ajuda-content').innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <div style="width:32px;height:32px;border-radius:9px;background:var(--sur-low);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${d.iconColor}" stroke-width="1.8">${d.icon}</svg>
+      </div>
+      <div>
+        <div style="font-family:var(--font-d);font-size:13px;font-weight:800;color:var(--pri-800)">${d.title}</div>
+        ${d.optional ? '<span style="font-size:10px;font-weight:700;color:var(--text-s);background:var(--sur-high);border:0.5px solid var(--outline-v);border-radius:9999px;padding:1.5px 7px">OPCIONAL</span>' : ''}
+      </div>
+    </div>
+    <div onclick="openThumb('${ajudaImgs[key]}')" style="background:#1a1c2e;border-radius:10px;height:72px;overflow:hidden;margin-bottom:10px;cursor:zoom-in;position:relative">
+      <img src="${ajudaImgs[key]}" style="width:100%;height:100%;object-fit:cover">
+    </div>
+    <div style="background:var(--surface);border-radius:10px;overflow:hidden;box-shadow:var(--sh-card)">
+      <div style="padding:8px 11px;border-bottom:0.5px solid var(--sur-low)">
+        <div style="font-size:12px;font-weight:700;color:var(--text-m);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Onde encontrar</div>
+        <div style="font-size:11px;color:var(--text-b)">${d.onde}</div>
+      </div>
+      <div style="padding:8px 11px;border-bottom:0.5px solid var(--sur-low)">
+        <div style="font-size:12px;font-weight:700;color:var(--text-m);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Ferramentas</div>
+        <div style="font-size:11px;color:var(--text-b)">${d.ferramentas}</div>
+      </div>
+      <div style="padding:8px 11px">
+        <div style="font-size:12px;font-weight:700;color:var(--text-m);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Pontos de atenção</div>
+        <div style="font-size:11px;color:var(--text-b)">${d.atencao}</div>
+      </div>
+    </div>`;
+  document.getElementById('modal-ajuda').classList.add('open');
+}
+function closeAjuda() { document.getElementById('modal-ajuda').classList.remove('open'); }
+
+// ── Impedimento (Sem Foto) ────────────────────────────────────
+const impedimentoMotivos = {
+  chassi: [
+    'Acesso difícil à coluna B',
+    'Iluminação insuficiente no local',
+    'Obstrução por objetos ou equipamentos',
+    'Defeito físico ou dano no local do chassi',
+  ],
+  vin: [
+    'Etiqueta ilegível ou danificada',
+    'Local inacessível no momento',
+    'Iluminação insuficiente',
+    'Etiqueta ausente ou removida',
+  ],
+  vidros: [
+    'Reflexo excessivo no vidro',
+    'Vidro com película escura impedindo leitura',
+    'Código apagado ou ilegível',
+    'Ângulo de captura impossível',
+  ],
+  motor: [
+    'Tampa do motor bloqueada ou travada',
+    'Sujeira excessiva cobrindo a gravação',
+    'Iluminação insuficiente no compartimento',
+    'Gravação inacessível pela posição',
+  ],
+};
+
+const impedimentoTitulos = {
+  chassi: 'Chassi · Col. B esq.',
+  vin:    'Etiqueta VIN',
+  vidros: 'Vidros',
+  motor:  'Motor',
+};
+
+let impSelectedVal = null;
+
+let impFotoCount = 0;
+function addFotoImp() {
+  if (impFotoCount >= 2) return;
+  impFotoCount++;
+  const thumbs = document.getElementById('imp-foto-thumbs');
+  const idx = impFotoCount;
+  const colors = ['#c8d6f0','#d0e8c8'];
+  const div = document.createElement('div');
+  div.style.cssText = 'position:relative;width:64px;height:64px;border-radius:8px;overflow:hidden;flex-shrink:0';
+  div.innerHTML = `
+    <div style="width:100%;height:100%;background:${colors[idx-1]};display:flex;align-items:center;justify-content:center">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-m)" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    </div>
+    <div onclick="this.parentNode.remove();impFotoCount--;document.getElementById('imp-foto-area').style.opacity='1'"
+      style="position:absolute;top:2px;right:2px;width:14px;height:14px;border-radius:50%;background:var(--co);display:flex;align-items:center;justify-content:center;cursor:pointer">
+      <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </div>`;
+  thumbs.appendChild(div);
+  if (impFotoCount >= 2) document.getElementById('imp-foto-area').style.opacity = '0.4';
+}
+
+function openImpedimento(key) {
+  impSelectedVal = null;
+  impFotoCount = 0;
+  document.getElementById('imp-outro-wrap').style.display = 'none';
+  document.getElementById('imp-outro-txt').value = '';
+  document.getElementById('imp-obs-txt').value = '';
+  document.getElementById('imp-foto-thumbs').innerHTML = '';
+  document.getElementById('imp-foto-area').style.opacity = '1';
+  document.getElementById('imp-subtitle').textContent = impedimentoTitulos[key] || key;
+
+  const motivos = impedimentoMotivos[key] || [];
+  const container = document.getElementById('imp-motivos');
+  container.innerHTML = [...motivos, 'Outro'].map(m => `
+    <div class="imp-opt" data-val="${m}" onclick="selectImpedimento(this)"
+      style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:10px;border:1.5px solid var(--sur-high);background:var(--sur-low);cursor:pointer">
+      <div class="imp-radio" style="width:15px;height:15px;border-radius:50%;border:1.5px solid var(--outline-v);flex-shrink:0"></div>
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--text-h)">${m}</div>
+        ${m === 'Outro' ? '<div style="font-size:10px;color:var(--text-m)">Descreva manualmente abaixo</div>' : ''}
+      </div>
+    </div>`).join('');
+
+  document.getElementById('modal-impedimento').classList.add('open');
+}
+
+function selectImpedimento(el) {
+  document.querySelectorAll('.imp-opt').forEach(o => {
+    o.style.background   = 'var(--sur-low)';
+    o.style.border       = '1.5px solid var(--sur-high)';
+    o.querySelector('.imp-radio').style.background   = '';
+    o.querySelector('.imp-radio').style.border       = '1.5px solid var(--outline-v)';
+  });
+  el.style.background = 'var(--am-50)';
+  el.style.border     = '1.5px solid rgba(240,169,43,0.4)';
+  el.querySelector('.imp-radio').style.background = 'var(--am)';
+  el.querySelector('.imp-radio').style.border     = '1.5px solid var(--am)';
+  impSelectedVal = el.dataset.val;
+  document.getElementById('imp-outro-wrap').style.display = impSelectedVal === 'Outro' ? 'block' : 'none';
+}
+
+function closeImpedimento() {
+  document.getElementById('modal-impedimento').classList.remove('open');
+}
+
+function submitImpedimento() {
+  if (!impSelectedVal) { showToast('⚠️ Selecione um motivo'); return; }
+  closeImpedimento();
+
+  // Marca o step como "sem foto" visualmente
+  const btn = document.getElementById('step-' + activeStep);
+  if (btn) {
+    btn.style.background = 'rgba(240,169,43,0.55)';
+    btn.style.border     = '1.5px solid rgba(240,169,43,0.6)';
+    const numEl = btn.querySelector('[id^="num-"]');
+    if (numEl) numEl.style.background = 'var(--am)';
+  }
+  showToast('⚠️ Impedimento registrado');
+}
+
+// ── Resultado IA ──
+function openResultado() {
+  const d = resData[activeStep];
+  document.getElementById('res-titulo').textContent = d.titulo;
+  document.getElementById('res-badge').textContent = d.badge;
+  document.getElementById('res-bbox-label').textContent = d.bboxLabel;
+  document.getElementById('res-dado-label').textContent = d.dadoLabel;
+  document.getElementById('res-dado-valor').textContent = d.dadoValor;
+  document.getElementById('res-integridade').textContent = d.integridade;
+  document.getElementById('res-prof').textContent = d.prof;
+  document.getElementById('res-espac').textContent = d.espac;
+  // atualiza nomes e callbacks dos thumbs
+const fotoMap = {
+  chassi: { t1: 'assets/fotos/chassi-captura.png', t2: 'assets/fotos/chassi-modelo.png' },
+  vin:    { t1: 'assets/fotos/vin-captura.png',    t2: 'assets/fotos/vin-modelo.png'    },
+  vidros: { t1: 'assets/fotos/vidro-captura.png',  t2: 'assets/fotos/vidro-modelo.png'  },
+  motor:  { t1: 'assets/fotos/motor-captura.png',  t2: 'assets/fotos/motor-modelo.png'  },
+};
+const t1name = fotoMap[activeStep].t1;
+const t2name = fotoMap[activeStep].t2;
+  document.getElementById('res-thumb1-img').src = t1name;
+  document.getElementById('res-thumb2-img').src = t2name;
+  document.getElementById('res-thumb1').onclick = () => openThumb(t1name, t2name);
+  document.getElementById('res-thumb2').onclick = () => openThumb(t1name, t2name);
+  document.getElementById('modal-resultado').classList.add('open');
+}
+function closeResultado() { document.getElementById('modal-resultado').classList.remove('open'); }
+
+// ── Salvar passo ──
+let chassiOk = false;
+// ── Salvar passo ──
+function salvarPasso() {
+  stepState[activeStep] = 'ok';
+  const numEl = document.getElementById('num-' + activeStep);
+  numEl.textContent = '✓';
+  numEl.style.background = 'var(--em-400)';
+  const btn = document.getElementById('step-' + activeStep);
+  btn.style.background = 'rgba(35,203,151,0.75)';
+  btn.style.border = '1.5px solid rgba(35,203,151,0.5)';
+
+  if (activeStep === 'chassi') {
+    const bc = document.getElementById('btn-concluir');
+    bc.classList.remove('locked');
+    bc.classList.add('unlocked');
+    document.getElementById('btn-avancar-revisao').style.display = 'flex';
+  }
+
+  closeResultado();
+
+  // obrigatórios apenas: chassi, vin, vidros (motor é opcional, nunca força navegação)
+  const obrigatorios = ['chassi', 'vin', 'vidros'];
+  const proximo = obrigatorios.find(s => stepState[s] === 'pending');
+
+  if (proximo) {
+    // ainda tem obrigatório pendente — vai para ele
+    setTimeout(() => setStep(proximo), 300);
+  } else {
+    // todos obrigatórios ok — avança para próxima tela
+    setTimeout(() => {
+      // aqui você navegaria para a tela seguinte; por ora, mostra o botão de revisão
+      document.getElementById('btn-avancar-revisao').style.display = 'flex';
+    }, 300);
+  }
+}
+// ── Fullscreen thumb ──
+function openThumb(name1, name2) {
+  const existing = document.getElementById('thumb-fs');
+  if (existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'thumb-fs';
+  overlay.style.cssText = 'position:absolute;inset:0;z-index:50;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:zoom-out;backdrop-filter:blur(4px);padding:12px';
+  const img2 = name2 ? `
+      <div style="width:100%;aspect-ratio:27/22;background:#2A2E3C;border-radius:8px;overflow:hidden;flex-shrink:0">
+        <img src="${name2}" style="width:100%;height:100%;object-fit:cover">
+      </div>` : '';
+  overlay.innerHTML = `
+    <div style="width:100%;display:flex;flex-direction:column;gap:8px;overflow-y:auto">
+      <div style="width:100%;aspect-ratio:27/22;background:#2A2E3C;border-radius:8px;overflow:hidden;flex-shrink:0">
+        <img src="${name1}" style="width:100%;height:100%;object-fit:cover">
+      </div>${img2}
+    </div>
+    <span style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10.1px;color:rgba(255,255,255,0.4);letter-spacing:0.5px;flex-shrink:0">toque para fechar</span>`;
+  overlay.onclick = () => overlay.remove();
+  document.querySelector('.phone').appendChild(overlay);
+}
+
+function goTo(rota) {
+  if (window.parent && window.parent.goTo) {
+    window.parent.goTo(rota);
+  } else {
+    const map = { revisao:"verifcar-06-revisao.html" , camera:"verifcar-03-camera-traseira.html" };
+    if (map[rota]) window.location.href = map[rota];
+  }
+}
+</script>
+</body>
+</html>

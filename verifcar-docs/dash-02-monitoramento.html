@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VerifCar · Monitoramento</title>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"></noscript>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+:root{--pri-deep:#0C6B4E;--pri-deep2:#149B72;
+  --pri:#23CB97;--pri-50:#0F221D;--pri-100:#16352C;--pri-400:#23CB97;--pri-600:#4FDCB0;--pri-800:#93EED3;
+  --em:#23CB97;--em-50:#0F221D;--em-400:#35D9A4;
+  --am:#F0A92B;--am-50:#2A1F0E;--am-400:#F0A92B;--am-800:#FFD48A;
+  --co:#FF3B63;--co-50:#2B1119;--co-400:#FF3B63;--co-800:#FF95AC;
+  --bg:#12141C;--surface:#1A1D28;
+  --sur-low:#222431;--sur-mid:#282B39;--sur-high:#33374A;
+  --text-h:#F3F5F9;--text-b:#CBD0DC;--text-m:#8D94A6;--text-s:#666D80;--border:rgba(255,255,255,0.10);
+  --font-d:'Space Grotesk',sans-serif;--font-b:'Inter',sans-serif;--font-m:'JetBrains Mono',monospace;
+  --sh-card:0 1px 3px rgba(0,0,0,.45),0 6px 20px rgba(0,0,0,.30);
+}
+html,body{height:100%;overflow:hidden;font-family:var(--font-b);background:var(--bg);color:var(--text-h)}
+
+/* ── Layout ─────────────────────────────────────── */
+.page{height:100%;display:flex;flex-direction:column;overflow:hidden}
+
+/* Stats bar — substitui o clock strip, fica no topo da página */
+/* Ticker */
+.ticker-wrap{
+  height:22px;overflow:hidden;display:flex;align-items:center;
+  background:var(--sur-low);border-bottom:1px solid rgba(255,255,255,.06);
+  flex-shrink:0;
+}
+.ticker-inner{
+  display:flex;white-space:nowrap;
+  animation:ticker 40s linear infinite;
+  font-family:var(--font-m);font-weight: 600;font-size:9.5px;gap:0;
+}
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* Grid 3 colunas */
+.main-grid{
+  flex:1;display:grid;
+  grid-template-columns:240px 1fr 300px;
+  gap:12px;min-height:0;
+  padding:12px 14px;overflow:hidden;
+}
+
+/* Coluna genérica */
+.col{display:flex;flex-direction:column;gap:10px;min-height:0;overflow:hidden}
+
+/* Panel */
+.panel{background:var(--surface);border-radius:14px;border:1px solid var(--border);box-shadow:var(--sh-card);overflow:hidden;display:flex;flex-direction:column}
+.panel-header{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.panel-title{font-family:var(--font-d);font-size:12px;font-weight:800;color:var(--text-h)}
+.panel-subtitle{font-size:10px;color:var(--text-s);margin-top:1px}
+.panel-body{padding:10px 14px 14px}
+
+/* Location pins */
+.lpin{position:absolute;z-index:2;width:11px;height:11px;border-radius:50%}
+.lpin::after{content:'';position:absolute;inset:0;border-radius:50%;animation:pulse 2s ease-in-out infinite}
+.lpin.g{background:var(--em-400);box-shadow:0 0 6px var(--em)}.lpin.g::after{background:var(--em-400)}
+.lpin.a{background:var(--am-400)}.lpin.a::after{background:var(--am-400);animation-delay:.5s}
+.lpin.r{background:var(--co-400);box-shadow:0 0 6px var(--co)}.lpin.r::after{background:var(--co-400);animation-delay:1s}
+@keyframes pulse{0%{transform:scale(1);opacity:.9}50%{transform:scale(2.4);opacity:.2}100%{transform:scale(1);opacity:.9}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* Inspetores row */
+.agent-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--sur-low)}
+.agent-row:last-child{border-bottom:none}
+.agent-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--pri-50),var(--pri-100));border:1.5px solid var(--pri-100);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:9px;font-weight:800;color:var(--pri-800);flex-shrink:0}
+.agent-name{font-size:11px;font-weight:600;color:var(--text-h)}
+.agent-sub{font-size:9px;color:var(--text-s);margin-top:1px}
+.agent-status{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* Feed */
+.feed-panel{flex:1;min-height:0}
+.feed-filters{display:flex;gap:5px;padding:8px 14px 0}
+.feed-filter{font-size:10px;font-weight:600;padding:3px 10px;border-radius:9999px;cursor:pointer;border:none}
+.feed-filter.active{background:var(--pri-deep2);color:#fff}
+.feed-filter.alerts{background:var(--co-50);color:var(--co-800);border:1px solid rgba(255,59,99,.2)}
+.feed-list{overflow-y:auto;flex:1;margin-top:6px}
+.feed-list::-webkit-scrollbar{width:4px}
+.feed-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+.feed-item{display:flex;gap:10px;padding:9px 14px;border-bottom:1px solid var(--sur-low);cursor:pointer;align-items:flex-start;transition:background .1s}
+.feed-item:last-child{border-bottom:none}
+.feed-item:hover{background:var(--sur-low)}
+.feed-item.err{background:rgba(255,59,99,.03);border-bottom-color:rgba(255,59,99,.1)}
+.feed-item.err:hover{background:rgba(255,59,99,.06)}
+.feed-icon{width:42px;height:42px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.feed-icon.ok{background:var(--em-50)}.feed-icon.warn{background:var(--am-50)}.feed-icon.err{background:var(--co-50)}
+.feed-name{font-size:12px;font-weight:700;color:var(--text-h)}
+.feed-sub{font-size:10px;color:var(--text-m);margin-top:1px}
+.feed-meta{display:flex;align-items:center;justify-content:space-between;margin-top:5px}
+.feed-ago{font-family:var(--font-m);font-size:9px;color:var(--text-s)}
+
+/* Badge */
+.badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--font-b);font-size:9px;font-weight:700;padding:1px 6px;border-radius:9999px}
+.badge-ok{background:var(--em-50);color:var(--em);border:1px solid rgba(35,203,151,.15)}
+.badge-warn{background:var(--am-50);color:var(--am-800);border:1px solid rgba(240,169,43,.2)}
+.badge-err{background:var(--co-50);color:var(--co-800);border:1px solid rgba(255,59,99,.15)}
+.badge-info{background:var(--pri-50);color:var(--pri-600);border:1px solid var(--pri-100)}
+
+/* Alertas críticos */
+.alerts-panel{flex:1;min-height:0}
+.alerts-header{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;background:var(--co-50);border-bottom:1px solid rgba(255,59,99,.12);flex-shrink:0}
+.alerts-list{flex:1;overflow-y:auto}
+.alerts-list::-webkit-scrollbar{width:4px}
+.alerts-list::-webkit-scrollbar-thumb{background:rgba(255,59,99,.2);border-radius:2px}
+.alert-item{display:flex;gap:10px;padding:10px 14px;border-bottom:1px solid var(--sur-low);align-items:flex-start}
+.alert-item:last-child{border-bottom:none}
+.alert-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.alert-icon.err{background:var(--co-50);border:1px solid rgba(255,59,99,.15)}
+.alert-icon.warn{background:var(--am-50);border:1px solid rgba(240,169,43,.2)}
+.alert-title{font-size:12px;font-weight:700;color:var(--text-h)}
+.alert-sub{font-size:10px;color:var(--text-m);margin-top:2px;line-height:1.4}
+.btn-detail{font-size:10px;font-weight:600;padding:3px 10px;border-radius:9999px;cursor:pointer;margin-top:5px;border:none;display:inline-block}
+.btn-detail.err{background:var(--co-50);color:var(--co-800);border:1px solid rgba(255,59,99,.2)}
+.btn-detail.warn{background:var(--am-50);color:var(--am-800);border:1px solid rgba(240,169,43,.25)}
+
+/* Turno */
+.turno-panel{flex-shrink:0}
+.turno-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--sur-low)}
+.turno-row:last-child{border-bottom:none}
+.turno-label{font-size:11px;color:var(--text-m)}
+.turno-val{font-family:var(--font-d);font-size:14px;font-weight:800}
+
+/* Footer */
+.footer{display:flex;justify-content:space-between;padding:5px 14px;border-top:1px solid var(--sur-high);flex-shrink:0;background:var(--bg)}
+.mono-sm{font-family:var(--font-m);font-size:9px;color:var(--text-s)}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Ticker -->
+  <div class="ticker-wrap">
+    <div class="ticker-inner" id="ticker-inner"></div>
+  </div>
+
+  <!-- Grid 3 colunas -->
+  <div class="main-grid">
+
+    <!-- Col esquerda: mapa ao vivo + inspetores -->
+    <div class="col">
+      <div class="panel" style="flex:1;min-height:0">
+        <div class="panel-header">
+          <div><div class="panel-title">Mapa ao vivo</div><div class="panel-subtitle">Posições em tempo real</div></div>
+          <div style="display:flex;align-items:center;gap:5px;font-family:var(--font-m);font-size:8px;font-weight:700;color:var(--em-400);background:var(--em-50);border:1px solid rgba(35,203,151,.2);border-radius:9999px;padding:2px 8px">
+            <div style="width:5px;height:5px;border-radius:50%;background:var(--em-400);animation:blink 1.4s ease-in-out infinite"></div>LIVE
+          </div>
+        </div>
+        <div class="panel-body" style="display:flex;flex-direction:column;gap:8px;flex:1;min-height:0;padding-top:8px">
+          <div id="map-wrap" style="position:relative;flex:1;min-height:100px;border-radius:10px;overflow:hidden">
+            <!-- <iframe id="map-iframe"
+              width="100%" height="100%"
+              style="position:absolute;inset:0;border:0;filter:grayscale(100%) contrast(100%) brightness(110%)"
+              loading="lazy"></iframe>
+            <canvas id="heatmap-canvas"
+              style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border-radius:10px"></canvas> -->
+            <img id="map-img" src="mapa.webp"
+              style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:10px;">
+            <canvas id="heatmap-canvas"
+              style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border-radius:10px;"></canvas>
+            <!-- <div style="legenda..."></div> -->
+            <div
+              style="position:absolute;bottom:10px;right:10px;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.85);backdrop-filter:blur(4px);padding:4px 10px;border-radius:9999px;pointer-events:none">
+              <span style="font-family:var(--font-m);font-size:8px;color:#8D94A6">Baixo</span>
+              <div
+                style="width:60px;height:6px;border-radius:3px;background:linear-gradient(90deg,rgba(35,203,151,.6),rgba(240,169,43,.7),rgba(255,59,99,.85))">
+              </div>
+              <span style="font-family:var(--font-m);font-size:8px;color:#8D94A6">Alto</span>
+            </div>
+          
+            <div id="agent-pins"></div>
+            <div style="position:absolute;top:6px;left:8px;font-family:var(--font-m);font-size:8px;font-weight:700;color:var(--text-s);letter-spacing:1px;z-index:5;background:rgba(255,255,255,.85);padding:2px 7px;border-radius:9999px;backdrop-filter:blur(4px)">ES · AO VIVO</div>
+          </div>
+          <div style="display:flex;justify-content:space-around;padding:5px 0;border-top:1px solid var(--sur-high)">
+            <div style="text-align:center"><div style="font-family:var(--font-d);font-size:18px;font-weight:800;color:var(--em)" id="map-inspetores">–</div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text-s);margin-top:1px">Inspetores</div></div>
+            <div style="text-align:center"><div style="font-family:var(--font-d);font-size:18px;font-weight:800;color:var(--pri-400)" id="map-devices">–</div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text-s);margin-top:1px">Devices</div></div>
+            <div style="text-align:center"><div style="font-family:var(--font-d);font-size:18px;font-weight:800;color:var(--am)" id="map-sessoes">–</div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text-s);margin-top:1px">Sessões</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Inspetores ativos</div>
+          <span class="badge badge-ok" id="inspetores-badge"></span>
+        </div>
+        <div class="panel-body" id="inspetores-list" style="padding-top:6px"></div>
+      </div>
+    </div>
+
+    <!-- Col central: feed -->
+    <div class="panel feed-panel">
+      <div class="panel-header">
+        <div><div class="panel-title">Feed de verificações</div><div class="panel-subtitle">Atualizando em tempo real</div></div>
+        <span class="badge badge-info" id="feed-count"></span>
+      </div>
+      <div class="feed-filters">
+        <button class="feed-filter active" id="ff-all" onclick="setFeedFilter('all',this)">Todos</button>
+        <button class="feed-filter alerts" onclick="setFeedFilter('err',this)">Alertas</button>
+      </div>
+      <div class="feed-list" id="feed-list"></div>
+    </div>
+
+    <!-- Col direita: alertas + turno -->
+    <div class="col">
+      <div class="panel alerts-panel">
+        <div class="alerts-header">
+          <div>
+            <div class="panel-title" style="color:var(--co-800);display:flex;align-items:center;gap:5px">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--co-400)" stroke-width="2.5" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              Alertas críticos
+            </div>
+            <div class="panel-subtitle">Requer atenção imediata</div>
+          </div>
+          <span class="badge badge-err" id="alerts-count"></span>
+        </div>
+        <div class="alerts-list" id="alerts-list"></div>
+      </div>
+
+      <div class="panel turno-panel">
+        <div class="panel-header">
+          <div class="panel-title">Resumo do turno</div>
+          <span class="mono-sm" id="turno-range"></span>
+        </div>
+        <div style="padding:6px 14px 12px" id="turno-body"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <span class="mono-sm">VerifCar MONITOR · <span id="footer-versao"></span></span>
+    <span class="mono-sm" id="fbar"></span>
+  </div>
+
+</div>
+
+<script src="data.js"></script>
+<script>
+function goTo(r) {
+  try {
+    if (window.parent && window.parent.goTo) window.parent.goTo(r);
+    else window.postMessage({ goTo: r }, '*');
+  } catch(e) { window.postMessage({ goTo: r }, '*'); }
+}
+
+// ── Ticker gerado do DB ──────────────────────────────────
+function renderTicker() {
+  const items = DB.verificacoes_recentes(8).map(v => {
+    const vei = DB.veiculo(v.veiculo_id);
+    const und = DB.unidade(v.unidade_id);
+    const d   = new Date(v.data);
+    const hora = d.toTimeString().slice(0,5);
+    const label = vei ? `${vei.marca} ${vei.modelo.split(' ')[0]}` : '—';
+    const col = v.status==='err'
+  ? 'rgba(255, 99, 132, 0.9)'     // vermelho vibrante
+  : v.status==='warn'
+  ? 'rgba(255, 189, 46, 0.9)'     // amarelo/laranja vivo
+  : 'rgba(46, 213, 115, 0.9)'
+    const txt = DB.badge_label(v.status).toUpperCase();
+    return `<span style="color:${col};padding:0 20px">● ${txt} · ${label} · ${und?.nome||'—'} · ${hora}</span><span style="color:rgba(255,255,255,.15)"> · </span>`;
+  }).join('');
+  // Duplica para loop contínuo
+  document.getElementById('ticker-inner').innerHTML = items + items;
+}
+
+// ── Mapa ao vivo ──────────────────────────────────────────
+function renderMapa() {
+
+  // Pins de inspetores sobrepostos (posições simuladas em % do container)
+  const INSPETOR_POS = [
+    { x:42, y:37, cls:'g' }, { x:57, y:51, cls:'g' },
+    { x:53, y:32, cls:'a' }, { x:37, y:59, cls:'r' },
+    { x:65, y:43, cls:'g' },
+  ];
+  const pinsEl = document.getElementById('agent-pins');
+  pinsEl.innerHTML = INSPETOR_POS.slice(0, DB.inspetores.length).map(p =>
+    `<div class="lpin ${p.cls}" style="top:${p.y}%;left:${p.x}%;z-index:5"></div>`
+  ).join('');
+
+  const tryDraw = () => {
+    const wrap = document.getElementById('map-wrap');
+    if (wrap && wrap.offsetWidth > 0) renderHeatmap();
+    else requestAnimationFrame(tryDraw);
+  };
+  tryDraw();
+}
+
+function renderHeatmap() {
+  const canvas = document.getElementById('heatmap-canvas');
+  const wrap   = document.getElementById('map-wrap');
+  if (!wrap) return;
+
+  const rect = wrap.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+
+  const W = rect.width;
+  const H = rect.height;
+
+  if (!W || !H) return;
+
+  // 👉 Ajuste real de resolução (evita blur e desalinhamento)
+  canvas.width  = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
+
+  // 👉 Mantém o tamanho visual correto
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+
+  const ctx = canvas.getContext('2d');
+
+  // 👉 Escala para compensar o DPR
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  ctx.clearRect(0, 0, W, H);
+
+  const R = W * 0.09;
+
+  DB.mapa.pontos.forEach(p => {
+    const cx = (p.x / 100) * W;
+    const OFFSET_Y = -100; // ajusta aqui (px)
+
+const cy = (p.y / 100) * H + OFFSET_Y;
+
+    const r = Math.round(p.intensidade > 0.5 ? 229 : 26 + (196-26) * (p.intensidade/0.5));
+    const g = Math.round(p.intensidade > 0.5 ? 158 - (158-34)*((p.intensidade-0.5)/0.5) : 158 + (196-158)*(p.intensidade/0.5));
+    const b = p.intensidade > 0.5 ? 7 : 20;
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${r},${g},${b},${(0.18 + p.intensidade * 0.42).toFixed(2)})`;
+    ctx.fill();
+  });
+}
+
+// ── Inspetores ──────────────────────────────────────────────
+function renderAgentes() {
+  const STATUS = ['verificando','deslocamento','verificando','aguardando','verificando'];
+  const STATUS_DOT = {
+    'verificando': { color:'var(--em-400)', shadow:'box-shadow:0 0 5px var(--em)' },
+    'deslocamento':{ color:'var(--am-400)', shadow:'' },
+    'aguardando':  { color:'var(--co-400)', shadow:'box-shadow:0 0 5px var(--co)' },
+  };
+  document.getElementById('inspetores-badge').textContent = `${DB.inspetores.length} online`;
+  document.getElementById('map-inspetores').textContent = DB.inspetores.length;
+  document.getElementById('map-devices').textContent  = DB.inspetores.length + 4;
+  document.getElementById('map-sessoes').textContent  = Math.ceil(DB.inspetores.length * 0.7);
+
+  document.getElementById('inspetores-list').innerHTML = DB.inspetores.map((a, i) => {
+    const und = DB.unidade(a.unidade_id);
+    const st  = STATUS[i % STATUS.length];
+    const dot = STATUS_DOT[st] || STATUS_DOT['verificando'];
+    return `
+      <div class="agent-row">
+        <div class="agent-avatar">${a.iniciais}</div>
+        <div style="flex:1;min-width:0">
+          <div class="agent-name">${a.nome}</div>
+          <div class="agent-sub">${und?.nome||'—'} · ${st}</div>
+        </div>
+        <div class="agent-status" style="background:${dot.color};${dot.shadow}"></div>
+      </div>`;
+  }).join('');
+}
+
+// ── Feed ─────────────────────────────────────────────────
+let feedFilter = 'all';
+
+function feedIconSVG(s) {
+  if (s==='err')  return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--co-400)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`;
+  if (s==='warn') return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--am-400)" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>`;
+  return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--em)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+}
+
+function setFeedFilter(f, btn) {
+  feedFilter = f;
+  document.querySelectorAll('.feed-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFeed();
+}
+
+function renderFeed() {
+  const all = DB.verificacoes_recentes(15);
+  const list = feedFilter === 'all' ? all : all.filter(v => v.status === feedFilter);
+  document.getElementById('feed-count').textContent = `${list.length} recentes`;
+  document.getElementById('feed-list').innerHTML = list.map(v => {
+    const vei = DB.veiculo(v.veiculo_id);
+    const agt = DB.inspetor(v.inspetor_id);
+    const ago = Math.round((Date.now() - new Date(v.data)) / 60000);
+    const agoStr = ago < 60 ? `${ago} min` : `${Math.round(ago/60)}h`;
+    const label  = vei ? `${vei.marca} ${vei.modelo} ${vei.ano}` : '—';
+    const vinShort = vei ? vei.vin.slice(0,9)+'...'+vei.vin.slice(-3) : '—';
+    const etapa = ['Gravação chassi','Etiqueta VIN','Vidros','Placa OCR'][Math.abs(v.score) % 4];
+    return `
+      <div class="feed-item ${v.status}" onclick="goTo('detalhe')">
+        <div class="feed-icon ${v.status}">${feedIconSVG(v.status)}</div>
+        <div style="flex:1;min-width:0">
+          <div class="feed-name">${label}</div>
+          <div class="feed-sub">${etapa} · <span style="font-family:var(--font-m);font-size:9px">${vinShort}</span></div>
+          <div class="feed-meta">
+            <span class="badge ${DB.badge_class(v.status)}">${DB.badge_label(v.status)}</span>
+            <span class="feed-ago">${agt?.nome||'—'} · ${agoStr}</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── Alertas ──────────────────────────────────────────────
+function alertIconSVG(t) {
+  if (t==='err') return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--co-400)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`;
+  return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--am-400)" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>`;
+}
+
+function renderAlertas() {
+  document.getElementById('alerts-count').textContent = DB.alertas_criticos().length;
+  document.getElementById('alerts-list').innerHTML = DB.alertas.map(a => {
+    const cls    = a.tipo === 'err' ? 'err' : 'warn';
+    const partes = a.texto.split('·');
+    return `
+      <div class="alert-item">
+        <div class="alert-icon ${cls}">${alertIconSVG(a.tipo)}</div>
+        <div style="flex:1;min-width:0">
+          <div class="alert-title">${partes[0].trim()}</div>
+          <div class="alert-sub">${partes.slice(1).join('·').trim()}<br>${a.meta}</div>
+          <button class="btn-detail ${cls}" onclick="goTo('detalhe')">Ver detalhe →</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── Turno ─────────────────────────────────────────────────
+function renderTurno() {
+  const tots = DB.totais();
+  const h    = new Date().getHours();
+  const turnoStart = h < 14 ? '08:00' : h < 20 ? '14:00' : '20:00';
+  document.getElementById('turno-range').textContent = `${turnoStart} – agora`;
+  document.getElementById('turno-body').innerHTML = `
+    <div class="turno-row"><span class="turno-label">Verificações</span><span class="turno-val">${tots.verificacoes}</span></div>
+    <div class="turno-row"><span class="turno-label">Compatíveis</span><span class="turno-val" style="color:var(--em)">${tots.ok}</span></div>
+    <div class="turno-row"><span class="turno-label">Atenção</span><span class="turno-val" style="color:var(--am)">${tots.warn}</span></div>
+    <div class="turno-row"><span class="turno-label">Divergentes</span><span class="turno-val" style="color:var(--co-400)">${tots.err}</span></div>
+    <div class="turno-row"><span class="turno-label">Taxa</span><span style="font-family:var(--font-m);font-size:12px;font-weight:700;color:var(--co-400)">${tots.pct_diverg}%</span></div>
+  `;
+}
+
+function tick() {
+  const t = new Date().toTimeString().slice(0, 8);
+  document.getElementById('fbar').innerHTML =
+    `SYNC: ${t} · <span style="color:var(--em-400)">ONLINE</span> · ${DB.inspetores.length} INSPETORES`;
+}
+
+function render() {
+  renderTicker();
+  renderMapa();
+  renderAgentes();
+  renderFeed();
+  renderAlertas();
+  renderTurno();
+  document.getElementById('footer-versao').textContent = DB.sistema.versao;
+  tick();
+}
+
+render();
+setInterval(tick, 1000);
+window.addEventListener('resize', renderHeatmap);
+</script>
+</body>
+</html>

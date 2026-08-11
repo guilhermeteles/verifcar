@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VerifCar · Dashboard · Acesso</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"></noscript>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+:root{
+  --pri:#23CB97;--pri-50:#0F221D;--pri-100:#16352C;--pri-400:#23CB97;--pri-600:#4FDCB0;--pri-800:#93EED3;
+  --em:#23CB97;--em-50:#0F221D;--em-400:#35D9A4;
+  --am:#F0A92B;--am-50:#2A1F0E;--am-400:#F0A92B;
+  --co:#FF3B63;--co-50:#2B1119;--co-400:#FF3B63;--co-800:#FF95AC;
+  --font-d:'Space Grotesk',sans-serif;
+  --font-b:'Inter',sans-serif;
+  --font-m:'JetBrains Mono',monospace;
+}
+
+html,body{
+  width:100%;height:100%;overflow:hidden;
+  font-family:var(--font-b);
+  background:#12141C;
+  color:#fff;
+  
+}
+
+/* ── Background ───────────────────────────────────────────── */
+.bg{
+  position:fixed;inset:0;z-index:0;
+  background:radial-gradient(ellipse 80% 60% at 30% 40%,rgba(35,203,151,.55) 0%,transparent 70%),
+             radial-gradient(ellipse 60% 50% at 70% 70%,rgba(35,203,151,.1) 0%,transparent 60%),
+             #12141C;
+             
+}
+/* dot grid */
+.bg::before{
+  content:'';position:absolute;inset:0;
+  background-image:radial-gradient(rgba(35,203,151,.22) 1px,transparent 1px);
+  background-size:28px 28px;
+}
+/* glow orbs */
+.bg::after{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(circle 300px at 20% 80%,rgba(35,203,151,.12),transparent),
+    radial-gradient(circle 200px at 85% 15%,rgba(35,203,151,.08),transparent);
+    /* background-image: url("bg.png");
+  mix-blend-mode: color-dodge;
+  background-repeat: no-repeat;
+  background-size: 800px;
+  background-position: 70% 80%, 85% 15%;
+  opacity: 1; */
+  
+}
+
+/* rainbow bar */
+.rainbow-bar{
+  position:fixed;top:0;left:0;right:0;height:3px;z-index:100;
+  background:linear-gradient(90deg,var(--pri-800),var(--pri-400),var(--em-400),var(--pri-400),var(--pri-800));
+  box-shadow:0 0 16px rgba(0,0,0,1.0);
+}
+
+/* ── Layout ───────────────────────────────────────────────── */
+.page{
+  position:relative;z-index:1;
+  display:flex;align-items:stretch;
+  width:100%;height:100%;
+}
+
+/* ── Left panel (branding) ────────────────────────────────── */
+.left-panel{
+  flex:1;display:flex;flex-direction:column;justify-content:space-between;
+  padding:48px 56px;
+  border-right:1px solid rgba(255,255,255,.06);
+  position:relative;overflow:hidden;
+  align-items: end;
+}
+
+/* animated grid lines on left */
+.left-panel::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 55px,rgba(255,255,255,.025) 55px,rgba(255,255,255,.025) 56px),
+             repeating-linear-gradient(90deg,transparent,transparent 55px,rgba(255,255,255,.025) 55px,rgba(255,255,255,.025) 56px);
+  pointer-events:none;
+}
+
+.brand-top{display:flex;align-items:center;gap:14px;}
+.brand-mark{
+  /* width:44px;height:44px;border-radius:14px; */
+  background:linear-gradient(135deg,var(--pri-400),var(--pri-600));
+  border:1.5px solid rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 20px rgba(0,0,0,1.0);
+}
+.brand-wordmark{font-family:var(--font-d);font-size:22px;font-weight:800;color:#fff;letter-spacing:3px}
+.brand-badge{
+  font-family:var(--font-m);font-size:8px;font-weight:700;
+  color:rgba(255,255,255,.35);letter-spacing:1.5px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  border-radius:5px;padding:2px 8px;
+}
+
+.brand-main{flex:1;display:flex;flex-direction:column;justify-content:center;padding:40px 0}
+.brand-tag{
+  font-family:var(--font-m);font-size:9px;font-weight:700;
+  color:var(--pri-400);letter-spacing:2px;text-transform:uppercase;
+  margin-bottom:16px;
+}
+.brand-headline{
+  font-family:var(--font-d);font-size:36px;font-weight:800;
+  line-height:1.15;color:#fff;margin-bottom:18px;
+  letter-spacing:-.5px;
+}
+.brand-headline em{
+  font-style:normal;
+  background:linear-gradient(90deg,var(--pri-400),#A493F8);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.brand-desc{font-size:13px;color:rgba(255,255,255,.45);line-height:1.65;max-width:380px;margin-bottom:32px}
+
+/* Stats strip */
+.stats-strip{display:flex;gap:24px}
+.stat-item{display:flex;flex-direction:column;gap:3px}
+.stat-val{font-family:var(--font-d);font-size:22px;font-weight:800;color:#fff}
+.stat-lbl{font-size:10px;color:rgba(255,255,255,.35);font-weight:500}
+
+/* Feature list */
+.feature-list{display:flex;flex-direction:column;gap:10px;margin-top:32px}
+.feature-item{
+  display:flex;align-items:center;gap:10px;
+  font-size:12px;color:rgba(255,255,255,.5);
+}
+.feature-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--pri-400);flex-shrink:0;
+  box-shadow:0 0 8px rgba(0,0,0,1.0);
+}
+
+.brand-footer{
+  font-family:var(--font-m);font-size:8px;
+  color:rgba(255,255,255,.2);letter-spacing:.8px;
+}
+
+/* ── Right panel (form) ───────────────────────────────────── */
+.right-panel{
+  flex:1;flex-shrink:0;
+  display:flex;flex-direction:column;align-items:start;justify-content:center;
+  padding:40px 48px;
+  position:relative;
+}
+
+.login-card{width:100%;max-width:360px}
+
+/* Header do card */
+.login-header{margin-bottom:28px}
+.login-title{font-family:var(--font-d);font-size:22px;font-weight:800;color:#fff;margin-bottom:6px}
+.login-sub{font-size:12px;color:rgba(255,255,255,.4);line-height:1.5}
+
+/* Tabs de método */
+.method-tabs{display:flex;gap:0;background:rgba(255,255,255,.05);border-radius:12px;padding:3px;margin-bottom:24px;border:1px solid rgba(255,255,255,.07)}
+.method-tab{
+  flex:1;padding:8px 12px;border-radius:9px;
+  font-family:var(--font-b);font-size:11px;font-weight:600;
+  color:rgba(255,255,255,.4);cursor:pointer;
+  border:none;background:none;transition:all .2s;text-align:center;
+}
+.method-tab.active{
+  background:rgba(35,203,151,.3);color:#fff;
+  border:1px solid rgba(35,203,151,.4);
+  box-shadow:0 2px 8px rgba(0,0,0,0.88);
+}
+
+/* Form */
+.form-group{margin-bottom:14px}
+.form-label{
+  display:block;font-size:11px;font-weight:700;
+  color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.8px;
+  margin-bottom:7px;
+}
+.form-input{
+  width:100%;padding:11px 14px;
+  background:rgba(255,255,255,.05);
+  border:1.5px solid rgba(255,255,255,.1);
+  border-radius:10px;
+  font-family:var(--font-b);font-size:13px;color:#fff;
+  outline:none;transition:all .2s;
+}
+.form-input::placeholder{color:rgba(255,255,255,.2)}
+.form-input:focus{
+  background:rgba(255,255,255,.07);
+  border-color:rgba(35,203,151,.7);
+  box-shadow:0 0 0 3px rgba(0,0,0,0.33);
+}
+.form-input.error{border-color:rgba(255,59,99,.5);box-shadow:0 0 0 3px rgba(0,0,0,0.22)}
+
+/* Input com ícone */
+.input-wrap{position:relative}
+.input-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.25);pointer-events:none}
+.input-wrap .form-input{padding-left:38px}
+.input-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:rgba(255,255,255,.25);border:none;background:none;padding:2px}
+.input-toggle:hover{color:rgba(255,255,255,.55)}
+
+/* Forgot */
+.forgot{
+  display:block;text-align:right;font-size:11px;
+  color:rgba(35,203,151,.7);cursor:pointer;margin-top:6px;
+  font-weight:600;
+}
+.forgot:hover{color:var(--pri-400)}
+
+/* Error msg */
+.form-error{
+  font-size:11px;color:var(--co-400);margin-top:5px;
+  display:none;align-items:center;gap:5px;
+}
+.form-error.show{display:flex}
+
+/* Btn principal */
+.btn-login{
+  width:100%;padding:13px;margin-top:4px;
+  background:linear-gradient(135deg,var(--pri-600),var(--pri-400));
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:12px;
+  font-family:var(--font-d);font-size:13px;font-weight:800;
+  color:#fff;cursor:pointer;
+  box-shadow:0 6px 20px rgba(0,0,0,1.0);
+  transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  position:relative;overflow:hidden;
+}
+.btn-login::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.1),transparent);
+  opacity:0;transition:opacity .2s;
+}
+.btn-login:hover::before{opacity:1}
+.btn-login:hover{box-shadow:0 8px 28px rgba(0,0,0,1.0);transform:translateY(-1px)}
+.btn-login:active{transform:translateY(0)}
+.btn-login.loading{pointer-events:none;opacity:.8}
+.btn-spinner{display:none;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+.btn-login.loading .btn-spinner{display:block}
+.btn-login.loading .btn-txt{display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Divider */
+.divider{display:flex;align-items:center;gap:10px;margin:18px 0}
+.divider-line{flex:1;height:1px;background:rgba(255,255,255,.08)}
+.divider-txt{font-size:10px;font-weight:600;color:rgba(255,255,255,.25);white-space:nowrap}
+
+/* SSO btn */
+.btn-govbr{
+  width:100%;padding:12px;
+  background:rgba(255,255,255,.04);
+  border:1.5px solid rgba(255,255,255,.1);
+  border-radius:12px;
+  font-family:var(--font-d);font-size:13px;font-weight:700;
+  color:#fff;cursor:pointer;
+  transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.btn-govbr:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2)}
+
+/* SSO logo mark */
+.govbr-logo{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,.06);border-radius:6px;padding:2px 8px;
+}
+.govbr-flag{display:flex;gap:1.5px}
+.govbr-flag span{display:inline-block;width:4px;height:16px;border-radius:1px}
+
+/* 2FA panel */
+.twofa-panel{display:none}
+.twofa-panel.show{display:block}
+.twofa-digits{display:flex;gap:8px;justify-content:center;margin-bottom:6px}
+.twofa-digit{
+  width:44px;height:52px;
+  background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);
+  border-radius:10px;
+  font-family:var(--font-m);font-size:22px;font-weight:700;color:#fff;
+  text-align:center;outline:none;transition:all .2s;
+}
+.twofa-digit:focus{border-color:rgba(35,203,151,.7);box-shadow:0 0 0 3px rgba(0,0,0,0.33);background:rgba(255,255,255,.07)}
+
+/* Link de ações extras */
+.aux-links{margin-top:18px;text-align:center;font-size:11px;color:rgba(255,255,255,.25)}
+.aux-links a{color:rgba(35,203,151,.65);cursor:pointer;font-weight:600;text-decoration:none}
+.aux-links a:hover{color:var(--pri-400)}
+
+/* Sistema chip */
+.system-chip{
+  position:absolute;bottom:24px;
+  display:flex;align-items:center;gap:6px;
+  font-family:var(--font-m);font-size:8px;color:rgba(255,255,255,.2);
+}
+.system-dot{width:5px;height:5px;border-radius:50%;background:var(--em-400);box-shadow:0 0 5px var(--em)}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);
+  background:var(--co-800);border:1px solid rgba(255,59,99,.3);
+  color:#fff;padding:10px 18px;border-radius:10px;
+  font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;
+  box-shadow:0 8px 24px rgba(0,0,0,.4);opacity:0;pointer-events:none;
+  transition:all .3s;z-index:200;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{background:#133d1a;border-color:rgba(35,203,151,.35)}
+
+/* Modal */
+.modal-bg{
+  position:fixed;inset:0;z-index:150;
+  background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
+  display:none;align-items:center;justify-content:center;
+}
+.modal-bg.open{display:flex}
+.modal{
+  background:#131628;border:1px solid rgba(255,255,255,.1);
+  border-radius:18px;padding:28px 32px;max-width:480px;width:90%;
+  box-shadow:0 24px 60px rgba(0,0,0,.6);
+}
+.modal-title{font-family:var(--font-d);font-size:16px;font-weight:800;color:#fff;margin-bottom:6px}
+.modal-body{font-size:12px;color:rgba(255,255,255,.45);line-height:1.7;max-height:300px;overflow-y:auto;padding-right:4px}
+.modal-body::-webkit-scrollbar{width:4px}
+.modal-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+.modal-footer{margin-top:20px;display:flex;justify-content:flex-end;gap:8px}
+.modal-btn{font-family:var(--font-b);font-size:12px;font-weight:700;padding:8px 20px;border-radius:9999px;cursor:pointer;border:none}
+.modal-btn.close{background:rgba(255,255,255,.08);color:rgba(255,255,255,.6)}
+.modal-btn.accept{background:var(--pri-600);color:#fff}
+
+/* Fade-in animation */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.login-card{animation:fadeUp .4s ease both}
+.left-panel .brand-main{animation:fadeUp .5s .1s ease both}
+</style>
+</head>
+<body>
+
+<div class="rainbow-bar"></div>
+<div class="bg"></div>
+
+<div class="page">
+
+  <!-- ── Left panel ───────────────────────────────────── -->
+  <div class="left-panel">
+    <div class="brand-top">
+      <img src="logo-white.svg" alt="VerifCar" height="34">
+      <!-- <span class="brand-wordmark">VerifCar</span> -->
+      <span class="brand-badge">DASHBOARD · WEB</span>
+    </div>
+
+    <div class="brand-main">
+      <div class="brand-tag">Sistema de verificação veicular inteligente</div>
+      <h1 class="brand-headline">
+        Inspeção veicular<br>com <em>inteligência artificial</em>
+      </h1>
+      <p class="brand-desc">
+        Plataforma de gestão e monitoramento das operações de verificação veicular do Base Oficial. Análise em tempo real, inteligência investigativa e conformidade LGPD.
+      </p>
+
+      <div class="stats-strip">
+        <div class="stat-item">
+          <div class="stat-val">1.247</div>
+          <div class="stat-lbl">Verificações / mês</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val">47</div>
+          <div class="stat-lbl">Inspetores ativos</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val">4,2%</div>
+          <div class="stat-lbl">Taxa divergência</div>
+        </div>
+      </div>
+
+      <div class="feature-list">
+        <div class="feature-item"><div class="feature-dot"></div>Monitoramento ao vivo das operações de campo</div>
+        <div class="feature-item"><div class="feature-dot"></div>Grafo de inteligência — conexões entre veículos, VINs e inspetores</div>
+        <div class="feature-item"><div class="feature-dot"></div>Análise tática por região e município</div>
+        <div class="feature-item"><div class="feature-dot"></div>Conformidade LGPD · TLS 1.3 · AES-256</div>
+      </div>
+    </div>
+
+    <div class="brand-footer">
+      Grupo Almeida · Rede · VerifCar DASHBOARD v2.4.1 · ACESSO RESTRITO A SERVIDORES AUTORIZADOS
+    </div>
+  </div>
+
+  <!-- ── Right panel (form) ────────────────────────────── -->
+  <div class="right-panel">
+
+    <div class="login-card">
+
+      <div class="login-header">
+        <div class="login-title">Acesso ao sistema</div>
+        <div class="login-sub">Use suas credenciais corporativas ou acesse via SSO da sua empresa</div>
+      </div>
+
+      <!-- Method tabs -->
+      <div class="method-tabs">
+        <button class="method-tab active" id="tab-cred" onclick="setTab('cred')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;vertical-align:middle"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          Credenciais
+        </button>
+        <button class="method-tab" id="tab-gov" onclick="setTab('gov')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;vertical-align:middle"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>SSO</button>
+      </div>
+
+      <!-- CREDENCIAIS FORM -->
+      <div id="form-cred">
+        <div class="form-group">
+          <label class="form-label">Usuário funcional</label>
+          <div class="input-wrap">
+            <svg class="input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 4v16M3 9h5M3 14h5"/></svg>
+            <input class="form-input" id="matricula" type="text" placeholder="usuario@empresa.com.br" autocomplete="username" maxlength="12" oninput="clearErrors()">
+          </div>
+          <div class="form-error" id="err-mat">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Usuário inválida ou não encontrada
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Senha</label>
+          <div class="input-wrap">
+            <svg class="input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            <input class="form-input" id="senha" type="password" placeholder="••••••••" autocomplete="current-password" oninput="clearErrors()" onkeydown="if(event.key==='Enter')doLogin()">
+            <button class="input-toggle" id="toggle-pwd" onclick="togglePwd()">
+              <svg id="eye-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="form-error" id="err-pwd">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Senha incorreta. <span id="attempts-left"></span>
+          </div>
+          <span class="forgot" onclick="showModal('forgot')">Esqueci minha senha</span>
+        </div>
+
+        <!-- 2FA -->
+        <div class="twofa-panel" id="twofa-panel">
+          <div class="form-group" style="margin-bottom:8px">
+            <label class="form-label">Código de verificação (2FA)</label>
+            <div class="twofa-digits" id="twofa-digits">
+              <input class="twofa-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]">
+              <input class="twofa-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]">
+              <input class="twofa-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]">
+              <input class="twofa-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]">
+              <input class="twofa-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]">
+              <input class="twofa-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]">
+            </div>
+            <div style="font-size:10px;color:rgba(255,255,255,.3);text-align:center">Código enviado para •••••@verifcar.com.br</div>
+          </div>
+        </div>
+
+        <button class="btn-login" id="btn-login" onclick="doLogin()">
+          <div class="btn-spinner"></div>
+          <span class="btn-txt">Entrar no sistema</span>
+          <svg class="btn-txt" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <!-- SSO FORM -->
+      <div id="form-gov" style="display:none">
+        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:20px;margin-bottom:18px;text-align:center">
+          <!-- SSO visual -->
+          <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px">
+            <div style="display:flex;gap:2px">
+              <div style="width:5px;height:22px;border-radius:2px;background:#23CB97"></div>
+              <div style="width:5px;height:22px;border-radius:2px;background:#F0A92B"></div>
+              <div style="width:5px;height:22px;border-radius:2px;background:#222431"></div>
+            </div>
+            <span style="font-family:var(--font-d);font-size:18px;font-weight:800;color:#fff;letter-spacing:.5px">SSO</span>
+          </div>
+          <div style="font-size:12px;color:rgba(255,255,255,.45);line-height:1.5;margin-bottom:14px">
+            Você será redirecionado para o provedor de identidade da sua empresa (Microsoft Entra ID ou Google Workspace).
+          </div>
+          <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap">
+            <span style="font-family:var(--font-m);font-size:9px;color:rgba(255,255,255,.3);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);padding:3px 9px;border-radius:9999px">Nível Prata</span>
+            <span style="font-family:var(--font-m);font-size:9px;color:rgba(255,255,255,.3);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);padding:3px 9px;border-radius:9999px">Nível Ouro</span>
+            <span style="font-family:var(--font-m);font-size:9px;color:rgba(255,255,255,.3);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);padding:3px 9px;border-radius:9999px">ICP-Brasil</span>
+          </div>
+        </div>
+
+        <button class="btn-govbr" onclick="doLoginGovBr()">
+          <div style="display:flex;gap:2px">
+            <div style="width:4px;height:18px;border-radius:1px;background:#23CB97"></div>
+            <div style="width:4px;height:18px;border-radius:1px;background:#F0A92B"></div>
+            <div style="width:4px;height:18px;border-radius:1px;background:#222431"></div>
+          </div>
+          <span>Acessar com SSO</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </button>
+      </div>
+
+      <!-- Divider só no tab credenciais -->
+      <div class="divider" id="divider-gov" style="display:none">
+        <div class="divider-line"></div>
+        <div class="divider-txt">ou acesse com credenciais</div>
+        <div class="divider-line"></div>
+      </div>
+
+      <div class="aux-links">
+        <a onclick="showModal('terms')">Termos de uso</a> · <a onclick="showModal('privacy')">Privacidade</a> · <a onclick="showModal('support')">Suporte</a>
+      </div>
+    </div>
+
+    <div class="system-chip">
+      <div class="system-dot"></div>
+      Sistema operacional · TLS 1.3 · LGPD
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Modal -->
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer">
+      <button class="modal-btn close" onclick="closeModal()">Fechar</button>
+      <button class="modal-btn accept" id="modal-accept" style="display:none" onclick="closeModal()">Aceitar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────
+let attempts = 0;
+let twoFaStep = false;
+const VALID = { mat: 'ID: -00001', pwd: '123456' };
+
+// ── Tab switching ──────────────────────────────────────────
+function setTab(t) {
+  document.getElementById('tab-cred').classList.toggle('active', t === 'cred');
+  document.getElementById('tab-gov').classList.toggle('active', t === 'gov');
+  document.getElementById('form-cred').style.display = t === 'cred' ? 'block' : 'none';
+  document.getElementById('form-gov').style.display = t === 'gov' ? 'block' : 'none';
+  document.getElementById('divider-gov').style.display = t === 'gov' ? 'flex' : 'none';
+}
+
+// ── Password toggle ────────────────────────────────────────
+function togglePwd() {
+  const inp = document.getElementById('senha');
+  const showing = inp.type === 'text';
+  inp.type = showing ? 'password' : 'text';
+  document.getElementById('eye-icon').innerHTML = showing
+    ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
+    : '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
+}
+
+// ── Login logic ────────────────────────────────────────────
+function doLogin() {
+  const mat = document.getElementById('matricula').value.trim().toUpperCase();
+  const pwd = document.getElementById('senha').value;
+
+  if (!mat) {
+    document.getElementById('matricula').classList.add('error');
+    document.getElementById('err-mat').classList.add('show');
+    return;
+  }
+
+  if (twoFaStep) {
+    const code = [...document.querySelectorAll('.twofa-digit')].map(d => d.value).join('');
+    if (code.length < 6) { showToast('Preencha todos os 6 dígitos do código.'); return; }
+    // Aceita qualquer código de 6 dígitos no protótipo
+    doSuccess();
+    return;
+  }
+
+  const btn = document.getElementById('btn-login');
+  btn.classList.add('loading');
+
+  setTimeout(() => {
+    btn.classList.remove('loading');
+
+    // Aceita mat+senha demo OU qualquer mat com pwd não vazia (protótipo)
+    if (mat === 'VERIFCAR' && pwd === 'verifcar2026') {
+      // Simula 2FA para perfis Admin
+      show2FA();
+    } else {
+      attempts++;
+      document.getElementById('senha').classList.add('error');
+      const errPwd = document.getElementById('err-pwd');
+      errPwd.classList.add('show');
+      const left = Math.max(0, 5 - attempts);
+      document.getElementById('attempts-left').textContent = left > 0 ? `${left} tentativas restantes.` : 'Conta bloqueada.';
+      if (attempts >= 5) {
+        document.getElementById('btn-login').disabled = true;
+        showToast('Conta bloqueada após 5 tentativas.', 'error');
+      }
+    }
+  }, 1200);
+}
+
+function show2FA() {
+  twoFaStep = true;
+  document.getElementById('twofa-panel').classList.add('show');
+  document.querySelector('.btn-txt').textContent = 'Verificar código';
+  setupTwoFaInputs();
+  document.querySelector('.twofa-digit').focus();
+}
+
+function setupTwoFaInputs() {
+  const digits = document.querySelectorAll('.twofa-digit');
+  digits.forEach((d, i) => {
+    d.addEventListener('input', () => {
+      d.value = d.value.replace(/\D/g, '');
+      if (d.value && i < digits.length - 1) digits[i + 1].focus();
+      if ([...digits].every(x => x.value)) doLogin();
+    });
+    d.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !d.value && i > 0) digits[i - 1].focus();
+    });
+  });
+}
+
+function doSuccess() {
+  showToast('Autenticado com sucesso. Redirecionando...', 'success');
+
+  setTimeout(() => {
+    if (window.parent) {
+      window.parent.postMessage({ goTo: 'visao-geral' }, '*');
+    } else {
+      // fallback (caso abra direto o HTML)
+      window.location.href = 'dash-01-visao-geral.html';
+    }
+  }, 900);
+}
+
+function doLoginGovBr() {
+  const btn = document.querySelector('.btn-govbr');
+
+  btn.style.opacity = '.6';
+  btn.style.pointerEvents = 'none';
+
+  btn.innerHTML = '<span>Integração SSO em configuração</span>';
+
+  setTimeout(() => {
+    btn.style.opacity = '';
+    btn.style.pointerEvents = '';
+    
+    showToast('SSO corporativo indisponível no momento.', 'error');
+  }, 1200);
+}
+
+function clearErrors() {
+  ['matricula','senha'].forEach(id => {
+    document.getElementById(id)?.classList.remove('error');
+  });
+  document.getElementById('err-mat').classList.remove('show');
+  document.getElementById('err-pwd').classList.remove('show');
+}
+
+// ── Toast ─────────────────────────────────────────────────
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type === 'success' ? ' success' : '');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── Modals ─────────────────────────────────────────────────
+const MODAL_CONTENT = {
+  terms: {
+    title: 'Termos de uso',
+    body: `<p>O acesso ao VerifCar Dashboard é exclusivo para servidores públicos autorizados pelo Base Oficial/ES. O uso indevido das informações aqui contidas pode configurar infração administrativa, civil e penal.</p>
+<br><p><strong style="color:rgba(255,255,255,.6)">Responsabilidades do usuário</strong></p>
+<p style="margin-top:6px">O usuário compromete-se a: (i) manter sigilo sobre suas credenciais de acesso; (ii) não compartilhar informações restritas obtidas no sistema; (iii) utilizar o sistema exclusivamente para fins relacionados às suas atribuições funcionais; (iv) reportar imediatamente qualquer uso suspeito ao administrador do sistema.</p>
+<br><p><strong style="color:rgba(255,255,255,.6)">Monitoramento</strong></p>
+<p style="margin-top:6px">Todas as ações realizadas no sistema são registradas em log de auditoria com identificação do usuário, endereço IP e timestamp. O acesso ao sistema implica concordância com o monitoramento e auditoria das atividades.</p>`,
+    accept: false,
+  },
+  privacy: {
+    title: 'Política de privacidade · LGPD',
+    body: `<p>O VerifCar Dashboard trata dados pessoais de proprietários de veículos com base legal no Art. 7º, II e VI da LGPD (Lei 13.709/2018), para fins de inspeção veicular no âmbito das competências do Base Oficial/ES.</p>
+<br><p><strong style="color:rgba(255,255,255,.6)">Dados tratados</strong></p>
+<p style="margin-top:6px">Nome, CPF, RENAVAM, placa, chassi, histórico de verificações. Dados de imagem (capturas do veículo durante verificação).</p>
+<br><p><strong style="color:rgba(255,255,255,.6)">Segurança</strong></p>
+<p style="margin-top:6px">Comunicações protegidas por TLS 1.3. Dados em repouso criptografados com AES-256. Backups automáticos com retenção mínima de 5 anos conforme legislação vigente.</p>
+<br><p><strong style="color:rgba(255,255,255,.6)">DPO</strong></p>
+<p style="margin-top:6px">Encarregado de proteção de dados designado. Contato: dpo@verifcar.com.br</p>`,
+    accept: false,
+  },
+  forgot: {
+    title: 'Recuperação de acesso',
+    body: `<p style="margin-bottom:10px">Para recuperar seu acesso, entre em contato com o administrador do sistema ou com a TI do Base Oficial/ES:</p>
+<p>📧 <strong style="color:rgba(255,255,255,.5)">suporte@verifcar.com.br</strong></p>
+<p style="margin-top:6px">📞 <strong style="color:rgba(255,255,255,.5)">(27) 3636-0000 ramal 212</strong></p>
+<p style="margin-top:12px;color:rgba(255,255,255,.35);font-size:11px">Horário de atendimento: Seg–Sex 8h–18h</p>`,
+    accept: false,
+  },
+  support: {
+    title: 'Suporte técnico',
+    body: `<p>Central de suporte VerifCar — Base Oficial/ES</p>
+<br><p>📧 <strong style="color:rgba(255,255,255,.5)">suporte@verifcar.com.br</strong></p>
+<p style="margin-top:6px">📞 <strong style="color:rgba(255,255,255,.5)">(27) 3636-0000 ramal 212</strong></p>
+<p style="margin-top:6px">🔗 <strong style="color:rgba(255,255,255,.5)">ajuda.verifcar.com.br</strong></p>
+<br><p style="color:rgba(255,255,255,.35);font-size:11px">SLA: Incidentes críticos — 2h úteis. Dúvidas gerais — 24h úteis.</p>`,
+    accept: false,
+  },
+};
+
+function showModal(key) {
+  const c = MODAL_CONTENT[key];
+  if (!c) return;
+  document.getElementById('modal-title').textContent = c.title;
+  document.getElementById('modal-body').innerHTML = c.body;
+  document.getElementById('modal-accept').style.display = c.accept ? '' : 'none';
+  document.getElementById('modalBg').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('modalBg').classList.remove('open');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// Focus no usuário ao carregar
+window.addEventListener('load', () => {
+  document.getElementById('matricula')?.focus();
+});
+</script>
+</body>
+</html>

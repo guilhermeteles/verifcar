@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VerifCar · Design Handoff · Cortex Indigo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════
+   RESET & GLOBAL
+   ══════════════════════════════════════════════════════ */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+:root{--pri-deep:#0C6B4E;--pri-deep2:#149B72;
+  --pri:#23CB97;--pri-50:#0F221D;--pri-100:#16352C;
+  --pri-400:#23CB97;--pri-600:#4FDCB0;--pri-800:#93EED3;
+  --em:#23CB97;--em-50:#0F221D;--em-400:#35D9A4;
+  --am:#F0A92B;--am-50:#2A1F0E;--am-400:#F0A92B;--am-800:#FFD48A;
+  --co:#FF3B63;--co-50:#2B1119;--co-400:#FF3B63;--co-800:#FF95AC;
+  --bg:#12141C;--surface:#1A1D28;
+  --sur-low:#222431;--sur-mid:#282B39;--sur-high:#33374A;
+  --text-h:#F3F5F9;--text-b:#CBD0DC;--text-m:#8D94A6;--text-s:#666D80;
+  --border:rgba(255,255,255,0.10);
+  --font-d:'Space Grotesk',sans-serif;
+  --font-b:'Inter',sans-serif;
+  --font-m:'JetBrains Mono',monospace;
+  --sh-card:0 1px 3px rgba(0,0,0,.45),0 6px 20px rgba(0,0,0,.30);
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-b);background:#12141C;color:var(--text-h);line-height:1.6}
+
+/* ── Layout ── */
+.page-shell{display:flex;min-height:100vh}
+.sidebar{width:260px;background:var(--sur-low);position:fixed;top:0;left:0;bottom:0;z-index:90;display:flex;flex-direction:column;overflow-y:auto;padding-top:3px}
+.sidebar::-webkit-scrollbar{width:4px}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:2px}
+.main{margin-left:260px;flex:1;background:var(--bg);min-height:100vh}
+
+/* Rainbow bar */
+.rainbow{position:fixed;top:0;left:0;right:0;height:3px;z-index:100;background:linear-gradient(90deg,var(--pri-800),var(--pri-400),var(--em-400),var(--pri-400),var(--pri-800))}
+
+/* ── Sidebar ── */
+.sb-logo{padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sb-logo-title{font-family:var(--font-d);font-size:16px;font-weight:800;color:#fff;letter-spacing:2px}
+.sb-logo-sub{font-family:var(--font-m);font-size:9px;color:rgba(255,255,255,.45);letter-spacing:1px;margin-top:2px}
+.sb-section{padding:16px 12px 8px}
+.sb-section-label{font-family:var(--font-m);font-size:8px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;padding:0 8px;margin-bottom:6px}
+.sb-link{display:block;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:500;color:rgba(255,255,255,.65);text-decoration:none;transition:all .15s;cursor:pointer}
+.sb-link:hover,.sb-link.active{background:rgba(255,255,255,.1);color:#fff;font-weight:600}
+.sb-link.active{border-left:2px solid var(--em-400)}
+
+/* ── Main content ── */
+.content-area{padding:32px 40px 80px;max-width:1100px}
+
+/* Section */
+.section{margin-bottom:56px;scroll-margin-top:24px}
+.section-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-m);font-size:9px;font-weight:700;color:var(--pri-600);background:var(--pri-50);border:1px solid var(--pri-100);padding:3px 10px;border-radius:6px;margin-bottom:8px;letter-spacing:1px}
+.section-title{font-family:var(--font-d);font-size:26px;font-weight:800;color:var(--pri-800);letter-spacing:-0.5px;margin-bottom:4px}
+.section-desc{font-size:13px;color:var(--text-m);margin-bottom:24px;max-width:600px}
+
+/* Grid helpers */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+
+/* ══════════════════════════════════════════════════════
+   COLOR SWATCHES
+   ══════════════════════════════════════════════════════ */
+.color-group{margin-bottom:20px}
+.color-group-label{font-family:var(--font-d);font-size:11px;font-weight:700;color:var(--text-m);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px}
+.color-row{display:flex;gap:8px;flex-wrap:wrap}
+.swatch{width:100%;border-radius:12px;background:var(--surface);box-shadow:var(--sh-card);overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
+.swatch:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.264)}
+.swatch-color{height:64px;position:relative}
+.swatch-info{padding:8px 10px}
+.swatch-name{font-family:var(--font-d);font-size:10px;font-weight:700;color:var(--text-h)}
+.swatch-hex{font-family:var(--font-m);font-size:9px;color:var(--text-s);margin-top:1px}
+.swatch-token{font-family:var(--font-m);font-size:8px;color:var(--pri-600);background:var(--pri-50);padding:1px 5px;border-radius:4px;margin-top:3px;display:inline-block}
+.swatch-flutter{font-family:var(--font-m);font-size:8px;color:var(--text-s);margin-top:2px;display:block}
+.copy-toast{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.8);color:#fff;font-family:var(--font-m);font-size:9px;padding:4px 10px;border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:5}
+.swatch.copied .copy-toast{opacity:1}
+
+/* ══════════════════════════════════════════════════════
+   TYPOGRAPHY
+   ══════════════════════════════════════════════════════ */
+.type-sample{background:var(--surface);border-radius:14px;padding:16px 18px;box-shadow:var(--sh-card);margin-bottom:12px}
+.type-label{font-family:var(--font-m);font-size:9px;color:var(--text-s);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.type-spec{font-family:var(--font-m);font-size:8px;color:var(--pri-600);background:var(--pri-50);padding:2px 6px;border-radius:4px}
+.type-preview{color:var(--text-h);margin-bottom:4px}
+
+/* ══════════════════════════════════════════════════════
+   SPACING & RADIUS
+   ══════════════════════════════════════════════════════ */
+.spacing-row{display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:10px;padding:10px 14px;box-shadow:var(--sh-card);margin-bottom:8px;cursor:pointer;transition:all .15s}
+.spacing-row:hover{box-shadow:0 4px 16px rgba(0,0,0,0.22)}
+.spacing-bar{background:var(--pri-400);border-radius:3px;height:16px;transition:width .3s}
+.spacing-meta{display:flex;gap:10px;align-items:center;min-width:220px}
+.spacing-token{font-family:var(--font-m);font-size:10px;color:var(--pri-800);font-weight:600;min-width:60px}
+.spacing-value{font-family:var(--font-m);font-size:10px;color:var(--text-s)}
+.spacing-flutter{font-family:var(--font-m);font-size:9px;color:var(--text-s)}
+
+.radius-grid{display:flex;gap:12px;flex-wrap:wrap}
+.radius-item{background:var(--surface);border-radius:12px;padding:14px;box-shadow:var(--sh-card);text-align:center;cursor:pointer;transition:all .15s;flex:1;min-width:100px}
+.radius-item:hover{transform:translateY(-2px)}
+.radius-preview{width:56px;height:56px;background:var(--pri-50);border:2px solid var(--pri-400);margin:0 auto 8px;transition:border-radius .3s}
+.radius-label{font-family:var(--font-m);font-size:10px;color:var(--pri-800);font-weight:600}
+.radius-val{font-family:var(--font-m);font-size:9px;color:var(--text-s);margin-top:2px}
+
+/* ══════════════════════════════════════════════════════
+   SHADOWS
+   ══════════════════════════════════════════════════════ */
+.shadow-card{background:var(--surface);border-radius:14px;padding:20px;text-align:center;cursor:pointer;transition:all .15s}
+.shadow-card:hover{transform:translateY(-2px)}
+.shadow-preview{width:80px;height:56px;background:var(--surface);border-radius:10px;margin:0 auto 10px}
+.shadow-name{font-family:var(--font-d);font-size:11px;font-weight:700;color:var(--text-h)}
+.shadow-token{font-family:var(--font-m);font-size:9px;color:var(--pri-600);background:var(--pri-50);padding:1px 5px;border-radius:4px;margin-top:4px;display:inline-block}
+.shadow-css{font-family:var(--font-m);font-size:8px;color:var(--text-s);margin-top:4px;word-break:break-all}
+
+/* ══════════════════════════════════════════════════════
+   COMPONENTS
+   ══════════════════════════════════════════════════════ */
+.comp-card{background:var(--surface);border-radius:16px;padding:20px;box-shadow:var(--sh-card);margin-bottom:16px}
+.comp-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.comp-name{font-family:var(--font-d);font-size:14px;font-weight:800;color:var(--pri-800)}
+.comp-platform{font-family:var(--font-m);font-size:8px;color:var(--text-s);background:var(--sur-low);padding:2px 6px;border-radius:4px}
+.comp-preview{background:var(--sur-low);border-radius:12px;padding:20px;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;min-height:60px}
+.comp-specs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.comp-spec{display:flex;justify-content:space-between;padding:4px 0;border-bottom:.5px solid var(--sur-low)}
+.comp-spec-label{font-size:10px;color:var(--text-m)}
+.comp-spec-value{font-family:var(--font-m);font-size:10px;color:var(--text-h);font-weight:500;cursor:pointer}
+.comp-spec-value:hover{color:var(--pri-400)}
+.comp-usage{margin-top:10px;padding-top:10px;border-top:1px solid var(--sur-low)}
+.comp-usage-label{font-family:var(--font-m);font-size:8px;color:var(--text-s);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.comp-usage-list{font-size:10px;color:var(--text-b);line-height:1.8}
+
+/* Code block */
+.code-block{background:#1a1e2e;border-radius:10px;padding:14px 16px;margin-top:10px;position:relative;overflow-x:auto}
+.code-block pre{font-family:var(--font-m);font-size:10px;color:#c5d4eb;line-height:1.7;white-space:pre;tab-size:2}
+.code-block .kw{color:#7c93d4}
+.code-block .str{color:#6fc088}
+.code-block .num{color:#d4a15c}
+.code-block .cmt{color:#5a6080}
+.copy-btn{position:absolute;top:8px;right:8px;background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.6);font-family:var(--font-m);font-size:9px;padding:3px 8px;border-radius:4px;cursor:pointer;transition:all .15s}
+.copy-btn:hover{background:rgba(255,255,255,.2);color:#fff}
+
+/* ══════════════════════════════════════════════════════
+   SCREEN MAP
+   ══════════════════════════════════════════════════════ */
+.screen-card{background:var(--surface);border-radius:16px;overflow:hidden;box-shadow:var(--sh-card);margin-bottom:16px;cursor:pointer;transition:all .15s}
+.screen-card:hover{box-shadow:0 8px 24px rgba(0,0,0,0.264);transform:translateY(-2px)}
+.screen-iframe-wrap{width:100%;height:320px;overflow:hidden;position:relative;background:#12141C}
+.screen-iframe-wrap iframe{width:100%;height:100%;border:none;pointer-events:none}
+.screen-iframe-wrap.mobile{max-width:180px;margin:0 auto;height:380px}
+.screen-iframe-wrap.mobile iframe{transform:scale(0.5);transform-origin:top center;width:200%;height:200%}
+.screen-iframe-wrap.desktop iframe{transform:scale(0.35);transform-origin:top left;width:285%;height:285%}
+.screen-meta{padding:14px 16px}
+.screen-name{font-family:var(--font-d);font-size:13px;font-weight:700;color:var(--pri-800)}
+.screen-file{font-family:var(--font-m);font-size:9px;color:var(--text-s);margin-top:2px}
+.screen-components{margin-top:8px;display:flex;flex-wrap:wrap;gap:4px}
+.screen-comp-tag{font-family:var(--font-m);font-size:8px;color:var(--pri-600);background:var(--pri-50);border:1px solid var(--pri-100);padding:2px 6px;border-radius:4px}
+
+/* ══════════════════════════════════════════════════════
+   FLUTTER REF
+   ══════════════════════════════════════════════════════ */
+.flutter-section{background:linear-gradient(135deg,#132C26,#17A87C);border-radius:16px;padding:24px;margin-bottom:16px}
+.flutter-section .section-title{color:#fff}
+.flutter-section .section-desc{color:rgba(255,255,255,.6)}
+
+/* ══════════════════════════════════════════════════════
+   TOAST
+   ══════════════════════════════════════════════════════ */
+#global-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--pri-deep2);color:#fff;font-family:var(--font-m);font-size:11px;padding:8px 16px;border-radius:9999px;opacity:0;transition:all .3s;z-index:200;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,0.66)}
+#global-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Responsive */
+@media(max-width:900px){
+  .sidebar{display:none}
+  .main{margin-left:0}
+  .content-area{padding:20px 16px 60px}
+  .grid-2,.grid-3,.grid-4{grid-template-columns:1fr 1fr}
+}
+@media(max-width:600px){
+  .grid-2,.grid-3,.grid-4{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="rainbow"></div>
+
+<div class="page-shell">
+  <!-- ════ SIDEBAR ════ -->
+  <nav class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-title">VerifCar</div>
+      <div class="sb-logo-sub">DESIGN HANDOFF · CORTEX INDIGO</div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-section-label">Foundations</div>
+      <a class="sb-link active" onclick="goSection('colors')">Cores</a>
+      <a class="sb-link" onclick="goSection('typography')">Tipografia</a>
+      <a class="sb-link" onclick="goSection('spacing')">Espaçamentos</a>
+      <a class="sb-link" onclick="goSection('radius')">Border Radius</a>
+      <a class="sb-link" onclick="goSection('shadows')">Sombras</a>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-section-label">Componentes</div>
+      <a class="sb-link" onclick="goSection('buttons')">Botões</a>
+      <a class="sb-link" onclick="goSection('cards')">Cards</a>
+      <a class="sb-link" onclick="goSection('badges')">Badges</a>
+      <a class="sb-link" onclick="goSection('inputs')">Inputs & Fields</a>
+      <a class="sb-link" onclick="goSection('modals')">Modais / Bottom Sheets</a>
+      <a class="sb-link" onclick="goSection('nav')">Navegação</a>
+      <a class="sb-link" onclick="goSection('data')">Data Display</a>
+      <a class="sb-link" onclick="goSection('feedback')">Feedback & Status</a>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-section-label">Telas</div>
+      <a class="sb-link" onclick="goSection('screens-app')">App Mobile</a>
+      <a class="sb-link" onclick="goSection('screens-dash')">Dashboard Web</a>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-section-label">Dev Reference</div>
+      <a class="sb-link" onclick="goSection('flutter')">Flutter ThemeData</a>
+      <a class="sb-link" onclick="goSection('tokens-css')">CSS Tokens (completo)</a>
+    </div>
+  </nav>
+
+  <!-- ════ MAIN ════ -->
+  <main class="main">
+    <div class="content-area">
+
+      <!-- HEADER -->
+      <div style="margin-bottom:40px;padding-bottom:24px;border-bottom:1px solid var(--sur-high)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+         
+          <div>
+            <div style="font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--pri-800);letter-spacing:-0.3px">VerifCar Design Handoff</div>
+            <div style="font-family:var(--font-m);font-size:9px;color:var(--text-s);letter-spacing:0.5px">CORTEX INDIGO · v1.0 · Abril 2026</div>
+          </div>
+        </div>
+        <p style="font-size:13px;color:var(--text-m);max-width:640px;margin-top:8px">Guia de referência visual e técnica para o desenvolvimento do app mobile e dashboard web VerifCar. Todos os tokens, componentes e specs extraídos dos protótipos aprovados. Clique em qualquer valor para copiar.</p>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           CORES
+           ═══════════════════════════════════════════ -->
+      <div class="section" id="colors">
+        <div class="section-badge">01 · FOUNDATIONS</div>
+        <div class="section-title">Cores</div>
+        <div class="section-desc">Paleta completa do design system Cortex Indigo. Cada cor possui token CSS, valor hexadecimal e equivalente Flutter.</div>
+
+        <!-- Primary -->
+        <div class="color-group">
+          <div class="color-group-label">Primary — Indigo</div>
+          <div class="grid-4 color-row">
+            <div class="swatch" onclick="copyToken(this,'#0F221D')">
+              <div class="swatch-color" style="background:#0F221D"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Primary 50</div>
+                <div class="swatch-hex">#0F221D</div>
+                <div class="swatch-token">--pri-50</div>
+                <div class="swatch-flutter">Color(0xFF0F221D)</div>
+              </div>
+              <div class="copy-toast">Copiado!</div>
+            </div>
+            <div class="swatch" onclick="copyToken(this,'#B9F0DC')">
+              <div class="swatch-color" style="background:#B9F0DC"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Primary 100</div>
+                <div class="swatch-hex">#B9F0DC</div>
+                <div class="swatch-token">--pri-100</div>
+                <div class="swatch-flutter">Color(0xFFB9F0DC)</div>
+              </div>
+              <div class="copy-toast">Copiado!</div>
+            </div>
+            <div class="swatch" onclick="copyToken(this,'#23CB97')">
+              <div class="swatch-color" style="background:#23CB97"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Primary 400</div>
+                <div class="swatch-hex">#23CB97</div>
+                <div class="swatch-token">--pri-400</div>
+                <div class="swatch-flutter">Color(0xFF23CB97)</div>
+              </div>
+              <div class="copy-toast">Copiado!</div>
+            </div>
+            <div class="swatch" onclick="copyToken(this,'#1BA87C')">
+              <div class="swatch-color" style="background:#1BA87C"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Primary 600</div>
+                <div class="swatch-hex">#1BA87C</div>
+                <div class="swatch-token">--pri-600</div>
+                <div class="swatch-flutter">Color(0xFF1BA87C)</div>
+              </div>
+              <div class="copy-toast">Copiado!</div>
+            </div>
+            <div class="swatch" onclick="copyToken(this,'#12A47A')">
+              <div class="swatch-color" style="background:#12A47A"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Primary 800</div>
+                <div class="swatch-hex">#12A47A</div>
+                <div class="swatch-token">--pri-800</div>
+                <div class="swatch-flutter">Color(0xFF12A47A)</div>
+              </div>
+              <div class="copy-toast">Copiado!</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Emerald -->
+        <div class="color-group">
+          <div class="color-group-label">Semântica — Emerald (Sucesso)</div>
+          <div class="grid-4 color-row">
+            <div class="swatch" onclick="copyToken(this,'#0F221D')">
+              <div class="swatch-color" style="background:#0F221D"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Emerald 50</div><div class="swatch-hex">#0F221D</div>
+                <div class="swatch-token">--em-50</div><div class="swatch-flutter">Color(0xFF0F221D)</div>
+              </div><div class="copy-toast">Copiado!</div>
+            </div>
+            <div class="swatch" onclick="copyToken(this,'#35D9A4')">
+              <div class="swatch-color" style="background:#35D9A4"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Emerald 400</div><div class="swatch-hex">#35D9A4</div>
+                <div class="swatch-token">--em-400</div><div class="swatch-flutter">Color(0xFF35D9A4)</div>
+              </div><div class="copy-toast">Copiado!</div>
+            </div>
+            <div class="swatch" onclick="copyToken(this,'#23CB97')">
+              <div class="swatch-color" style="background:#23CB97"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Emerald Base</div><div class="swatch-hex">#23CB97</div>
+                <div class="swatch-token">--em</div><div class="swatch-flutter">Color(0xFF23CB97)</div>
+              </div><div class="copy-toast">Copiado!</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Amber -->
+        <div class="color-group">
+          <div class="color-group-label">Semântica — Amber (Alerta)</div>
+          <div class="grid-4 color-row">
+            <div class="swatch" onclick="copyToken(this,'#2A1F0E')">
+              <div class="swatch-color" style="background:#2A1F0E"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Amber 50</div><div class="swatch-hex">#2A1F0E</div>
+                <div class="swatch-token">--am-50</div><div class="swatch-flutter">Color(0xFF2A1F0E)</div>
+              </div><div class="copy-toast">Copiado!</div>
+            </div>
+            <div class="swatch" onclick="copyToken(this,'#F0A92B')">
+              <div class="swatch-color" style="background:#F0A92B"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Amber 400</div><div class="swatch-hex">#F0A92B</div>
+                <div class="swatch-token">--am-400</div><div class="swatch-flutter">Color(0xFFF0A92B)</div>
+              </div><div class="copy-toast">Copiado!</div>
+            </div>
+            <div class="swatch" onclick="copyToken(this,'#FFD48A')">
+              <div class="swatch-color" style="background:#FFD48A"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Amber 800</div><div class="swatch-hex">#FFD48A</div>
+                <div class="swatch-token">--am-800</div><div class="swatch-flutter">Color(0xFFFFD48A)</div>
+              </div><div class="copy-toast">Copiado!</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Coral -->
+        <div class="color-group">
+          <div class="color-group-label">Semântica — Coral (Erro / Perigo)</div>
+          <div class="grid-4 color-row">
+            <div class="swatch" onclick="copyToken(this,'#2B1119')">
+              <div class="swatch-color" style="background:#2B1119"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Coral 50</div><div class="swatch-hex">#2B1119</div>
+                <div class="swatch-token">--co-50</div><div class="swatch-flutter">Color(0xFF2B1119)</div>
+              </div><div class="copy-toast">Copiado!</div>
+            </div>
+            <div class="swatch" onclick="copyToken(this,'#FF3B63')">
+              <div class="swatch-color" style="background:#FF3B63"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Coral 400</div><div class="swatch-hex">#FF3B63</div>
+                <div class="swatch-token">--co-400</div><div class="swatch-flutter">Color(0xFFFF3B63)</div>
+              </div><div class="copy-toast">Copiado!</div>
+            </div>
+            <div class="swatch" onclick="copyToken(this,'#FF95AC')">
+              <div class="swatch-color" style="background:#FF95AC"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Coral 800</div><div class="swatch-hex">#FF95AC</div>
+                <div class="swatch-token">--co-800</div><div class="swatch-flutter">Color(0xFFFF95AC)</div>
+              </div><div class="copy-toast">Copiado!</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Neutrals / Surfaces -->
+        <div class="color-group">
+          <div class="color-group-label">Neutros — Superfícies & Texto</div>
+          <div class="grid-4 color-row">
+            <div class="swatch" onclick="copyToken(this,'#12141C')">
+              <div class="swatch-color" style="background:#12141C"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Background</div><div class="swatch-hex">#12141C</div>
+                <div class="swatch-token">--bg</div><div class="swatch-flutter">Color(0xFF12141C)</div>
+              </div><div class="copy-toast">Copiado!</div>
+            </div>
+            <div class="swatch" onclick="copyToken(this,'#1A1D28')">
+              <div class="swatch-color" style="background:#1A1D28"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Surface</div><div class="swatch-hex">#1A1D28</div>
+                <div class="swatch-token">--surface</div><div class="swatch-flutter">Color(0xFF1A1D28)</div>
+              </div><div class="copy-toast">Copiado!</div>
+            </div>
+            <div class="swatch" onclick="copyToken(this,'#222431')">
+              <div class="swatch-color" style="background:#222431"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Surface Low</div><div class="swatch-hex">#222431</div>
+                <div class="swatch-token">--sur-low</div><div class="swatch-flutter">Color(0xFF222431)</div>
+              </div><div class="copy-toast">Copiado!</div>
+            </div>
+            <div class="swatch" onclick="copyToken(this,'#282B39')">
+              <div class="swatch-color" style="background:#282B39"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Surface Mid</div><div class="swatch-hex">#282B39</div>
+                <div class="swatch-token">--sur-mid</div><div class="swatch-flutter">Color(0xFF282B39)</div>
+              </div><div class="copy-toast">Copiado!</div>
+            </div>
+            <div class="swatch" onclick="copyToken(this,'#33374A')">
+              <div class="swatch-color" style="background:#33374A"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Surface High</div><div class="swatch-hex">#33374A</div>
+                <div class="swatch-token">--sur-high</div><div class="swatch-flutter">Color(0xFF33374A)</div>
+              </div><div class="copy-toast">Copiado!</div>
+            </div>
+            <div class="swatch" onclick="copyToken(this,'#33374A')">
+              <div class="swatch-color" style="background:#33374A"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Border</div><div class="swatch-hex">#33374A</div>
+                <div class="swatch-token">--border</div><div class="swatch-flutter">Color(0xFF33374A)</div>
+              </div><div class="copy-toast">Copiado!</div>
+            </div>
+            <div class="swatch" onclick="copyToken(this,'#F3F5F9')">
+              <div class="swatch-color" style="background:#F3F5F9"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Text Heading</div><div class="swatch-hex">#F3F5F9</div>
+                <div class="swatch-token">--text-h</div><div class="swatch-flutter">Color(0xFFF3F5F9)</div>
+              </div><div class="copy-toast">Copiado!</div>
+            </div>
+            <div class="swatch" onclick="copyToken(this,'#CBD0DC')">
+              <div class="swatch-color" style="background:#CBD0DC"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Text Body</div><div class="swatch-hex">#CBD0DC</div>
+                <div class="swatch-token">--text-b</div><div class="swatch-flutter">Color(0xFFCBD0DC)</div>
+              </div><div class="copy-toast">Copiado!</div>
+            </div>
+            <div class="swatch" onclick="copyToken(this,'#8D94A6')">
+              <div class="swatch-color" style="background:#8D94A6"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Text Muted</div><div class="swatch-hex">#8D94A6</div>
+                <div class="swatch-token">--text-m</div><div class="swatch-flutter">Color(0xFF8D94A6)</div>
+              </div><div class="copy-toast">Copiado!</div>
+            </div>
+            <div class="swatch" onclick="copyToken(this,'#666D80')">
+              <div class="swatch-color" style="background:#666D80"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Text Subtle</div><div class="swatch-hex">#666D80</div>
+                <div class="swatch-token">--text-s</div><div class="swatch-flutter">Color(0xFF666D80)</div>
+              </div><div class="copy-toast">Copiado!</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           TIPOGRAFIA
+           ═══════════════════════════════════════════ -->
+      <div class="section" id="typography">
+        <div class="section-badge">02 · FOUNDATIONS</div>
+        <div class="section-title">Tipografia</div>
+        <div class="section-desc">Três famílias tipográficas com papéis distintos. Google Fonts — carregamento assíncrono.</div>
+
+        <div class="type-sample">
+          <div class="type-label">
+            <span>DISPLAY — Space Grotesk</span>
+            <span class="type-spec">--font-d</span>
+          </div>
+          <div class="type-preview" style="font-family:var(--font-d);font-size:28px;font-weight:800;letter-spacing:-0.5px">Verificação Veicular</div>
+          <div style="font-family:var(--font-m);font-size:9px;color:var(--text-s);margin-top:6px">Uso: Títulos, headings, nomes de seções, KPI values, logo text</div>
+          <div style="font-family:var(--font-m);font-size:9px;color:var(--text-s);margin-top:2px">Pesos: 400 · 500 · 600 · 700 · 800</div>
+          <div style="font-family:var(--font-m);font-size:9px;color:var(--pri-600);margin-top:2px">Flutter: GoogleFonts.plusJakartaSans()</div>
+          <div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap">
+            <span style="font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--text-h)">Hero 22/800</span>
+            <span style="font-family:var(--font-d);font-size:15px;font-weight:700;color:var(--text-h)">Card Title 15/700</span>
+            <span style="font-family:var(--font-d);font-size:13px;font-weight:700;color:var(--text-h)">Section 13/700</span>
+            <span style="font-family:var(--font-d);font-size:11px;font-weight:700;color:var(--text-m)">Label 11/700</span>
+            <span style="font-family:var(--font-d);font-size:10px;font-weight:700;color:var(--text-s)">Overline 10/700</span>
+          </div>
+        </div>
+
+        <div class="type-sample">
+          <div class="type-label">
+            <span>BODY — Inter</span>
+            <span class="type-spec">--font-b</span>
+          </div>
+          <div class="type-preview" style="font-family:var(--font-b);font-size:14px;font-weight:400;line-height:1.6;color:var(--text-b)">A verificação identificou 3 inconsistências nos dados do chassi. Recomenda-se inspeção presencial para validação dos itens sinalizados.</div>
+          <div style="font-family:var(--font-m);font-size:9px;color:var(--text-s);margin-top:6px">Uso: Textos corridos, labels, parágrafos, botões, inputs</div>
+          <div style="font-family:var(--font-m);font-size:9px;color:var(--text-s);margin-top:2px">Pesos: 400 · 500 · 600 · 700</div>
+          <div style="font-family:var(--font-m);font-size:9px;color:var(--pri-600);margin-top:2px">Flutter: GoogleFonts.dmSans()</div>
+          <div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;align-items:baseline">
+            <span style="font-family:var(--font-b);font-size:13px;font-weight:600;color:var(--text-h)">Button 13/600</span>
+            <span style="font-family:var(--font-b);font-size:12px;font-weight:500;color:var(--text-b)">Body 12/500</span>
+            <span style="font-family:var(--font-b);font-size:11px;font-weight:400;color:var(--text-m)">Caption 11/400</span>
+            <span style="font-family:var(--font-b);font-size:10px;font-weight:600;color:var(--text-m)">Small 10/600</span>
+          </div>
+        </div>
+
+        <div class="type-sample">
+          <div class="type-label">
+            <span>MONOSPACE — JetBrains Mono</span>
+            <span class="type-spec">--font-m</span>
+          </div>
+          <div class="type-preview" style="font-family:var(--font-m);font-size:12px;font-weight:400;color:var(--text-b);letter-spacing:0.3px">VIN: 9BWZZZ377VT004251 · PLACA: ABC1D23</div>
+          <div style="font-family:var(--font-m);font-size:9px;color:var(--text-s);margin-top:6px">Uso: Códigos, placas, VINs, timestamps, badges técnicos, status tags, versões</div>
+          <div style="font-family:var(--font-m);font-size:9px;color:var(--text-s);margin-top:2px">Pesos: 400 · 500</div>
+          <div style="font-family:var(--font-m);font-size:9px;color:var(--pri-600);margin-top:2px">Flutter: GoogleFonts.jetBrainsMono()</div>
+          <div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;align-items:baseline">
+            <span style="font-family:var(--font-m);font-size:10px;font-weight:500;color:var(--text-h)">Data 10/500</span>
+            <span style="font-family:var(--font-m);font-size:9px;font-weight:400;color:var(--text-s)">Tag 9/400</span>
+            <span style="font-family:var(--font-m);font-size:8px;font-weight:700;color:var(--pri-600)">Badge 8/700</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           ESPAÇAMENTOS
+           ═══════════════════════════════════════════ -->
+      <div class="section" id="spacing">
+        <div class="section-badge">03 · FOUNDATIONS</div>
+        <div class="section-title">Espaçamentos</div>
+        <div class="section-desc">Escala de espaçamentos usados nos protótipos. Baseada em múltiplos de 2px.</div>
+
+        <div id="spacing-list"></div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           BORDER RADIUS
+           ═══════════════════════════════════════════ -->
+      <div class="section" id="radius">
+        <div class="section-badge">04 · FOUNDATIONS</div>
+        <div class="section-title">Border Radius</div>
+        <div class="section-desc">Escala de arredondamento utilizada nos componentes.</div>
+
+        <div class="radius-grid" id="radius-grid"></div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           SOMBRAS
+           ═══════════════════════════════════════════ -->
+      <div class="section" id="shadows">
+        <div class="section-badge">05 · FOUNDATIONS</div>
+        <div class="section-title">Sombras</div>
+        <div class="section-desc">Níveis de elevação usados em cards, painéis e overlays.</div>
+
+        <div class="grid-3" id="shadow-grid"></div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           BOTÕES
+           ═══════════════════════════════════════════ -->
+      <div class="section" id="buttons">
+        <div class="section-badge">06 · COMPONENTES</div>
+        <div class="section-title">Botões</div>
+        <div class="section-desc">Botões utilizados no app e dashboard.</div>
+
+        <div class="comp-card">
+          <div class="comp-header">
+            <div class="comp-name">btn-primary</div>
+            <div class="comp-platform">APP + DASH</div>
+          </div>
+          <div class="comp-preview">
+            <button style="background:linear-gradient(135deg,#12A47A,#1BA87C);color:#fff;border-radius:9999px;padding:11px 20px;font-family:var(--font-b);font-size:13px;font-weight:600;border:none;box-shadow:0 4px 12px rgba(0,0,0,0.55);cursor:pointer;display:flex;align-items:center;gap:6px">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              Iniciar Verificação
+            </button>
+          </div>
+          <div class="comp-specs">
+            <div class="comp-spec"><span class="comp-spec-label">Background</span><span class="comp-spec-value" onclick="copy('linear-gradient(135deg,var(--pri-deep),var(--pri-deep2))')">gradient pri-800 → pri-600</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Cor texto</span><span class="comp-spec-value" onclick="copy('#ffffff')">#FFFFFF</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Border radius</span><span class="comp-spec-value" onclick="copy('9999px')">9999px (pill)</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Padding</span><span class="comp-spec-value" onclick="copy('11px 16px')">11px 16px</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Font</span><span class="comp-spec-value" onclick="copy('Inter, 13px, 600')">Inter · 13px · 600</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Shadow</span><span class="comp-spec-value" onclick="copy('0 4px 12px rgba(35,203,151,0.25)')">0 4px 12px rgba(35,203,151,.25)</span></div>
+          </div>
+          <div class="comp-usage">
+            <div class="comp-usage-label">Usado em</div>
+            <div class="comp-usage-list">Login (Entrar), Home (Iniciar Verificação), Ficha (Continuar), Câmera, Edge Cases, Dashboard (ações primárias)</div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-header">
+            <div class="comp-name">btn-secondary</div>
+            <div class="comp-platform">APP + DASH</div>
+          </div>
+          <div class="comp-preview">
+            <button style="background:#282B39;border-radius:9999px;padding:10px 18px;font-size:12px;font-weight:600;color:#CBD0DC;border:none;cursor:pointer;display:flex;align-items:center;gap:6px">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#CBD0DC" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h4"/></svg>
+              Inserir manualmente
+            </button>
+          </div>
+          <div class="comp-specs">
+            <div class="comp-spec"><span class="comp-spec-label">Background</span><span class="comp-spec-value" onclick="copy('var(--sur-mid)')">--sur-mid (#282B39)</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Cor texto</span><span class="comp-spec-value" onclick="copy('#CBD0DC')">--text-b (#CBD0DC)</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Border radius</span><span class="comp-spec-value" onclick="copy('9999px')">9999px (pill)</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Padding</span><span class="comp-spec-value" onclick="copy('10px 14px')">10px 14px</span></div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-header">
+            <div class="comp-name">btn-danger</div>
+            <div class="comp-platform">APP</div>
+          </div>
+          <div class="comp-preview">
+            <button style="background:#2B1119;border:1px solid rgba(255,59,99,0.2);border-radius:9999px;padding:9px 18px;font-size:11px;font-weight:600;color:#FF3B63;cursor:pointer;display:flex;align-items:center;gap:5px">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FF3B63" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+              Sair do Sistema
+            </button>
+          </div>
+          <div class="comp-specs">
+            <div class="comp-spec"><span class="comp-spec-label">Background</span><span class="comp-spec-value" onclick="copy('var(--co-50)')">--co-50 (#2B1119)</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Border</span><span class="comp-spec-value" onclick="copy('1px solid rgba(255,59,99,0.2)')">1px solid rgba(255,59,99,.2)</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Cor texto</span><span class="comp-spec-value" onclick="copy('#FF3B63')">--co (#FF3B63)</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           CARDS
+           ═══════════════════════════════════════════ -->
+      <div class="section" id="cards">
+        <div class="section-badge">07 · COMPONENTES</div>
+        <div class="section-title">Cards</div>
+
+        <div class="comp-card">
+          <div class="comp-header"><div class="comp-name">card (base)</div><div class="comp-platform">APP + DASH</div></div>
+          <div class="comp-preview">
+            <div style="background:#fff;border-radius:12px;padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.176),0 4px 16px rgba(0,0,0,0.088);width:200px">
+              <div style="font-family:var(--font-d);font-size:11px;font-weight:700;color:var(--text-h);margin-bottom:4px">Card Base</div>
+              <div style="font-size:10px;color:var(--text-m)">Conteúdo padrão</div>
+            </div>
+          </div>
+          <div class="comp-specs">
+            <div class="comp-spec"><span class="comp-spec-label">Background</span><span class="comp-spec-value" onclick="copy('var(--surface)')">--surface (#FFF)</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Border radius</span><span class="comp-spec-value" onclick="copy('12px')">12px</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Padding</span><span class="comp-spec-value" onclick="copy('10px 12px')">10–12px</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Shadow</span><span class="comp-spec-value" onclick="copy('0 1px 3px rgba(35,203,151,.08), 0 4px 16px rgba(35,203,151,.04)')">--sh-card</span></div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-header"><div class="comp-name">card-ok / card-warn / card-pri</div><div class="comp-platform">APP</div></div>
+          <div class="comp-preview" style="flex-direction:column;gap:6px;align-items:stretch">
+            <div style="background:#0F221D;border-radius:10px;padding:8px 11px;border-left:2.5px solid #35D9A4"><span style="font-size:10px;font-weight:600;color:#23CB97">✓ Verificação conforme</span></div>
+            <div style="background:#2A1F0E;border-radius:10px;padding:8px 11px;border-left:2.5px solid #F0A92B"><span style="font-size:10px;font-weight:600;color:#FFD48A">⚠ Divergência identificada</span></div>
+            <div style="background:#0F221D;border-radius:10px;padding:8px 11px;border-left:2.5px solid #23CB97"><span style="font-size:10px;font-weight:600;color:#1BA87C">ℹ Informação complementar</span></div>
+          </div>
+          <div class="comp-specs">
+            <div class="comp-spec"><span class="comp-spec-label">Border radius</span><span class="comp-spec-value" onclick="copy('10px')">10px</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Border left</span><span class="comp-spec-value" onclick="copy('2.5px solid')">2.5px solid [cor]</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Padding</span><span class="comp-spec-value" onclick="copy('8px 11px')">8px 11px</span></div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-header"><div class="comp-name">panel (dashboard)</div><div class="comp-platform">DASH</div></div>
+          <div class="comp-specs">
+            <div class="comp-spec"><span class="comp-spec-label">Background</span><span class="comp-spec-value" onclick="copy('var(--surface)')">--surface</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Border radius</span><span class="comp-spec-value" onclick="copy('14px')">14px</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Padding</span><span class="comp-spec-value" onclick="copy('14px 16px')">14–16px</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Shadow</span><span class="comp-spec-value" onclick="copy('0 2px 8px rgba(35,203,151,.06)')">--sh-panel</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           BADGES
+           ═══════════════════════════════════════════ -->
+      <div class="section" id="badges">
+        <div class="section-badge">08 · COMPONENTES</div>
+        <div class="section-title">Badges</div>
+
+        <div class="comp-card">
+          <div class="comp-header"><div class="comp-name">Badges de Status</div><div class="comp-platform">APP + DASH</div></div>
+          <div class="comp-preview" style="gap:8px">
+            <span style="display:inline-flex;align-items:center;font-size:9px;font-weight:700;padding:2.5px 7px;border-radius:9999px;gap:3px;background:#0F221D;color:#23CB97;border:.5px solid rgba(35,203,151,0.2)">● CONFORME</span>
+            <span style="display:inline-flex;align-items:center;font-size:9px;font-weight:700;padding:2.5px 7px;border-radius:9999px;gap:3px;background:#2A1F0E;color:#F0A92B;border:.5px solid rgba(240,169,43,0.2)">● ALERTA</span>
+            <span style="display:inline-flex;align-items:center;font-size:9px;font-weight:700;padding:2.5px 7px;border-radius:9999px;gap:3px;background:#2B1119;color:#FF3B63;border:.5px solid rgba(255,59,99,0.2)">● ERRO</span>
+            <span style="display:inline-flex;align-items:center;font-size:9px;font-weight:700;padding:2.5px 7px;border-radius:9999px;gap:3px;background:#0F221D;color:#1BA87C;border:.5px solid #B9F0DC">● INFO</span>
+          </div>
+          <div class="comp-specs">
+            <div class="comp-spec"><span class="comp-spec-label">Font</span><span class="comp-spec-value">9px · 700</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Border radius</span><span class="comp-spec-value" onclick="copy('9999px')">9999px (pill)</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Padding</span><span class="comp-spec-value" onclick="copy('2.5px 7px')">2.5px 7px</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Border</span><span class="comp-spec-value">0.5px solid [cor 20% opac]</span></div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-header"><div class="comp-name">Mono Badge / Tag Técnico</div><div class="comp-platform">APP + DASH</div></div>
+          <div class="comp-preview">
+            <span style="font-family:var(--font-m);font-size:8px;font-weight:700;color:#1BA87C;background:#0F221D;padding:2px 7px;border-radius:6px;border:1px solid #B9F0DC">v2.1.4-beta</span>
+            <span style="font-family:var(--font-m);font-size:8px;font-weight:700;color:#666D80;background:#222431;padding:2px 7px;border-radius:6px">HASH: a7b3c44</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           INPUTS
+           ═══════════════════════════════════════════ -->
+      <div class="section" id="inputs">
+        <div class="section-badge">09 · COMPONENTES</div>
+        <div class="section-title">Inputs & Fields</div>
+
+        <div class="comp-card">
+          <div class="comp-header"><div class="comp-name">Input Field</div><div class="comp-platform">APP</div></div>
+          <div class="comp-preview" style="flex-direction:column;gap:8px;align-items:stretch;max-width:300px">
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text-m);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">CPF / ID: RÍCULA</div>
+              <div style="background:var(--sur-low);border:1.5px solid var(--sur-high);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-s)" stroke-width="1.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span style="font-family:var(--font-b);font-size:12px;color:var(--text-s)">Digite seu CPF</span>
+              </div>
+            </div>
+          </div>
+          <div class="comp-specs">
+            <div class="comp-spec"><span class="comp-spec-label">Background</span><span class="comp-spec-value" onclick="copy('var(--sur-low)')">--sur-low</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Border</span><span class="comp-spec-value" onclick="copy('1.5px solid var(--sur-high)')">1.5px solid --sur-high</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Border radius</span><span class="comp-spec-value" onclick="copy('10px')">10px</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Padding</span><span class="comp-spec-value" onclick="copy('10px 12px')">10px 12px</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Font input</span><span class="comp-spec-value">Inter · 12px · 400</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Focus border</span><span class="comp-spec-value" onclick="copy('var(--pri-400)')">--pri-400 + ring 3px</span></div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-header"><div class="comp-name">Search Bar</div><div class="comp-platform">APP</div></div>
+          <div class="comp-specs">
+            <div class="comp-spec"><span class="comp-spec-label">Background</span><span class="comp-spec-value">--sur-low</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Border</span><span class="comp-spec-value">1px solid --sur-high</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Border radius</span><span class="comp-spec-value">10px</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Padding</span><span class="comp-spec-value">8px 11px</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           MODAIS
+           ═══════════════════════════════════════════ -->
+      <div class="section" id="modals">
+        <div class="section-badge">10 · COMPONENTES</div>
+        <div class="section-title">Modais / Bottom Sheets</div>
+
+        <div class="comp-card">
+          <div class="comp-header"><div class="comp-name">Bottom Sheet (App Mobile)</div><div class="comp-platform">APP</div></div>
+          <div class="comp-specs">
+            <div class="comp-spec"><span class="comp-spec-label">Background</span><span class="comp-spec-value">--surface</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Border radius</span><span class="comp-spec-value" onclick="copy('20px 20px 0 0')">20px 20px 0 0</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Shadow</span><span class="comp-spec-value">0 -6px 28px rgba(35,203,151,.13)</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Overlay</span><span class="comp-spec-value" onclick="copy('rgba(8,9,13,0.52)')">rgba(8,9,13,.52) + blur(14px)</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Handle</span><span class="comp-spec-value">32×3.5px · --border · radius 2px</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Animação</span><span class="comp-spec-value">translateY · cubic-bezier(.32,1.1,.5,1)</span></div>
+          </div>
+          <div class="comp-usage"><div class="comp-usage-label">Usado em</div><div class="comp-usage-list">Login (LGPD/Termos), Home (Notificações, Perfil), Ficha (Sinalizar Problema), Edge Cases</div></div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           NAVEGAÇÃO
+           ═══════════════════════════════════════════ -->
+      <div class="section" id="nav">
+        <div class="section-badge">11 · COMPONENTES</div>
+        <div class="section-title">Navegação</div>
+
+        <div class="comp-card">
+          <div class="comp-header"><div class="comp-name">Rainbow Bar</div><div class="comp-platform">APP + DASH</div></div>
+          <div class="comp-preview" style="padding:0;overflow:hidden;border-radius:8px">
+            <div style="width:100%;height:5px;background:linear-gradient(90deg,#12A47A,#23CB97,#35D9A4,#23CB97,#12A47A)"></div>
+          </div>
+          <div class="comp-specs">
+            <div class="comp-spec"><span class="comp-spec-label">Altura</span><span class="comp-spec-value">3–5px</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Gradiente</span><span class="comp-spec-value" onclick="copy('linear-gradient(90deg, var(--pri-800), var(--pri-400), var(--em-400), var(--pri-400), var(--pri-800))')">pri-800 → pri-400 → em-400 → pri-400 → pri-800</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Shadow</span><span class="comp-spec-value">0 1px 8px rgba(35,203,151,.25)</span></div>
+          </div>
+          <div class="comp-usage"><div class="comp-usage-label">Identidade</div><div class="comp-usage-list">Presente no topo de TODAS as telas (app e dashboard). É a assinatura visual do VerifCar.</div></div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-header"><div class="comp-name">Sidebar (Dashboard)</div><div class="comp-platform">DASH</div></div>
+          <div class="comp-specs">
+            <div class="comp-spec"><span class="comp-spec-label">Width</span><span class="comp-spec-value" onclick="copy('220px')">220px (--sidebar-w)</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Background</span><span class="comp-spec-value">--pri-800</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Shadow</span><span class="comp-spec-value">2px 0 24px rgba(35,203,151,.08)</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Item ativo</span><span class="comp-spec-value">bg rgba(255,255,255,.1) + border-left em-400</span></div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-header"><div class="comp-name">Topbar (Dashboard)</div><div class="comp-platform">DASH</div></div>
+          <div class="comp-specs">
+            <div class="comp-spec"><span class="comp-spec-label">Height</span><span class="comp-spec-value" onclick="copy('52px')">52px (--topbar-h)</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Background</span><span class="comp-spec-value">--surface</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Border</span><span class="comp-spec-value">bottom 1px solid --sur-high</span></div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-header"><div class="comp-name">App Header (Mobile)</div><div class="comp-platform">APP</div></div>
+          <div class="comp-specs">
+            <div class="comp-spec"><span class="comp-spec-label">Background</span><span class="comp-spec-value">rgba(26,29,40,.88) + blur(18px)</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Border</span><span class="comp-spec-value">bottom 0.5px solid rgba(35,203,151,.07)</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Padding</span><span class="comp-spec-value">9px 14px</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           DATA DISPLAY
+           ═══════════════════════════════════════════ -->
+      <div class="section" id="data">
+        <div class="section-badge">12 · COMPONENTES</div>
+        <div class="section-title">Data Display</div>
+
+        <div class="comp-card">
+          <div class="comp-header"><div class="comp-name">data-row</div><div class="comp-platform">APP + DASH</div></div>
+          <div class="comp-preview" style="flex-direction:column;gap:0;align-items:stretch;max-width:300px;padding:12px 16px;background:#fff;border-radius:12px">
+            <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:.5px solid #222431"><span style="font-size:10px;color:#8D94A6">Marca/Modelo</span><span style="font-size:10px;font-weight:600;color:#F3F5F9">Fiat Toro</span></div>
+            <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:.5px solid #222431"><span style="font-size:10px;color:#8D94A6">Ano</span><span style="font-size:10px;font-weight:600;color:#F3F5F9;font-family:var(--font-m)">2023/2024</span></div>
+            <div style="display:flex;justify-content:space-between;padding:5px 0"><span style="font-size:10px;color:#8D94A6">Cor</span><span style="font-size:10px;font-weight:600;color:#F3F5F9">Branco</span></div>
+          </div>
+          <div class="comp-specs">
+            <div class="comp-spec"><span class="comp-spec-label">Padding row</span><span class="comp-spec-value" onclick="copy('5px 0')">3–5px 0</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Divider</span><span class="comp-spec-value">0.5px solid --sur-low</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Label</span><span class="comp-spec-value">10–11px · --text-m</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Value</span><span class="comp-spec-value">10–11px · 600 · --text-h</span></div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-header"><div class="comp-name">KPI Card</div><div class="comp-platform">APP + DASH</div></div>
+          <div class="comp-specs">
+            <div class="comp-spec"><span class="comp-spec-label">Valor</span><span class="comp-spec-value">Space Grotesk · 22–28px · 800</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Label</span><span class="comp-spec-value">10px · 700 · uppercase · letter-spacing 0.6px</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Border radius</span><span class="comp-spec-value">12px</span></div>
+          </div>
+          <div class="comp-usage"><div class="comp-usage-label">Usado em</div><div class="comp-usage-list">Home (KPI row), Dashboard Visão Geral (kpi-grid), Tática (kpi-strip), Performance</div></div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-header"><div class="comp-name">data-table</div><div class="comp-platform">DASH</div></div>
+          <div class="comp-specs">
+            <div class="comp-spec"><span class="comp-spec-label">Header font</span><span class="comp-spec-value">JetBrains Mono · 9px · 600 · --text-s · uppercase</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Cell font</span><span class="comp-spec-value">Inter · 11px · --text-b</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Row divider</span><span class="comp-spec-value">1px solid --sur-low</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Row hover</span><span class="comp-spec-value">background --sur-low</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Row padding</span><span class="comp-spec-value">8–10px 0</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           FEEDBACK
+           ═══════════════════════════════════════════ -->
+      <div class="section" id="feedback">
+        <div class="section-badge">13 · COMPONENTES</div>
+        <div class="section-title">Feedback & Status</div>
+
+        <div class="comp-card">
+          <div class="comp-header"><div class="comp-name">Toast / Feedback Temporário</div><div class="comp-platform">APP</div></div>
+          <div class="comp-specs">
+            <div class="comp-spec"><span class="comp-spec-label">Background</span><span class="comp-spec-value">rgba(0,0,0,.8) ou --pri-800</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Border radius</span><span class="comp-spec-value">9999px</span></div>
+            <div class="comp-spec"><span class="comp-spec-label">Font</span><span class="comp-spec-value">JetBrains Mono · 9px</span></div>
+          </div>
+        </div>
+
+        <div class="comp-card">
+          <div class="comp-header"><div class="comp-name">Status Live Indicator</div><div class="comp-platform">DASH</div></div>
+          <div class="comp-preview">
+            <div style="display:inline-flex;align-items:center;gap:6px;background:#0F221D;border:1px solid rgba(35,203,151,0.2);border-radius:9999px;padding:3px 10px">
+              <div style="width:6px;height:6px;border-radius:50%;background:#23CB97;animation:blink 1.4s ease-in-out infinite"></div>
+              <span style="font-family:var(--font-m);font-size:8px;font-weight:700;color:#23CB97">AO VIVO</span>
+            </div>
+          </div>
+          <div class="comp-specs">
+            <div class="comp-spec"><span class="comp-spec-label">Dot</span><span class="comp-spec-value">6px · --em · animation blink 1.4s</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           TELAS — APP MOBILE
+           ═══════════════════════════════════════════ -->
+      <div class="section" id="screens-app">
+        <div class="section-badge">14 · TELAS</div>
+        <div class="section-title">App Mobile</div>
+        <div class="section-desc">Mapa de componentes por tela. Cada tela está em iframe para referência visual. Clique para abrir em tela cheia.</div>
+
+        <div class="grid-3" id="app-screens"></div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           TELAS — DASHBOARD
+           ═══════════════════════════════════════════ -->
+      <div class="section" id="screens-dash">
+        <div class="section-badge">15 · TELAS</div>
+        <div class="section-title">Dashboard Web</div>
+
+        <div class="grid-2" id="dash-screens"></div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           FLUTTER THEMEDATA
+           ═══════════════════════════════════════════ -->
+      <div class="section" id="flutter">
+        <div class="section-badge">16 · DEV REFERENCE</div>
+        <div class="section-title">Flutter ThemeData</div>
+        <div class="section-desc">Tokens organizados para integração direta com Flutter. Copie o bloco completo.</div>
+
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+<pre><span class="cmt">// ─── VerifCar Cortex Indigo — Flutter Theme ───</span>
+<span class="kw">import</span> 'package:flutter/material.dart';
+<span class="kw">import</span> 'package:google_fonts/google_fonts.dart';
+
+<span class="kw">class</span> CortexIndigo {
+  <span class="cmt">// ── Primary ──</span>
+  <span class="kw">static const</span> pri50  = Color(<span class="num">0xFFECEEFF</span>);
+  <span class="kw">static const</span> pri100 = Color(<span class="num">0xFFD8DAFF</span>);
+  <span class="kw">static const</span> pri400 = Color(<span class="num">0xFF5C66D4</span>);
+  <span class="kw">static const</span> pri600 = Color(<span class="num">0xFF3D4592</span>);
+  <span class="kw">static const</span> pri800 = Color(<span class="num">0xFF252D7A</span>);
+
+  <span class="cmt">// ── Emerald (Success) ──</span>
+  <span class="kw">static const</span> em50  = Color(<span class="num">0xFFE6F4E8</span>);
+  <span class="kw">static const</span> em400 = Color(<span class="num">0xFF1A9E27</span>);
+  <span class="kw">static const</span> em    = Color(<span class="num">0xFF168821</span>);
+
+  <span class="cmt">// ── Amber (Warning) ──</span>
+  <span class="kw">static const</span> am50  = Color(<span class="num">0xFFFDF3DC</span>);
+  <span class="kw">static const</span> am400 = Color(<span class="num">0xFFC48C14</span>);
+  <span class="kw">static const</span> am800 = Color(<span class="num">0xFF7A5600</span>);
+
+  <span class="cmt">// ── Coral (Error) ──</span>
+  <span class="kw">static const</span> co50  = Color(<span class="num">0xFFFDECEA</span>);
+  <span class="kw">static const</span> co400 = Color(<span class="num">0xFFE52207</span>);
+  <span class="kw">static const</span> co800 = Color(<span class="num">0xFF8C1200</span>);
+
+  <span class="cmt">// ── Surfaces ──</span>
+  <span class="kw">static const</span> bg      = Color(<span class="num">0xFFF8F9FF</span>);
+  <span class="kw">static const</span> surface = Colors.white;
+  <span class="kw">static const</span> surLow  = Color(<span class="num">0xFFF1F3FB</span>);
+  <span class="kw">static const</span> surMid  = Color(<span class="num">0xFFECEEF6</span>);
+  <span class="kw">static const</span> surHigh = Color(<span class="num">0xFFE6E8F0</span>);
+  <span class="kw">static const</span> border  = Color(<span class="num">0xFFD8DAE8</span>);
+
+  <span class="cmt">// ── Text ──</span>
+  <span class="kw">static const</span> textH = Color(<span class="num">0xFF181C21</span>);
+  <span class="kw">static const</span> textB = Color(<span class="num">0xFF464651</span>);
+  <span class="kw">static const</span> textM = Color(<span class="num">0xFF595C7C</span>);
+  <span class="kw">static const</span> textS = Color(<span class="num">0xFF767682</span>);
+
+  <span class="cmt">// ── Spacing ──</span>
+  <span class="kw">static const</span> sp2  = <span class="num">2.0</span>;
+  <span class="kw">static const</span> sp4  = <span class="num">4.0</span>;
+  <span class="kw">static const</span> sp6  = <span class="num">6.0</span>;
+  <span class="kw">static const</span> sp8  = <span class="num">8.0</span>;
+  <span class="kw">static const</span> sp10 = <span class="num">10.0</span>;
+  <span class="kw">static const</span> sp12 = <span class="num">12.0</span>;
+  <span class="kw">static const</span> sp14 = <span class="num">14.0</span>;
+  <span class="kw">static const</span> sp16 = <span class="num">16.0</span>;
+  <span class="kw">static const</span> sp20 = <span class="num">20.0</span>;
+  <span class="kw">static const</span> sp24 = <span class="num">24.0</span>;
+  <span class="kw">static const</span> sp32 = <span class="num">32.0</span>;
+
+  <span class="cmt">// ── Border Radius ──</span>
+  <span class="kw">static final</span> radiusSm   = BorderRadius.circular(<span class="num">6</span>);
+  <span class="kw">static final</span> radiusMd   = BorderRadius.circular(<span class="num">10</span>);
+  <span class="kw">static final</span> radiusLg   = BorderRadius.circular(<span class="num">12</span>);
+  <span class="kw">static final</span> radiusXl   = BorderRadius.circular(<span class="num">14</span>);
+  <span class="kw">static final</span> radius2xl  = BorderRadius.circular(<span class="num">16</span>);
+  <span class="kw">static final</span> radiusSheet= BorderRadius.vertical(top: Radius.circular(<span class="num">20</span>));
+  <span class="kw">static final</span> radiusPill  = BorderRadius.circular(<span class="num">9999</span>);
+
+  <span class="cmt">// ── Shadows ──</span>
+  <span class="kw">static final</span> shCard = [
+    BoxShadow(color: Color(<span class="num">0x14252D7A</span>), blurRadius: <span class="num">3</span>, offset: Offset(<span class="num">0</span>,<span class="num">1</span>)),
+    BoxShadow(color: Color(<span class="num">0x0A252D7A</span>), blurRadius: <span class="num">16</span>, offset: Offset(<span class="num">0</span>,<span class="num">4</span>)),
+  ];
+
+  <span class="cmt">// ── ThemeData ──</span>
+  <span class="kw">static</span> ThemeData <span class="kw">get</span> theme => ThemeData(
+    scaffoldBackgroundColor: bg,
+    colorScheme: ColorScheme.light(
+      primary: pri800,
+      secondary: pri400,
+      error: co400,
+      surface: surface,
+    ),
+    textTheme: TextTheme(
+      displayLarge:  GoogleFonts.plusJakartaSans(fontSize: <span class="num">28</span>, fontWeight: FontWeight.w800, color: pri800),
+      titleLarge:    GoogleFonts.plusJakartaSans(fontSize: <span class="num">22</span>, fontWeight: FontWeight.w800, color: textH),
+      titleMedium:   GoogleFonts.plusJakartaSans(fontSize: <span class="num">15</span>, fontWeight: FontWeight.w700, color: textH),
+      titleSmall:    GoogleFonts.plusJakartaSans(fontSize: <span class="num">13</span>, fontWeight: FontWeight.w700, color: textH),
+      bodyLarge:     GoogleFonts.dmSans(fontSize: <span class="num">14</span>, fontWeight: FontWeight.w400, color: textB),
+      bodyMedium:    GoogleFonts.dmSans(fontSize: <span class="num">12</span>, fontWeight: FontWeight.w500, color: textB),
+      bodySmall:     GoogleFonts.dmSans(fontSize: <span class="num">10</span>, fontWeight: FontWeight.w600, color: textM),
+      labelLarge:    GoogleFonts.dmSans(fontSize: <span class="num">13</span>, fontWeight: FontWeight.w600, color: Colors.white),
+      labelSmall:    GoogleFonts.jetBrainsMono(fontSize: <span class="num">9</span>, fontWeight: FontWeight.w400, color: textS),
+    ),
+  );
+}</pre>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           CSS TOKENS COMPLETO
+           ═══════════════════════════════════════════ -->
+      <div class="section" id="tokens-css">
+        <div class="section-badge">17 · DEV REFERENCE</div>
+        <div class="section-title">CSS Tokens (Completo)</div>
+        <div class="section-desc">Bloco completo de variáveis CSS para copiar diretamente no projeto.</div>
+
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+<pre><span class="cmt">/* ═══ VerifCar Cortex Indigo — CSS Design Tokens ═══ */</span>
+:root {
+  <span class="cmt">/* Primary — Indigo */</span>
+  <span class="kw">--pri</span>:     <span class="str">#252d7a</span>;
+  <span class="kw">--pri-50</span>:  <span class="str">#eceeff</span>;
+  <span class="kw">--pri-100</span>: <span class="str">#d8daff</span>;
+  <span class="kw">--pri-400</span>: <span class="str">#5c66d4</span>;
+  <span class="kw">--pri-600</span>: <span class="str">#3d4592</span>;
+  <span class="kw">--pri-800</span>: <span class="str">#252d7a</span>;
+
+  <span class="cmt">/* Emerald — Success */</span>
+  <span class="kw">--em</span>:     <span class="str">#168821</span>;
+  <span class="kw">--em-50</span>:  <span class="str">#e6f4e8</span>;
+  <span class="kw">--em-400</span>: <span class="str">#1a9e27</span>;
+
+  <span class="cmt">/* Amber — Warning */</span>
+  <span class="kw">--am</span>:     <span class="str">#C48C14</span>;
+  <span class="kw">--am-50</span>:  <span class="str">#fdf3dc</span>;
+  <span class="kw">--am-400</span>: <span class="str">#C48C14</span>;
+  <span class="kw">--am-800</span>: <span class="str">#7a5600</span>;
+
+  <span class="cmt">/* Coral — Error */</span>
+  <span class="kw">--co</span>:     <span class="str">#E52207</span>;
+  <span class="kw">--co-50</span>:  <span class="str">#fdecea</span>;
+  <span class="kw">--co-400</span>: <span class="str">#E52207</span>;
+  <span class="kw">--co-800</span>: <span class="str">#8c1200</span>;
+
+  <span class="cmt">/* Surfaces */</span>
+  <span class="kw">--bg</span>:       <span class="str">#f8f9ff</span>;
+  <span class="kw">--surface</span>:  <span class="str">#ffffff</span>;
+  <span class="kw">--sur-low</span>:  <span class="str">#f1f3fb</span>;
+  <span class="kw">--sur-mid</span>:  <span class="str">#eceef6</span>;
+  <span class="kw">--sur-high</span>: <span class="str">#e6e8f0</span>;
+  <span class="kw">--border</span>:   <span class="str">#d8dae8</span>;
+
+  <span class="cmt">/* Text */</span>
+  <span class="kw">--text-h</span>: <span class="str">#181c21</span>;  <span class="cmt">/* heading */</span>
+  <span class="kw">--text-b</span>: <span class="str">#464651</span>;  <span class="cmt">/* body */</span>
+  <span class="kw">--text-m</span>: <span class="str">#595c7c</span>;  <span class="cmt">/* muted */</span>
+  <span class="kw">--text-s</span>: <span class="str">#767682</span>;  <span class="cmt">/* subtle */</span>
+
+  <span class="cmt">/* Typography */</span>
+  <span class="kw">--font-d</span>: <span class="str">'Space Grotesk', sans-serif</span>;
+  <span class="kw">--font-b</span>: <span class="str">'Inter', sans-serif</span>;
+  <span class="kw">--font-m</span>: <span class="str">'JetBrains Mono', monospace</span>;
+
+  <span class="cmt">/* Shadows */</span>
+  <span class="kw">--sh-card</span>:  <span class="str">0 1px 3px rgba(37,45,122,.08), 0 4px 16px rgba(37,45,122,.04)</span>;
+  <span class="kw">--sh-panel</span>: <span class="str">0 2px 8px rgba(37,45,122,.06)</span>;
+
+  <span class="cmt">/* Layout (Dashboard) */</span>
+  <span class="kw">--sidebar-w</span>: <span class="num">220px</span>;
+  <span class="kw">--topbar-h</span>:  <span class="num">52px</span>;
+}</pre>
+        </div>
+      </div>
+
+    </div><!-- /content-area -->
+  </main>
+</div>
+
+<!-- Global toast -->
+<div id="global-toast"></div>
+
+<style>@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}</style>
+
+<script>
+// ═══ NAV ═══
+function goSection(id){
+  document.querySelectorAll('.sb-link').forEach(l=>l.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(id).scrollIntoView({behavior:'smooth'});
+}
+
+// ═══ COPY ═══
+function copyToken(el, val){
+  navigator.clipboard.writeText(val);
+  el.classList.add('copied');
+  setTimeout(()=>el.classList.remove('copied'),1200);
+  showToast('Copiado: '+val);
+}
+function copy(val){
+  navigator.clipboard.writeText(val);
+  showToast('Copiado: '+val);
+}
+function copyCode(btn){
+  const pre = btn.parentElement.querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent);
+  btn.textContent='Copiado!';
+  setTimeout(()=>btn.textContent='Copiar',2000);
+  showToast('Bloco de código copiado');
+}
+function showToast(msg){
+  const t=document.getElementById('global-toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);
+  t._t=setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+// ═══ SPACING DATA ═══
+const spacings=[
+  {token:'sp-2', val:'2px', px:2, use:'Micro gaps, dividers'},
+  {token:'sp-4', val:'4px', px:4, use:'Badge padding, inline gaps'},
+  {token:'sp-6', val:'6px', px:6, use:'Gaps entre items, small padding'},
+  {token:'sp-8', val:'8px', px:8, use:'Card padding, component gaps'},
+  {token:'sp-10',val:'10px',px:10,use:'Section padding, row padding'},
+  {token:'sp-12',val:'12px',px:12,use:'Card padding, inner spacing'},
+  {token:'sp-14',val:'14px',px:14,use:'Content padding, panel padding'},
+  {token:'sp-16',val:'16px',px:16,use:'Page padding, modal padding'},
+  {token:'sp-18',val:'18px',px:18,use:'Logo padding, header padding'},
+  {token:'sp-20',val:'20px',px:20,use:'Content area padding (mobile)'},
+  {token:'sp-24',val:'24px',px:24,use:'Section spacing, large gaps'},
+  {token:'sp-32',val:'32px',px:32,use:'Section separation, page padding'},
+  {token:'sp-40',val:'40px',px:40,use:'Large section spacing (desktop)'},
+];
+const sEl=document.getElementById('spacing-list');
+spacings.forEach(s=>{
+  sEl.innerHTML+=`<div class="spacing-row" onclick="copy('${s.val}')">
+    <div class="spacing-meta">
+      <span class="spacing-token">${s.token}</span>
+      <span class="spacing-value">${s.val}</span>
+      <span class="spacing-flutter">Flutter: ${s.px}.0</span>
+    </div>
+    <div class="spacing-bar" style="width:${Math.min(s.px*3,300)}px"></div>
+    <span style="font-size:9px;color:var(--text-s);flex:1;text-align:right">${s.use}</span>
+  </div>`;
+});
+
+// ═══ RADIUS DATA ═══
+const radii=[
+  {label:'xs',val:'4px',r:4,use:'Tags, pills'},
+  {label:'sm',val:'6px',r:6,use:'Badges, tags'},
+  {label:'md',val:'10px',r:10,use:'Inputs, buttons internos'},
+  {label:'lg',val:'12px',r:12,use:'Cards base'},
+  {label:'xl',val:'14px',r:14,use:'Panels, cards hero'},
+  {label:'2xl',val:'16px',r:16,use:'Auth card, hero card'},
+  {label:'sheet',val:'20px',r:20,use:'Bottom sheets (top only)'},
+  {label:'pill',val:'9999px',r:9999,use:'Botões, badges'},
+  {label:'circle',val:'50%',r:'50%',use:'Avatares, dots'},
+];
+const rEl=document.getElementById('radius-grid');
+radii.forEach(r=>{
+  const rv = typeof r.r==='number'?r.r+'px':r.r;
+  rEl.innerHTML+=`<div class="radius-item" onclick="copy('${r.val}')">
+    <div class="radius-preview" style="border-radius:${rv}"></div>
+    <div class="radius-label">${r.label}</div>
+    <div class="radius-val">${r.val}</div>
+    <div style="font-size:8px;color:var(--text-s);margin-top:2px">${r.use}</div>
+  </div>`;
+});
+
+// ═══ SHADOWS DATA ═══
+const shadows=[
+  {name:'Card',token:'--sh-card',css:'0 1px 3px rgba(35,203,151,.08), 0 4px 16px rgba(35,203,151,.04)'},
+  {name:'Panel',token:'--sh-panel',css:'0 2px 8px rgba(35,203,151,.06)'},
+  {name:'Sidebar',token:'--sh-sidebar',css:'2px 0 24px rgba(35,203,151,.08)'},
+  {name:'Elevado',token:'(inline)',css:'0 8px 20px rgba(35,203,151,.09), 0 2px 6px rgba(35,203,151,.05)'},
+  {name:'Modal',token:'(inline)',css:'0 -6px 28px rgba(35,203,151,.13)'},
+  {name:'Botão Primary',token:'(inline)',css:'0 4px 12px rgba(35,203,151,.25)'},
+];
+const shEl=document.getElementById('shadow-grid');
+shadows.forEach(s=>{
+  shEl.innerHTML+=`<div class="shadow-card" onclick="copy('${s.css}')" style="box-shadow:var(--sh-card)">
+    <div class="shadow-preview" style="box-shadow:${s.css}"></div>
+    <div class="shadow-name">${s.name}</div>
+    <div class="shadow-token">${s.token}</div>
+    <div class="shadow-css">${s.css}</div>
+  </div>`;
+});
+
+// ═══ APP SCREENS ═══
+const appScreens=[
+  {file:'verifcar-01-login.html',name:'01 · Login',components:['rainbow-bar','auth-card','input-field','btn-primary','btn-secondary','modal-sheet','powered-badge']},
+  {file:'verifcar-02-home.html',name:'02 · Home',components:['app-header','search-bar','hero-card','kpi-row','filter-row','acc-item','badge-ok','badge-warn','modal-sheet','empty-state']},
+  {file:'verifcar-03-camera-traseira.html',name:'03 · Câmera',components:['cam-guide','shutter-btn','ia-overlay','toast']},
+  {file:'verifcar-04-ficha-completa.html',name:'04 · Ficha Completa',components:['veh-hero','placa-badge','section-title','card','card-ok','card-warn','data-row','badge','timeline','btn-primary','modal-sheet']},
+  {file:'verifcar-05-captura-assistida.html',name:'05 · Captura Assistida',components:['step-indicator','cam-guide','toast','progress-bar']},
+  {file:'verifcar-06-revisao.html',name:'06 · Revisão',components:['score-circle','evidence-grid','data-row','badge','btn-primary','btn-secondary']},
+  {file:'verifcar-tour.html',name:'Tour / Onboarding',components:['step-dots','illustration','btn-primary']},
+  {file:'verifcar-ec01-sem-wifi.html',name:'EC-01 · Sem Conexão',components:['icon-wrap','status-badge','card','card-warn','btn-primary','btn-secondary']},
+  {file:'verifcar-ec02-camera.html',name:'EC-02 · Câmera Negada',components:['bottom-sheet','step-row','btn-primary','btn-secondary','cam-blocked']},
+];
+const asEl=document.getElementById('app-screens');
+appScreens.forEach(s=>{
+  const tags=s.components.map(c=>`<span class="screen-comp-tag">${c}</span>`).join('');
+  asEl.innerHTML+=`<div class="screen-card" onclick="window.open('${s.file}','_blank')">
+    <div class="screen-iframe-wrap mobile"><iframe src="${s.file}" loading="lazy"></iframe></div>
+    <div class="screen-meta">
+      <div class="screen-name">${s.name}</div>
+      <div class="screen-file">${s.file}</div>
+      <div class="screen-components">${tags}</div>
+    </div>
+  </div>`;
+});
+
+// ═══ DASHBOARD SCREENS ═══
+const dashScreens=[
+  {file:'dash-00-login.html',name:'00 · Login',components:['brand-panel','form-group','btn-login','btn-govbr','feature-list']},
+  {file:'dash-01-visao-geral.html',name:'01 · Visão Geral',components:['sidebar','topbar','kpi-grid','chart-bars','data-table','heat-map','badge','period-pills']},
+  {file:'dash-02-monitoramento.html',name:'02 · Monitoramento',components:['feed-list','agent-row','alerts-panel','turno-panel','map-canvas','badge']},
+  {file:'dash-03-tatica.html',name:'03 · Tática',components:['kpi-strip','map-canvas','heat-blob','data-table','region-table','badge']},
+  {file:'dash-04-inteligencia.html',name:'04 · Inteligência',components:['graph-area','filter-bar','detail-panel','cluster-card','conn-item','badge']},
+  {file:'dash-05-detalhe.html',name:'05 · Detalhe Verificação',components:['hero-panel','evidence-grid','data-row','timeline','btn-primary','btn-danger','score-badge']},
+  {file:'dash-06-performance.html',name:'06 · Performance',components:['kpi-grid','donut-chart','heatmap','etapa-item','chart-bars','badge']},
+];
+const dsEl=document.getElementById('dash-screens');
+dashScreens.forEach(s=>{
+  const tags=s.components.map(c=>`<span class="screen-comp-tag">${c}</span>`).join('');
+  dsEl.innerHTML+=`<div class="screen-card" onclick="window.open('${s.file}','_blank')">
+    <div class="screen-iframe-wrap desktop"><iframe src="${s.file}" loading="lazy"></iframe></div>
+    <div class="screen-meta">
+      <div class="screen-name">${s.name}</div>
+      <div class="screen-file">${s.file}</div>
+      <div class="screen-components">${tags}</div>
+    </div>
+  </div>`;
+});
+</script>
+</body>
+</html>
