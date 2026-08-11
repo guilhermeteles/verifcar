@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VerifCar · Inspeção veicular inteligente</title>
+<meta name="description" content="Inspeção veicular com IA para frotas, concessionárias e quem está comprando um usado. Chassi, VIN, motor e vidros verificados em minutos, com laudo assinado.">
+<link rel="icon" href="../verifcar-brand/icons/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pri:#23CB97; --pri-600:#4FDCB0; --pri-800:#93EED3;
+    --pri-deep:#0C6B4E; --pri-deep2:#149B72;
+    --red:#FF3B63; --amber:#F0A92B;
+    --bg:#12141C; --surface:#1A1D28; --sur-low:#222431; --sur-high:#33374A;
+    --text-h:#F3F5F9; --text-b:#CBD0DC; --text-m:#8D94A6; --text-s:#666D80;
+    --border:rgba(255,255,255,.10);
+    --font-d:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --font-b:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --font-m:'JetBrains Mono','SF Mono',Menlo,monospace;
+    --max:1120px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+  body{background:var(--bg);color:var(--text-b);font-family:var(--font-b);line-height:1.6;overflow-x:hidden}
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 24px}
+  section{position:relative}
+  a{color:inherit}
+
+  /* ── nav ── */
+  nav{
+    position:sticky;top:0;z-index:100;
+    background:rgba(18,20,28,.82);backdrop-filter:blur(18px);
+    border-bottom:1px solid var(--border);
+  }
+  .nav-in{max-width:var(--max);margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:28px}
+  .nav-logo{height:30px;width:auto}
+  .nav-links{display:flex;gap:24px;margin-left:auto;align-items:center}
+  .nav-links a{font-size:13.5px;font-weight:500;color:var(--text-m);text-decoration:none;transition:color .18s}
+  .nav-links a:hover{color:var(--text-h)}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:var(--font-b);font-size:14px;font-weight:600;
+    padding:11px 20px;border-radius:10px;border:none;cursor:pointer;
+    text-decoration:none;transition:transform .18s,box-shadow .18s,background .18s;
+  }
+  .btn-pri{background:linear-gradient(135deg,var(--pri-deep),var(--pri-deep2));color:#fff;box-shadow:0 6px 20px rgba(12,107,78,.4)}
+  .btn-pri:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(12,107,78,.5)}
+  .btn-ghost{background:var(--sur-low);color:var(--text-h);border:1px solid var(--border)}
+  .btn-ghost:hover{background:var(--sur-high)}
+  .btn-sm{font-size:13px;padding:9px 16px}
+
+  /* ── hero ── */
+  .hero{padding:88px 0 76px;text-align:center;overflow:hidden}
+  .hero::before,.hero::after{content:'';position:absolute;border-radius:50%;pointer-events:none;z-index:0}
+  .hero::before{top:-260px;right:-140px;width:640px;height:640px;background:rgba(35,203,151,.11);filter:blur(120px)}
+  .hero::after{top:60px;left:-200px;width:520px;height:520px;background:rgba(216,29,69,.07);filter:blur(120px)}
+  .hero .wrap{position:relative;z-index:1}
+  .kicker{
+    display:inline-flex;align-items:center;gap:7px;
+    font-family:var(--font-m);font-size:10px;font-weight:500;letter-spacing:1.4px;
+    color:var(--pri);background:rgba(35,203,151,.09);
+    border:1px solid rgba(35,203,151,.26);border-radius:999px;padding:5px 13px;margin-bottom:26px;
+  }
+  .kicker .dot{width:5px;height:5px;border-radius:50%;background:var(--pri);box-shadow:0 0 8px var(--pri);animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+  h1{
+    font-family:var(--font-d);font-size:clamp(32px,5.4vw,58px);font-weight:700;
+    color:var(--text-h);letter-spacing:-1.4px;line-height:1.08;margin-bottom:22px;
+  }
+  h1 em{font-style:normal;color:var(--pri)}
+  .lead{font-size:clamp(15px,2vw,18.5px);color:var(--text-m);max-width:620px;margin:0 auto 34px;line-height:1.62}
+  .hero-cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:52px}
+
+  .stats{display:flex;justify-content:center;gap:52px;flex-wrap:wrap;padding-top:8px}
+  .stat-n{font-family:var(--font-d);font-size:30px;font-weight:700;color:var(--pri-800);letter-spacing:-.6px}
+  .stat-l{font-size:11.5px;color:var(--text-s);text-transform:uppercase;letter-spacing:.9px;font-weight:500;margin-top:2px}
+
+  /* ── seções ── */
+  .sec{padding:80px 0}
+  .sec-alt{background:linear-gradient(180deg,transparent,rgba(34,36,49,.55),transparent)}
+  .sec-head{max-width:640px;margin-bottom:46px}
+  .sec-head.center{margin-left:auto;margin-right:auto;text-align:center}
+  .eyebrow{
+    font-family:var(--font-m);font-size:10.5px;font-weight:500;letter-spacing:1.5px;
+    color:var(--pri);text-transform:uppercase;margin-bottom:14px;
+  }
+  h2{font-family:var(--font-d);font-size:clamp(24px,3.4vw,36px);font-weight:600;color:var(--text-h);letter-spacing:-.8px;line-height:1.18;margin-bottom:14px}
+  .sec-sub{font-size:15.5px;color:var(--text-m);line-height:1.68}
+
+  /* ── problema ── */
+  .prob-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+  .prob{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px 22px}
+  .prob-n{font-family:var(--font-m);font-size:26px;font-weight:500;color:var(--red);letter-spacing:-1px;margin-bottom:10px}
+  .prob-t{font-family:var(--font-d);font-size:15.5px;font-weight:600;color:var(--text-h);margin-bottom:7px}
+  .prob-d{font-size:13.5px;color:var(--text-m);line-height:1.62}
+
+  /* ── como funciona ── */
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:16px;counter-reset:s}
+  .step{
+    background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px 22px;
+    position:relative;counter-increment:s;
+  }
+  .step::before{
+    content:counter(s,decimal-leading-zero);
+    font-family:var(--font-m);font-size:11px;font-weight:500;color:var(--pri);
+    letter-spacing:1px;display:block;margin-bottom:14px;
+  }
+  .step-t{font-family:var(--font-d);font-size:16px;font-weight:600;color:var(--text-h);margin-bottom:8px}
+  .step-d{font-size:13.5px;color:var(--text-m);line-height:1.62}
+
+  /* ── públicos ── */
+  .aud{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:18px}
+  .aud-card{
+    background:var(--surface);border:1px solid var(--border);border-radius:20px;
+    padding:30px 27px;display:flex;flex-direction:column;position:relative;overflow:hidden;
+    transition:border-color .22s,transform .22s;
+  }
+  .aud-card:hover{border-color:rgba(35,203,151,.32);transform:translateY(-3px)}
+  .aud-card.feature{border-color:rgba(35,203,151,.28);background:linear-gradient(160deg,rgba(35,203,151,.055),var(--surface) 55%)}
+  .aud-badge{
+    position:absolute;top:18px;right:18px;
+    font-family:var(--font-m);font-size:9px;font-weight:500;letter-spacing:1px;
+    color:var(--pri);background:rgba(35,203,151,.12);border:1px solid rgba(35,203,151,.3);
+    border-radius:5px;padding:3px 8px;
+  }
+  .aud-icon{
+    width:46px;height:46px;border-radius:13px;
+    background:linear-gradient(135deg,var(--pri-deep),var(--pri-deep2));
+    border:1px solid rgba(255,255,255,.12);
+    display:flex;align-items:center;justify-content:center;margin-bottom:20px;
+  }
+  .aud-t{font-family:var(--font-d);font-size:20px;font-weight:600;color:var(--text-h);margin-bottom:9px;letter-spacing:-.3px}
+  .aud-d{font-size:14px;color:var(--text-m);line-height:1.65;margin-bottom:20px}
+  .aud-list{list-style:none;margin-bottom:24px;flex:1}
+  .aud-list li{
+    font-size:13.5px;color:var(--text-b);padding:6px 0 6px 24px;position:relative;line-height:1.55;
+  }
+  .aud-list li::before{
+    content:'';position:absolute;left:2px;top:13px;width:10px;height:6px;
+    border-left:2px solid var(--pri);border-bottom:2px solid var(--pri);
+    transform:rotate(-45deg);border-radius:1px;
+  }
+
+  /* ── prova / telas ── */
+  .screens{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+  .screen{
+    background:var(--surface);border:1px solid var(--border);border-radius:16px;
+    padding:22px;text-decoration:none;display:block;transition:border-color .22s,transform .22s;
+  }
+  .screen:hover{border-color:rgba(35,203,151,.36);transform:translateY(-3px)}
+  .screen-tag{font-family:var(--font-m);font-size:9.5px;letter-spacing:1.2px;color:var(--text-s);text-transform:uppercase;margin-bottom:8px}
+  .screen-t{font-family:var(--font-d);font-size:16.5px;font-weight:600;color:var(--text-h);margin-bottom:7px}
+  .screen-d{font-size:13.5px;color:var(--text-m);line-height:1.6;margin-bottom:14px}
+  .screen-cta{font-size:13px;font-weight:600;color:var(--pri);display:flex;align-items:center;gap:6px}
+  .screen-cta svg{transition:transform .2s}
+  .screen:hover .screen-cta svg{transform:translateX(4px)}
+
+  /* ── cta final ── */
+  .cta-box{
+    background:linear-gradient(150deg,rgba(35,203,151,.09),var(--surface) 60%);
+    border:1px solid rgba(35,203,151,.24);border-radius:22px;
+    padding:52px 40px;text-align:center;position:relative;overflow:hidden;
+  }
+  .cta-box h2{margin-bottom:12px}
+  .cta-box p{font-size:15.5px;color:var(--text-m);max-width:520px;margin:0 auto 28px}
+  .cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+  /* ── rodapé ── */
+  footer{border-top:1px solid var(--border);margin-top:72px;padding:40px 0 48px}
+  .foot-in{display:flex;justify-content:space-between;gap:32px;flex-wrap:wrap;align-items:flex-start}
+  .foot-logo{height:26px;width:auto;margin-bottom:12px}
+  .foot-tag{font-size:13px;color:var(--text-s);max-width:280px;line-height:1.6}
+  .foot-col h3{font-family:var(--font-d);font-size:11px;font-weight:600;letter-spacing:1.2px;color:var(--text-s);text-transform:uppercase;margin-bottom:12px}
+  .foot-col a{display:block;font-size:13.5px;color:var(--text-m);text-decoration:none;padding:4px 0;transition:color .18s}
+  .foot-col a:hover{color:var(--pri)}
+  .foot-bottom{margin-top:34px;padding-top:22px;border-top:1px solid var(--border);font-size:12px;color:var(--text-s);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+  .disclaimer{
+    font-size:12px;color:var(--text-s);background:var(--sur-low);
+    border:1px solid var(--border);border-radius:10px;padding:12px 16px;
+    margin-top:20px;line-height:1.6;
+  }
+
+  @media (max-width:760px){
+    .nav-links a:not(.btn){display:none}
+    .hero{padding:56px 0 52px}
+    .sec{padding:58px 0}
+    .stats{gap:32px}
+    .cta-box{padding:38px 24px}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-in">
+    <a href="#top"><img class="nav-logo" src="../verifcar-brand/logos/verifcar-lockup-h-white.svg" alt="VerifCar"></a>
+    <div class="nav-links">
+      <a href="#problema">Por que</a>
+      <a href="#como">Como funciona</a>
+      <a href="#publicos">Para quem</a>
+      <a href="#produto">Produto</a>
+      <a class="btn btn-pri btn-sm" href="#contato">Agendar demonstração</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section class="hero" id="top">
+  <div class="wrap">
+    <div class="kicker"><span class="dot"></span>INSPEÇÃO VEICULAR INTELIGENTE</div>
+    <h1>A verdade sobre o veículo,<br>antes de <em>assinar</em>.</h1>
+    <p class="lead">
+      O VerifCar fotografa chassi, VIN, motor e vidros, lê cada gravação com IA
+      e cruza com as bases oficiais. Em poucos minutos você tem um laudo assinado —
+      não a opinião de quem olhou rápido.
+    </p>
+    <div class="hero-cta">
+      <a class="btn btn-pri" href="#contato">
+        Agendar demonstração
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <a class="btn btn-ghost" href="#produto">Ver o produto</a>
+    </div>
+    <div class="stats">
+      <div><div class="stat-n">4</div><div class="stat-l">pontos verificados</div></div>
+      <div><div class="stat-n">~3min</div><div class="stat-l">por inspeção</div></div>
+      <div><div class="stat-n">Offline</div><div class="stat-l">funciona sem sinal</div></div>
+      <div><div class="stat-n">Laudo</div><div class="stat-l">assinado e rastreável</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PROBLEMA ══ -->
+<section class="sec sec-alt" id="problema">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">O problema</div>
+      <h2>Adulteração de chassi não se vê a olho nu</h2>
+      <p class="sec-sub">
+        Quem compra um veículo — uma frota inteira ou um carro só — está apostando
+        que a documentação corresponde ao metal. Quando não corresponde, o prejuízo
+        aparece meses depois, no licenciamento ou na blitz.
+      </p>
+    </div>
+    <div class="prob-grid">
+      <div class="prob">
+        <div class="prob-n">01</div>
+        <div class="prob-t">A conferência é visual</div>
+        <div class="prob-d">Um avaliador experiente olha, compara com o documento e decide. Sem registro do que foi visto, sem como auditar depois.</div>
+      </div>
+      <div class="prob">
+        <div class="prob-n">02</div>
+        <div class="prob-t">Cada um faz diferente</div>
+        <div class="prob-d">Dez avaliadores, dez critérios. Não há como comparar a qualidade da inspeção entre filiais ou saber quem deixou passar.</div>
+      </div>
+      <div class="prob">
+        <div class="prob-n">03</div>
+        <div class="prob-t">O laudo não prova nada</div>
+        <div class="prob-d">Um PDF digitado depois, sem foto do momento, sem hash, sem hora. Em disputa, não sustenta.</div>
+      </div>
+      <div class="prob">
+        <div class="prob-n">04</div>
+        <div class="prob-t">O padrão de fraude se repete</div>
+        <div class="prob-d">Quadrilhas usam o mesmo método em série. Sem dados centralizados, cada caso parece isolado.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ COMO FUNCIONA ══ -->
+<section class="sec" id="como">
+  <div class="wrap">
+    <div class="sec-head center">
+      <div class="eyebrow">Como funciona</div>
+      <h2>Quatro capturas, um laudo</h2>
+      <p class="sec-sub">O app conduz a inspeção passo a passo. Quem está em campo não precisa saber onde procurar — o guia mostra.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-t">Captura assistida</div>
+        <div class="step-d">A câmera mostra a silhueta do veículo e só libera o disparo quando o enquadramento está correto. Chassi, VIN, motor e vidros, na sequência.</div>
+      </div>
+      <div class="step">
+        <div class="step-t">Leitura por IA</div>
+        <div class="step-d">OCR extrai cada gravação e um modelo de visão avalia sinais de raspagem, resolda e regravação — com nota de confiança por ponto.</div>
+      </div>
+      <div class="step">
+        <div class="step-t">Cruzamento de bases</div>
+        <div class="step-d">O que foi lido é confrontado com as bases oficiais e privadas: divergência de VIN, restrição judicial, histórico de sinistro.</div>
+      </div>
+      <div class="step">
+        <div class="step-t">Laudo assinado</div>
+        <div class="step-d">Score de risco, fotos do momento da captura, hora e hash. O inspetor revisa e assina. Fica rastreável para sempre.</div>
+      </div>
+    </div>
+    <div class="disclaimer">
+      Funciona sem conexão. As capturas ficam no dispositivo e sincronizam quando o sinal volta —
+      pensado para pátio coberto, subsolo e estrada.
+    </div>
+  </div>
+</section>
+
+<!-- ══ PÚBLICOS ══ -->
+<section class="sec sec-alt" id="publicos">
+  <div class="wrap">
+    <div class="sec-head center">
+      <div class="eyebrow">Para quem</div>
+      <h2>Mesma tecnologia, três decisões diferentes</h2>
+    </div>
+    <div class="aud">
+
+      <div class="aud-card feature">
+        <div class="aud-badge">B2B</div>
+        <div class="aud-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 3h15v13H1zM16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+          </svg>
+        </div>
+        <div class="aud-t">Gestores de frota</div>
+        <div class="aud-d">Você responde por centenas de veículos espalhados em filiais que não visita. O dashboard mostra onde está o risco.</div>
+        <ul class="aud-list">
+          <li>Inspeção de entrada e devolução padronizada</li>
+          <li>Taxa de divergência por filial e por inspetor</li>
+          <li>Alerta imediato quando aparece adulteração</li>
+          <li>Trilha de auditoria para seguradora e compliance</li>
+        </ul>
+        <a class="btn btn-pri" href="#contato">Falar sobre minha frota</a>
+      </div>
+
+      <div class="aud-card feature">
+        <div class="aud-badge">B2B</div>
+        <div class="aud-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 21V9l9-6 9 6v12"/><path d="M9 21v-7h6v7"/>
+          </svg>
+        </div>
+        <div class="aud-t">Concessionárias</div>
+        <div class="aud-d">Cada seminovo que entra na troca é um risco assumido no escuro. Inspecione antes de fechar o valor.</div>
+        <ul class="aud-list">
+          <li>Avaliação de troca com laudo em minutos</li>
+          <li>Menos surpresa na revenda e menos recompra</li>
+          <li>Laudo para anexar ao anúncio e fechar mais rápido</li>
+          <li>Um padrão só para toda a rede de lojas</li>
+        </ul>
+        <a class="btn btn-pri" href="#contato">Falar sobre minha loja</a>
+      </div>
+
+      <div class="aud-card">
+        <div class="aud-badge">B2C</div>
+        <div class="aud-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 12v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6"/><path d="M2 9l2.5-5h15L22 9zM2 9h20v3H2z"/>
+          </svg>
+        </div>
+        <div class="aud-t">Quem vai comprar um usado</div>
+        <div class="aud-d">É provavelmente a segunda compra mais cara da sua vida. Vale gastar alguns minutos antes de transferir o dinheiro.</div>
+        <ul class="aud-list">
+          <li>Inspeção avulsa, sem contrato</li>
+          <li>Laudo em linguagem clara — o que achamos e o que isso significa</li>
+          <li>Restrição, sinistro e divergência de chassi</li>
+          <li>Argumento de negociação, por escrito</li>
+        </ul>
+        <a class="btn btn-ghost" href="#contato">Entrar na lista de espera</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ PRODUTO ══ -->
+<section class="sec" id="produto">
+  <div class="wrap">
+    <div class="sec-head center">
+      <div class="eyebrow">O produto</div>
+      <h2>Dois produtos, uma base de dados</h2>
+      <p class="sec-sub">Um app para quem está com o veículo na frente e um dashboard para quem precisa da visão do todo. Navegue pelos protótipos.</p>
+    </div>
+    <div class="screens">
+      <a class="screen" href="../verifcar-app/index.html">
+        <div class="screen-tag">App mobile</div>
+        <div class="screen-t">Inspeção em campo</div>
+        <div class="screen-d">Captura assistida do chassi, VIN, motor e vidros, ficha do veículo e revisão do laudo antes de assinar.</div>
+        <div class="screen-cta">Abrir protótipo
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </div>
+      </a>
+      <a class="screen" href="../verifcar-dashboard/index.html">
+        <div class="screen-tag">Dashboard web</div>
+        <div class="screen-t">Gestão e inteligência</div>
+        <div class="screen-d">Monitoramento ao vivo, mapa de divergências por filial, grafo de conexões entre veículos e performance da equipe.</div>
+        <div class="screen-cta">Abrir protótipo
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </div>
+      </a>
+      <a class="screen" href="../verifcar-docs/index.html">
+        <div class="screen-tag">Documentação</div>
+        <div class="screen-t">Handoff técnico</div>
+        <div class="screen-d">Arquitetura, endpoints, design system com tokens e a especificação de cada tela, para o time de desenvolvimento.</div>
+        <div class="screen-cta">Abrir documentação
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </div>
+      </a>
+    </div>
+    <div class="disclaimer">
+      <strong style="color:var(--text-m)">Protótipos navegáveis</strong> — dados fictícios, criados para demonstração.
+      Acesso: <code style="font-family:var(--font-m);color:var(--pri-600)">verifcar</code> /
+      <code style="font-family:var(--font-m);color:var(--pri-600)">verifcar2026</code>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA ══ -->
+<section class="sec" id="contato">
+  <div class="wrap">
+    <div class="cta-box">
+      <div class="eyebrow" style="text-align:center">Vamos conversar</div>
+      <h2>Veja funcionando com os seus veículos</h2>
+      <p>
+        Uma conversa de 30 minutos: você conta como a inspeção funciona hoje
+        e a gente mostra o VerifCar rodando no seu cenário.
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-pri" href="mailto:contato@verifcar.com.br?subject=Demonstração%20VerifCar">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg>
+          contato@verifcar.com.br
+        </a>
+        <a class="btn btn-ghost" href="../verifcar-app/index.html">Explorar o app primeiro</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-in">
+      <div>
+        <img class="foot-logo" src="../verifcar-brand/logos/verifcar-lockup-h-white.svg" alt="VerifCar">
+        <p class="foot-tag">Inspeção veicular inteligente para frotas, concessionárias e compradores.</p>
+      </div>
+      <div class="foot-col">
+        <h3>Produto</h3>
+        <a href="../verifcar-app/index.html">App mobile</a>
+        <a href="../verifcar-dashboard/index.html">Dashboard web</a>
+        <a href="../verifcar-docs/index.html">Documentação</a>
+      </div>
+      <div class="foot-col">
+        <h3>Para quem</h3>
+        <a href="#publicos">Gestores de frota</a>
+        <a href="#publicos">Concessionárias</a>
+        <a href="#publicos">Comprador de usado</a>
+      </div>
+      <div class="foot-col">
+        <h3>Contato</h3>
+        <a href="mailto:contato@verifcar.com.br">contato@verifcar.com.br</a>
+        <a href="mailto:privacidade@verifcar.com.br">privacidade@verifcar.com.br</a>
+        <a href="../index.html">Índice de protótipos</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 VerifCar</span>
+      <span>Protótipo de apresentação · dados fictícios</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
